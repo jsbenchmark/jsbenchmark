@@ -241,6 +241,7 @@ const isExporting = ref(false);
 import * as htmlToImage from "html-to-image";
 import { IconLink } from "@tabler/icons-vue";
 import { IconCheck } from "@tabler/icons-vue";
+import { IconShare } from "@tabler/icons-vue";
 const exportResults = async () => {
   isExporting.value = true;
   await nextTick();
@@ -262,6 +263,16 @@ const clipboard = useClipboard();
 const getUrl = () => {
   return window.location.href;
 };
+
+const { share, isSupported } = useShare();
+
+function startShare() {
+  share({
+    title: "benched.dev",
+    text: `Check out this benchmark on benched.dev!`,
+    url: location.href,
+  });
+}
 </script>
 
 <template>
@@ -278,14 +289,15 @@ const getUrl = () => {
 
         <div class="ml-5 mt-1.5 h-[50px] flex gap-3">
           <BaseButton
-            @click="clipboard.copy(getUrl())"
+            @click="startShare()"
             :loading="isRunningAllTests"
             :disabled="isAnyTestRunning"
             class="!px-0 aspect-square"
             outline
           >
-            <IconLink v-if="!clipboard.copied.value" />
-            <IconCheck v-else />
+            <!-- <IconLink v-if="!clipboard.copied.value" />
+            <IconCheck v-else /> -->
+            <IconShare />
           </BaseButton>
           <BaseButton
             @click="run"
