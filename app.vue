@@ -475,11 +475,11 @@ input {
   background-size: 2em 2em;
   background-image: linear-gradient(
     45deg,
-    rgba(0, 0, 0, 0.05) 25%,
+    rgba(255, 255, 255, 0.05) 25%,
     transparent 25%,
     transparent 50%,
-    rgba(0, 0, 0, 0.05) 50%,
-    rgba(0, 0, 0, 0.05) 75%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0.05) 75%,
     transparent 75%,
     transparent
   );

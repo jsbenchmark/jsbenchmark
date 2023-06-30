@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { clamp } from "lodash-es";
 import { Case, TestState } from "types";
+import chroma from "chroma-js";
 
 const props = defineProps({
   cases: {
@@ -31,6 +32,20 @@ const maxOpsPerSecond = computed(() => {
     })
   );
 });
+
+const colorScale = chroma
+  .scale(["#4e2e94", "#ff8362"])
+  .mode("lch")
+  .domain([0, 1]);
+const colors = computed(() => {
+  return props.cases.map((c) => {
+    const state = props.stateByTest[c.id];
+    if (!state || state.status !== "success") return "#ff8362";
+    const percentage =
+      (state.result?.opsPerSecond || 0) / maxOpsPerSecond.value;
+    return colorScale(percentage).hex();
+  });
+});
 </script>
 
 <template>
@@ -49,20 +64,21 @@ const maxOpsPerSecond = computed(() => {
       </div>
       <div class="relative">
         <div
-          class="bg-white rounded-[0.375em] h-[2.75em] transition-all duration-500 striped"
+          class="rounded-[0.375em] h-[2.75em] transition-all duration-500 striped"
           :class="{
             'bg-gray-800 striped-animated':
               stateByTest[test.id]?.status === 'running',
             'bg-red-600': stateByTest[test.id]?.status === 'error',
           }"
           :style="{
-            opacity:
-              stateByTest[test.id]?.status === 'success'
-                ? getOpacityByPercentage(
-                    (stateByTest[test.id]?.result?.opsPerSecond || 0) /
-                      maxOpsPerSecond
-                  )
-                : 1,
+            backgroundColor: colors[i],
+            // opacity:
+            //   stateByTest[test.id]?.status === 'success'
+            //     ? getOpacityByPercentage(
+            //         (stateByTest[test.id]?.result?.opsPerSecond || 0) /
+            //           maxOpsPerSecond
+            //       )
+            //     : 1,
             width: !stateByTest[test.id]?.result
               ? '100%'
               : ((stateByTest[test.id]?.result?.opsPerSecond || 0) /
