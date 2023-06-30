@@ -407,7 +407,7 @@ function startShare() {
 
     <div class="w-[500px] min-w-[400px] py-14 px-12 relative">
       <div class="sticky top-14 z-10">
-        <div class="flex justify-between items-center mb-8">
+        <div class="flex justify-between items-center mb-12">
           <h2 class="text-3xl font-bold">Results</h2>
           <div>
             <BaseButton
