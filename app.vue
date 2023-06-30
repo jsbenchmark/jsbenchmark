@@ -251,8 +251,8 @@ const isAnyTestRunning = computed(() => {
 </script>
 
 <template>
-  <div class="w-full max-w-7xl mx-auto flex gap-8 items-stretch min-h-screen">
-    <div class="flex flex-col gap-8 flex-1 py-14 px-8">
+  <div class="w-full max-w-7xl mx-auto flex items-stretch min-h-screen">
+    <div class="flex flex-col gap-8 flex-1 py-14 px-12">
       <!-- <textarea v-model="dataCode" class="w-full" /> -->
       <div class="flex justify-between items-start">
         <BaseInput
@@ -368,7 +368,7 @@ const isAnyTestRunning = computed(() => {
       </label> -->
     </div>
 
-    <div class="w-[500px] py-14 px-10 relative">
+    <div class="w-[500px] py-14 px-12 relative">
       <div class="sticky top-14 z-10">
         <h2 class="text-3xl font-bold mb-8">Results</h2>
 
