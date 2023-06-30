@@ -24,7 +24,7 @@ function depsParser(deps: Dependency[], esm: boolean = false) {
 
         const name = dep.name || `DEP_${i}`;
 
-        return `import * as ${name} from '${dep.url}';\nglobalThis.${name} = Object.keys(${name}).length === 1 && ${name}.default ? ${name}.default : ${name};\nconsole.log(${name})`;
+        return `import * as ${name} from '${dep.url}';\nglobalThis.${name} = Object.keys(${name}).length === 1 && ${name}.default ? ${name}.default : ${name};\n`;
       })
       .join("\n");
   } else {

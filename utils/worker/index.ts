@@ -108,8 +108,6 @@ export function useWebWorkerFn<T extends (...fnArgs: any[]) => any>(
         resolve,
         reject,
       };
-      console.log({ fnArgs });
-
       worker.value && worker.value.postMessage([[...fnArgs]]);
 
       workerStatus.value = "RUNNING";

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IconLoader } from '@tabler/icons-vue';
+import { IconLoader } from "@tabler/icons-vue";
 
 defineProps({
   tag: {
@@ -10,19 +10,25 @@ defineProps({
   loading: Boolean,
   icon: {
     type: null,
-  }
+  },
+  outline: Boolean,
 });
 </script>
 
 <template>
   <Component
     :is="tag"
-    class="px-5 h-11 rounded-md bg-white text-black font-semibold flex items-center justify-center"
+    class="px-5 h-11 max-h-full rounded-md font-semibold flex items-center justify-center transition"
     :class="{
       'opacity-50 cursor-not-allowed': disabled || loading,
+
+      'bg-white text-black': !outline,
+      'bg-transparent text-gray-200 hover:text-white border border-gray-600 hover:border-white':
+        outline,
     }"
   >
-    <IconLoader v-if="loading" class="animate-spin mr-2 -ml-1" />
+    <IconLoader v-if="loading" class="animate-spin mr-1.5 -ml-2" />
+    <Component v-else-if="icon" :is="icon" class="mr-1.5 -ml-2" />
     <span>
       <slot />
     </span>

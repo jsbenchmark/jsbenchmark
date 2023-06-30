@@ -24,8 +24,6 @@ function createWorkerBlobUrl(
     deps,
     esm
   )} \n onmessage=(${jobRunner})(${fn})`;
-  console.log(blobCode);
-
   const blob = new Blob([blobCode], { type: "text/javascript" });
   const url = URL.createObjectURL(blob);
   return url;

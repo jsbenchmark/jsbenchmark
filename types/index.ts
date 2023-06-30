@@ -17,5 +17,7 @@ export type TestState = {
   error?: Error | null;
   result?: {
     opsPerSecond: number;
+    averageTime: number;
+    averageTimeFormatted: string;
   };
 };

@@ -2,21 +2,23 @@
 import { useWebWorkerFn } from "./utils/worker";
 // Supports weights 100-800
 import "@fontsource-variable/jetbrains-mono";
-import { IconX } from "@tabler/icons-vue";
+import { IconPlus, IconX } from "@tabler/icons-vue";
 import { Case, Dependency, TestState } from "types";
 import { nanoid } from "nanoid";
 import { clamp } from "@vueuse/core";
+import { IconPlayerPlay } from "@tabler/icons-vue";
+import { IconTrash } from "@tabler/icons-vue";
 
 useHead({
   title: "Web Worker",
   htmlAttrs: {
-    class: "bg-gray-900 text-white font-sans",
+    class: "bg-gray-900 text-white font-sans overflow-x-hidden",
   },
 });
 
 const config = ref({
   name: "Test 123",
-  parallel: false,
+  parallel: true,
   globalTestConfig: {
     dependencies: [] as Dependency[],
   } as Case,
@@ -48,8 +50,6 @@ const stateByTest = ref<Record<string, TestState>>({});
 // const WARMUP_ITERATIONS = 100;
 const ITERATIONS = 10_000;
 const TIME = 3000;
-
-const result = ref(null);
 
 const runCase = async (c: Case) => {
   stateByTest.value[c.id] = {
@@ -115,33 +115,53 @@ const runCase = async (c: Case) => {
     }
   );
 
-  const res = await workerFn(
-    {
+  let res;
+  try {
+    res = await workerFn({
       code: c.code,
       iterations: ITERATIONS,
       dataCode: config.value.dataCode,
       time: TIME,
+    });
+    // const average = res.timings.reduce((a, b) => a + b, 0) / ITERATIONS;
+    // const opsPerSecond = 1000 / average;
+    const opsPerSecond = Math.round(res.times / (TIME / 1000));
+
+    const averageTime = 1000 / opsPerSecond;
+    let averageTimeFormatted = averageTime.toFixed(2);
+
+    const isSubSecond = averageTime < 1;
+
+    if (isSubSecond) {
+      const zeroCountAfterDot = averageTime
+        .toString()
+        .match(/\.(0+)/)?.[1].length;
+      averageTimeFormatted = averageTime.toFixed((zeroCountAfterDot || 0) + 2);
     }
-    // data.value
-  );
 
-  const average = res.timings.reduce((a, b) => a + b, 0) / ITERATIONS;
-
-  // const opsPerSecond = 1000 / average;
-  const opsPerSecond = Math.round(res.times / (TIME / 1000));
-
-  console.log({ ...res, average, opsPerSecond });
-
-  stateByTest.value[c.id] = {
-    status: "success",
-    error: null,
-    result: {
-      opsPerSecond,
-    },
-  };
+    stateByTest.value[c.id] = {
+      status: "success",
+      error: null,
+      result: {
+        opsPerSecond,
+        averageTime,
+        averageTimeFormatted,
+      },
+    };
+  } catch (e) {
+    const error = e as Error;
+    console.error(`Worker failed with error: ${error.message}`);
+    stateByTest.value[c.id] = {
+      status: "error",
+      error: error,
+      result: undefined,
+    };
+  }
 };
 
+const isRunningAllTests = ref(false);
 const run = async () => {
+  isRunningAllTests.value = true;
   if (config.value.parallel) {
     await Promise.all(cases.value.map(runCase));
   } else {
@@ -149,6 +169,7 @@ const run = async () => {
       await runCase(c);
     }
   }
+  isRunningAllTests.value = false;
 };
 
 const serializeState = () => {
@@ -186,6 +207,13 @@ watch(
   { deep: true }
 );
 
+const addCase = () => {
+  cases.value.push({
+    id: nanoid(),
+    code: "",
+    dependencies: [],
+  });
+};
 const removeCase = (c: Case) => {
   if (!confirm("Are you sure?")) return;
   cases.value = cases.value.filter((x) => x !== c);
@@ -213,31 +241,58 @@ const getColorByPercentage = (percentage: number) => {
 const getOpacityByPercentage = (percentage: number) => {
   return clamp(percentage, 0.2, 1);
 };
+
+const isAnyTestRunning = computed(() => {
+  return cases.value.some((c) => {
+    const state = stateByTest.value[c.id];
+    return state?.status === "running";
+  });
+});
 </script>
 
 <template>
-  <div class="w-full flex gap-8 items-stretch min-h-screen">
+  <div class="w-full max-w-7xl mx-auto flex gap-8 items-stretch min-h-screen">
     <div class="flex flex-col gap-8 flex-1 py-14 px-8">
       <!-- <textarea v-model="dataCode" class="w-full" /> -->
-      <BaseInput
-        v-model="config.name"
-        placeholder="Name"
-        blendin
-        class="text-[2.6rem] font-bold"
-      />
+      <div class="flex justify-between items-start">
+        <BaseInput
+          v-model="config.name"
+          placeholder="Name"
+          blendin
+          class="text-[2.6rem] font-bold flex-1"
+        />
 
-      <div>
+        <div class="ml-5">
+          <BaseButton
+            @click="run"
+            :loading="isRunningAllTests"
+            :disabled="isAnyTestRunning"
+            class="text-lg px-6 h-[50px] mt-1.5"
+            >Run all</BaseButton
+          >
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-3">
         <h3 class="text-2xl font-bold">Setup</h3>
-        <p class="text-gray-400">
-          Anything returned from this setup function will be available via the
-          <code class="bg-gray-700 px-2 rounded text-white">DATA</code>
+        <p class="text-gray-400 text-sm">
+          This setup function should return the stuff you need in the tests.
+          Anything returned will be available via the
+          <code class="text-white">DATA</code>
           variable inside the test cases.
         </p>
         <BaseCodeEditor v-model="config.dataCode" />
-        <Dependencies v-model:test="config.globalTestConfig" />
+        <Dependencies v-model:test="config.globalTestConfig" global />
       </div>
 
-      <h3 class="text-2xl font-bold">Test cases</h3>
+      <div class="flex justify-between items-center">
+        <h3 class="text-2xl font-bold">Test cases</h3>
+        <div>
+          <BaseButton :icon="IconPlus" outline @click="addCase">
+            <span>Add case</span>
+          </BaseButton>
+        </div>
+      </div>
 
       <div
         v-for="(c, index) of cases"
@@ -245,64 +300,90 @@ const getOpacityByPercentage = (percentage: number) => {
         class="border rounded-xl border-gray-800 p-6 flex flex-col gap-4"
       >
         <div class="flex items-center justify-between">
-          <BaseInput v-model="c.name" placeholder="Name" blendin />
-          <button
+          <BaseInput
+            v-model="c.name"
+            placeholder="Name"
+            blendin
+            class="text-lg font-semibold"
+          />
+          <!-- <button
             @click="removeCase(c)"
             class="text-gray-500 hover:text-white transition"
           >
             <IconX />
-          </button>
+          </button> -->
+          <div class="flex justify-end space-x-4 h-10">
+            <div
+              class="rounded-md h-full px-0 mr-2 -border -bg-gray-800 flex items-center"
+            >
+              <div class="flex items-center font-mono space-x-2 text-sm">
+                <div class="text-gray-400">Ops/s:</div>
+                <div>
+                  {{
+                    stateByTest[c.id]?.result
+                      ? Number(
+                          stateByTest[c.id]?.result?.opsPerSecond
+                        ).toLocaleString()
+                      : "?"
+                  }}
+                </div>
+              </div>
+
+              <!-- <div
+                class="border-l border-gray-800 h-full flex items-center justify-center"
+              >
+                <IconPlayerPlay />
+                <span>Run</span>
+              </div> -->
+            </div>
+            <BaseButton
+              @click="runCase(c)"
+              :loading="stateByTest[c.id]?.status === 'running'"
+              outline
+              >Run</BaseButton
+            >
+            <BaseButton
+              @click="removeCase(c)"
+              class="!bg-transparent border border-gray-700 px-0 aspect-square text-gray-400"
+            >
+              <IconTrash :size="20" />
+            </BaseButton>
+          </div>
         </div>
         <BaseCodeEditor v-model="c.code" />
 
         <Dependencies v-model:test="cases[index]" />
 
-        <div class="flex justify-end space-x-4">
-          <div
-            class="rounded-md h-11 px-3 border border-gray-800 flex items-center"
-          >
-            Ops/s:
-            {{
-              stateByTest[c.id]?.result
-                ? Number(
-                    stateByTest[c.id]?.result?.opsPerSecond
-                  ).toLocaleString()
-                : "0"
-            }}
-          </div>
-          <BaseButton
-            @click="runCase(c)"
-            :loading="stateByTest[c.id]?.status === 'running'"
-            >Run</BaseButton
-          >
+        <div
+          v-if="stateByTest[c.id]?.status === 'error'"
+          class="bg-red-600/10 text-red-500 rounded-md px-4 py-3 font-mono border border-red-600"
+        >
+          {{ stateByTest[c.id]?.error?.message }}
         </div>
       </div>
 
-      <BaseButton @click="cases.push({ id: nanoid(), code: '' })"
-        >Add case</BaseButton
-      >
-
-      <label>
+      <!-- <label>
         <input type="checkbox" v-model="config.parallel" />
         Run in parallel (experimental)
-      </label>
-
-      <BaseButton @click="run">Run all</BaseButton>
+      </label> -->
     </div>
 
-    <div class="bg-gray-950/50 w-[500px] py-14 px-10 relative">
-      <div class="sticky top-14">
+    <div class="w-[500px] py-14 px-10 relative">
+      <div class="sticky top-14 z-10">
         <h2 class="text-3xl font-bold mb-8">Results</h2>
 
         <div class="w-full space-y-6">
           <div v-for="(test, i) in cases" :key="test.id">
-            <div class="flex justify-between items-center text-lg mb-1">
-              <div class="mb-2 font-medium">
+            <div class="flex justify-between items-center mb-2">
+              <div class="font-medium text-lg">
                 {{ test.name || `Test #${i + 1}` }}
               </div>
               <div class="font-mono">
+                <span class="text-gray-400">Ops/s:</span>
                 {{
-                  stateByTest[test.id]?.result?.opsPerSecond?.toLocaleString()
+                  stateByTest[
+                    test.id
+                  ]?.result?.opsPerSecond?.toLocaleString() || "?"
                 }}
               </div>
             </div>
@@ -338,10 +419,21 @@ const getOpacityByPercentage = (percentage: number) => {
                 }}
               </div> -->
             </div>
+            <div class="text-[0.8rem] mt-2.5 font-mono">
+              <span class="text-gray-400">Average run time:</span>
+              {{ stateByTest[test.id]?.result?.averageTimeFormatted || "?" }}
+              <span v-if="stateByTest[test.id]?.result" class="text-gray-400"
+                >ms</span
+              >
+            </div>
             <hr v-if="i < cases.length - 1" class="mt-8 border-gray-800" />
           </div>
         </div>
       </div>
+
+      <div
+        class="absolute z-0 pointer-events-none inset-0 -right-[100vw] bg-gray-950/50"
+      ></div>
     </div>
   </div>
 </template>

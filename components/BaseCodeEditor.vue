@@ -1,8 +1,39 @@
 <script setup lang="ts">
-import { EditorView, basicSetup } from "codemirror";
-import { placeholder } from "@codemirror/view";
+// import { basicSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { oneDark } from "@codemirror/theme-one-dark";
+import { debounce } from "lodash-es";
+import {
+  lineNumbers,
+  highlightActiveLineGutter,
+  highlightSpecialChars,
+  drawSelection,
+  dropCursor,
+  rectangularSelection,
+  crosshairCursor,
+  highlightActiveLine,
+  keymap,
+  placeholder,
+  EditorView,
+} from "@codemirror/view";
+import { EditorState } from "@codemirror/state";
+import {
+  foldGutter,
+  indentOnInput,
+  syntaxHighlighting,
+  defaultHighlightStyle,
+  bracketMatching,
+  foldKeymap,
+} from "@codemirror/language";
+import { history, defaultKeymap, historyKeymap } from "@codemirror/commands";
+import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
+import {
+  closeBrackets,
+  autocompletion,
+  closeBracketsKeymap,
+  completionKeymap,
+} from "@codemirror/autocomplete";
+import { lintKeymap } from "@codemirror/lint";
 
 const props = defineProps({
   modelValue: String,
@@ -15,10 +46,11 @@ const emit = defineEmits<{
 const editor = shallowRef<EditorView>();
 const editorRef = ref<HTMLElement>();
 
+const emitUpdateDebounced = debounce((value: string) => {
+  emit("update:modelValue", value);
+}, 250);
 const updateListener = EditorView.updateListener.of((v) => {
-  console.log("change", v.state.doc.toString());
-
-  emit("update:modelValue", v.state.doc.toString());
+  emitUpdateDebounced(v.state.doc.toString());
 });
 
 const theme = EditorView.theme({
@@ -32,6 +64,15 @@ const theme = EditorView.theme({
   },
   ".cm-gutters": {
     backgroundColor: "transparent !important",
+  },
+  "& .cm-gutterElement": {
+    display: "flex !important",
+    alignItems: "center !important",
+    justifyContent: "center !important",
+  },
+  ".cm-content": {
+    lineHeight: "1.8",
+    padding: "0 !important",
   },
   ".cm-activeLine": {
     backgroundColor: "transparent !important",
@@ -52,12 +93,41 @@ const theme = EditorView.theme({
   },
 });
 
-onMounted(() => {
-  console.log(props.modelValue);
+const setup = () => [
+  lineNumbers(),
+  highlightActiveLineGutter(),
+  highlightSpecialChars(),
+  history(),
+  foldGutter(),
+  drawSelection(),
+  dropCursor(),
+  EditorState.allowMultipleSelections.of(true),
+  indentOnInput(),
+  syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+  bracketMatching(),
+  closeBrackets(),
+  autocompletion(),
+  rectangularSelection(),
+  crosshairCursor(),
+  highlightActiveLine(),
+  highlightSelectionMatches(),
+  keymap.of([
+    ...closeBracketsKeymap,
+    ...defaultKeymap,
+    ...searchKeymap,
+    ...historyKeymap,
+    ...foldKeymap,
+    ...completionKeymap,
+    ...lintKeymap,
+  ]),
+];
 
+onMounted(() => {
   editor.value = new EditorView({
     extensions: [
-      basicSetup,
+      // basicSetup,
+      setup(),
+
       javascript(),
       updateListener,
       oneDark,
