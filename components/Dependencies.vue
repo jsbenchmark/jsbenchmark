@@ -49,7 +49,7 @@ const addDep = () => {
         v-model="dep.name"
         v-if="dep.esm"
         :placeholder="`Import as: DEP_${i}`"
-        class="w-80"
+        class="!w-44 shrink-0"
       />
 
       <label

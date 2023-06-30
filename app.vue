@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { useWebWorkerFn } from "./utils/worker";
-// Supports weights 100-800
 import "@fontsource-variable/jetbrains-mono";
-import { IconPlus, IconX } from "@tabler/icons-vue";
+import { IconPlus } from "@tabler/icons-vue";
 import { Case, Dependency, TestState } from "types";
 import { nanoid } from "nanoid";
 import { clamp } from "@vueuse/core";
-import { IconPlayerPlay } from "@tabler/icons-vue";
 import { IconTrash } from "@tabler/icons-vue";
+import slugify from "slugify";
 
 useHead({
   title: "Web Worker",
@@ -240,6 +239,8 @@ const allTestsHaveResults = computed(() => {
 const exportViewRef = ref<HTMLElement | null>(null);
 const isExporting = ref(false);
 import * as htmlToImage from "html-to-image";
+import { IconLink } from "@tabler/icons-vue";
+import { IconCheck } from "@tabler/icons-vue";
 const exportResults = async () => {
   isExporting.value = true;
   await nextTick();
@@ -250,15 +251,21 @@ const exportResults = async () => {
     canvasHeight: 900 * 2,
   });
   const link = document.createElement("a");
-  link.download = "results.png";
+  link.download = `${slugify(config.value.name).toLowerCase()}.png`;
   link.href = dataUrl;
   link.click();
   isExporting.value = false;
 };
+
+const clipboard = useClipboard();
+
+const getUrl = () => {
+  return window.location.href;
+};
 </script>
 
 <template>
-  <div class="w-full max-w-7xl mx-auto flex items-stretch min-h-screen">
+  <div class="w-full max-w-screen-2xl mx-auto flex items-stretch min-h-screen">
     <div class="flex flex-col gap-8 flex-1 py-14 px-12">
       <!-- <textarea v-model="dataCode" class="w-full" /> -->
       <div class="flex justify-between items-start">
@@ -269,12 +276,22 @@ const exportResults = async () => {
           class="text-[2.6rem] font-bold flex-1"
         />
 
-        <div class="ml-5">
+        <div class="ml-5 mt-1.5 h-[50px] flex gap-3">
+          <BaseButton
+            @click="clipboard.copy(getUrl())"
+            :loading="isRunningAllTests"
+            :disabled="isAnyTestRunning"
+            class="!px-0 aspect-square"
+            outline
+          >
+            <IconLink v-if="!clipboard.copied.value" />
+            <IconCheck v-else />
+          </BaseButton>
           <BaseButton
             @click="run"
             :loading="isRunningAllTests"
             :disabled="isAnyTestRunning"
-            class="text-lg px-6 h-[50px] mt-1.5"
+            class="text-lg px-6"
             >Run all</BaseButton
           >
         </div>
@@ -286,7 +303,8 @@ const exportResults = async () => {
           This setup function should return the stuff you need in the tests.
           Anything returned will be available via the
           <code class="text-white">DATA</code>
-          variable inside the test cases.
+          variable inside the test cases. Running the setup function is not part
+          of the benchmark and it's run separately for each test case.
         </p>
         <BaseCodeEditor v-model="config.dataCode" />
         <Dependencies v-model:test="config.globalTestConfig" global />
@@ -375,7 +393,7 @@ const exportResults = async () => {
       </label> -->
     </div>
 
-    <div class="w-[500px] py-14 px-12 relative">
+    <div class="w-[500px] min-w-[400px] py-14 px-12 relative">
       <div class="sticky top-14 z-10">
         <div class="flex justify-between items-center mb-8">
           <h2 class="text-3xl font-bold">Results</h2>
@@ -406,8 +424,9 @@ const exportResults = async () => {
         ref="exportViewRef"
         class="w-[1600px] h-[900px] rounded-xl bg-gray-900 p-20 flex flex-col justify-center"
         :style="{
-          fontSize: `${Math.max(
+          fontSize: `${clamp(
             40 * (2 / Math.max(cases.length, 2)) * 0.95,
+            10,
             35
           )}px`,
         }"
