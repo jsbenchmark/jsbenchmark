@@ -27,8 +27,8 @@ defineProps({
         outline,
     }"
   >
-    <IconLoader v-if="loading" class="animate-spin mr-1.5 -ml-2" />
-    <Component v-else-if="icon" :is="icon" class="mr-1.5 -ml-2" />
+    <IconLoader v-if="loading" class="animate-spin mr-1.5 -ml-2" :size="20" />
+    <Component v-else-if="icon" :is="icon" class="mr-1.5 -ml-2" :size="20" />
     <span>
       <slot />
     </span>
