@@ -66,9 +66,12 @@ const colors = computed(() => {
         <div
           class="rounded-[0.375em] h-[2.75em] transition-all duration-500 striped"
           :class="{
-            'bg-gray-800 striped-animated':
-              stateByTest[test.id]?.status === 'running',
-            'bg-red-600': stateByTest[test.id]?.status === 'error',
+            '!bg-gray-700': stateByTest[test.id]?.status === 'running',
+            '!bg-gray-800':
+              stateByTest[test.id]?.status !== 'running' &&
+              !stateByTest[test.id]?.result,
+            'striped-animated': stateByTest[test.id]?.status === 'running',
+            '!bg-red-600': stateByTest[test.id]?.status === 'error',
           }"
           :style="{
             backgroundColor: colors[i],
