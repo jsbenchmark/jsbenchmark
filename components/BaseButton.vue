@@ -20,7 +20,7 @@ defineProps({
     :is="tag"
     class="px-5 h-11 max-h-full rounded-md font-semibold flex items-center justify-center transition"
     :class="{
-      'opacity-50 cursor-not-allowed': disabled || loading,
+      'opacity-50 cursor-not-allowed pointer-events-none': disabled || loading,
 
       'bg-white text-black': !outline,
       'bg-transparent text-gray-200 hover:text-white border border-gray-600 hover:border-white':

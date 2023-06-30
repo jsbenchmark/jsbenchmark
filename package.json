@@ -27,6 +27,7 @@
     "@fontsource-variable/jetbrains-mono": "^5.0.4",
     "@tabler/icons-vue": "^2.23.0",
     "codemirror": "^6.0.1",
+    "html-to-image": "^1.11.11",
     "lodash-es": "^4.17.21",
     "nanoid": "^4.0.2"
   }

@@ -64,7 +64,7 @@ const runCase = async (c: Case) => {
 
   const { workerFn, workerStatus, workerTerminate } = useWebWorkerFn(
     async ({ iterations, code, dataCode, time }, d?: any) => {
-      const timings = [];
+      // const timings = [];
 
       const AsyncFunction = Object.getPrototypeOf(
         async function () {}
@@ -105,7 +105,7 @@ const runCase = async (c: Case) => {
 
       return {
         times,
-        timings,
+        // timings,
       };
     },
     {
@@ -223,31 +223,38 @@ onMounted(() => {
   readStateFromUrl(useRoute().hash.slice(1));
 });
 
-const maxOpsPerSecond = computed(() => {
-  return Math.max(
-    ...cases.value.map((c) => {
-      const state = stateByTest.value[c.id];
-      if (!state || state.status !== "success") return 0;
-      return state.result?.opsPerSecond || 0;
-    })
-  );
-});
-
-const getColorByPercentage = (percentage: number) => {
-  const hue = percentage * 120;
-  return `hsl(${hue}, 100%, 50%)`;
-};
-
-const getOpacityByPercentage = (percentage: number) => {
-  return clamp(percentage, 0.2, 1);
-};
-
 const isAnyTestRunning = computed(() => {
   return cases.value.some((c) => {
     const state = stateByTest.value[c.id];
     return state?.status === "running";
   });
 });
+
+const allTestsHaveResults = computed(() => {
+  return cases.value.every((c) => {
+    const state = stateByTest.value[c.id];
+    return state?.status === "success" || state?.status === "error";
+  });
+});
+
+const exportViewRef = ref<HTMLElement | null>(null);
+const isExporting = ref(false);
+import * as htmlToImage from "html-to-image";
+const exportResults = async () => {
+  isExporting.value = true;
+  await nextTick();
+
+  // Fix fonts: https://github.com/bubkoo/html-to-image/issues/49#issuecomment-762222100
+  const dataUrl = await htmlToImage.toPng(exportViewRef.value!, {
+    canvasWidth: 1600 * 2,
+    canvasHeight: 900 * 2,
+  });
+  const link = document.createElement("a");
+  link.download = "results.png";
+  link.href = dataUrl;
+  link.click();
+  isExporting.value = false;
+};
 </script>
 
 <template>
@@ -370,70 +377,52 @@ const isAnyTestRunning = computed(() => {
 
     <div class="w-[500px] py-14 px-12 relative">
       <div class="sticky top-14 z-10">
-        <h2 class="text-3xl font-bold mb-8">Results</h2>
-
-        <div class="w-full space-y-6">
-          <div v-for="(test, i) in cases" :key="test.id">
-            <div class="flex justify-between items-center mb-2">
-              <div class="font-medium text-lg">
-                {{ test.name || `Test #${i + 1}` }}
-              </div>
-              <div class="font-mono">
-                <span class="text-gray-400">Ops/s:</span>
-                {{
-                  stateByTest[
-                    test.id
-                  ]?.result?.opsPerSecond?.toLocaleString() || "?"
-                }}
-              </div>
-            </div>
-            <div class="relative">
-              <div
-                class="bg-white rounded-md h-11 transition-all duration-500 striped"
-                :class="{
-                  'bg-gray-800 striped-animated':
-                    stateByTest[test.id]?.status === 'running',
-                  'bg-red-600': stateByTest[test.id]?.status === 'error',
-                }"
-                :style="{
-                  opacity:
-                    stateByTest[test.id]?.status === 'success'
-                      ? getOpacityByPercentage(
-                          (stateByTest[test.id]?.result?.opsPerSecond || 0) /
-                            maxOpsPerSecond
-                        )
-                      : 1,
-                  width: !stateByTest[test.id]?.result
-                    ? '100%'
-                    : ((stateByTest[test.id]?.result?.opsPerSecond || 0) /
-                        maxOpsPerSecond) *
-                        100 +
-                      '%',
-                }"
-              ></div>
-              <!-- <div
-                class="absolute right-0 bottom-0 text-white z-10 text-shadow text-xl font-mono"
-              >
-                {{
-                  stateByTest[test.id]?.result?.opsPerSecond?.toLocaleString()
-                }}
-              </div> -->
-            </div>
-            <div class="text-[0.8rem] mt-2.5 font-mono">
-              <span class="text-gray-400">Average run time:</span>
-              {{ stateByTest[test.id]?.result?.averageTimeFormatted || "?" }}
-              <span v-if="stateByTest[test.id]?.result" class="text-gray-400"
-                >ms</span
-              >
-            </div>
-            <hr v-if="i < cases.length - 1" class="mt-8 border-gray-800" />
+        <div class="flex justify-between items-center mb-8">
+          <h2 class="text-3xl font-bold">Results</h2>
+          <div>
+            <BaseButton
+              @click="exportResults"
+              :disabled="!allTestsHaveResults"
+              outline
+              class="!h-8 !px-3 text-sm"
+              >Share</BaseButton
+            >
           </div>
         </div>
+
+        <Results :cases="cases" :state-by-test="stateByTest" />
       </div>
 
       <div
         class="absolute z-0 pointer-events-none inset-0 -right-[100vw] bg-gray-950/50"
       ></div>
+    </div>
+
+    <div
+      v-if="isExporting"
+      class="fixed -left-[1000000px] pointer-events-none flex items-center justify-center"
+    >
+      <div
+        ref="exportViewRef"
+        class="w-[1600px] h-[900px] rounded-xl bg-gray-900 p-20 flex flex-col justify-center"
+        :style="{
+          fontSize: `${Math.max(
+            40 * (2 / Math.max(cases.length, 2)) * 0.95,
+            35
+          )}px`,
+        }"
+      >
+        <h1 class="font-extrabold text-[2.6em] mb-[0.75em] leading-none">
+          {{ config.name }}
+        </h1>
+        <Results :cases="cases" :state-by-test="stateByTest" />
+        <div
+          class="absolute top-0 right-0 bg-gray-800 rounded-bl-md text-sm px-4 py-2 text-gray-400 tracking-wide font-medium"
+        >
+          <span>Powered by</span>
+          <span class="text-gray-300 inline-block ml-1">benched.dev</span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -452,7 +441,7 @@ input {
 }
 
 .striped {
-  background-size: 2rem 2rem;
+  background-size: 2em 2em;
   background-image: linear-gradient(
     45deg,
     rgba(0, 0, 0, 0.05) 25%,
