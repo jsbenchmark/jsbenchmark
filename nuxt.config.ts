@@ -12,6 +12,11 @@ export default defineNuxtConfig({
           href: "https://fonts.googleapis.com/css2?family=Pathway+Extreme:wght@400;500;600;700;800&display=swap",
           crossorigin: "anonymous",
         },
+        {
+          rel: "icon",
+          type: "image/svg+xml",
+          href: "/logo.svg",
+        },
       ],
     },
   },
