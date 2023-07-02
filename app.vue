@@ -7,6 +7,8 @@ import { nanoid } from "nanoid";
 import { clamp } from "@vueuse/core";
 import { IconTrash } from "@tabler/icons-vue";
 import slugify from "slugify";
+import * as htmlToImage from "html-to-image";
+import { IconShare } from "@tabler/icons-vue";
 
 const title = computed(() => config.value.name);
 
@@ -243,10 +245,7 @@ const allTestsHaveResults = computed(() => {
 
 const exportViewRef = ref<HTMLElement | null>(null);
 const isExporting = ref(false);
-import * as htmlToImage from "html-to-image";
-import { IconLink } from "@tabler/icons-vue";
-import { IconCheck } from "@tabler/icons-vue";
-import { IconShare } from "@tabler/icons-vue";
+
 const exportResults = async () => {
   isExporting.value = true;
   await nextTick();
@@ -260,7 +259,10 @@ const exportResults = async () => {
   link.download = `${slugify(config.value.name).toLowerCase()}.png`;
   link.href = dataUrl;
   link.click();
-  isExporting.value = false;
+
+  setTimeout(() => {
+    isExporting.value = false;
+  }, 500);
 };
 
 const clipboard = useClipboard();
@@ -416,6 +418,7 @@ function startShare() {
           <div>
             <BaseButton
               @click="exportResults"
+              :loading="isExporting"
               :disabled="!allTestsHaveResults"
               outline
               class="!h-8 !px-3 text-sm"
