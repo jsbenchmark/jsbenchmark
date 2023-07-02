@@ -29,6 +29,26 @@ useHead({
   htmlAttrs: {
     class: "bg-gray-900 text-white font-sans overflow-x-hidden",
   },
+  meta: [
+    {
+      name: "description",
+      content:
+        "A straight forward JavaScript benchmarking tool with support for ES modules and libraries.",
+    },
+    {
+      name: "keywords",
+      content:
+        "javascript, benchmark, js, performance, esm, module, library, measure, compare, testing, tool",
+    },
+    {
+      name: "author",
+      content: "pabue.co",
+    },
+    {
+      name: "viewport",
+      content: "width=device-width, initial-scale=1.0",
+    },
+  ],
 });
 
 const cases = ref<Case[]>([
