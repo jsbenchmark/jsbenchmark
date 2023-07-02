@@ -54,7 +54,12 @@ useHead({
 const cases = ref<Case[]>([
   {
     id: nanoid(),
-    code: "DATA.find(i => i === 1)",
+    code: "DATA.find(i => i === 99)",
+    // dependencies: [{ url: "", name: "" }],
+  },
+  {
+    id: nanoid(),
+    code: "DATA.find(i => i === 499)",
     // dependencies: [{ url: "", name: "" }],
   },
   {
