@@ -8,12 +8,7 @@ import { clamp } from "@vueuse/core";
 import { IconTrash } from "@tabler/icons-vue";
 import slugify from "slugify";
 
-useHead({
-  title: "Web Worker",
-  htmlAttrs: {
-    class: "bg-gray-900 text-white font-sans overflow-x-hidden",
-  },
-});
+const title = computed(() => config.value.name);
 
 const config = ref({
   name: "Test 123",
@@ -22,6 +17,16 @@ const config = ref({
     dependencies: [] as Dependency[],
   } as Case,
   dataCode: "return [...Array(1000).keys()]",
+});
+
+useHead({
+  title,
+  titleTemplate: (sub) => {
+    return sub ? `${sub} - JS Benchmark` : "JS Benchmark";
+  },
+  htmlAttrs: {
+    class: "bg-gray-900 text-white font-sans overflow-x-hidden",
+  },
 });
 
 const cases = ref<Case[]>([
@@ -268,8 +273,8 @@ const { share, isSupported } = useShare();
 
 function startShare() {
   share({
-    title: "benched.dev",
-    text: `Check out this benchmark on benched.dev!`,
+    title: "jsbenchmark.com",
+    text: `Check out this benchmark on jsbenchmark.com!`,
     url: location.href,
   });
 }
@@ -290,7 +295,6 @@ function startShare() {
         <div class="ml-5 mt-1.5 h-[50px] flex gap-3">
           <BaseButton
             @click="startShare()"
-            :loading="isRunningAllTests"
             :disabled="isAnyTestRunning"
             class="!px-0 aspect-square"
             outline
@@ -451,7 +455,7 @@ function startShare() {
           class="absolute top-0 right-0 bg-gray-800 rounded-bl-md text-sm px-4 py-2 text-gray-400 tracking-wide font-medium"
         >
           <span>Powered by</span>
-          <span class="text-gray-300 inline-block ml-1">benched.dev</span>
+          <span class="text-gray-300 inline-block ml-1">jsbenchmark.com</span>
         </div>
       </div>
     </div>
