@@ -55,16 +55,19 @@ const cases = ref<Case[]>([
   {
     id: nanoid(),
     code: "DATA.find(i => i === 99)",
+    name: "Find 99",
     // dependencies: [{ url: "", name: "" }],
   },
   {
     id: nanoid(),
     code: "DATA.find(i => i === 499)",
+    name: "Find 499",
     // dependencies: [{ url: "", name: "" }],
   },
   {
     id: nanoid(),
     code: "DATA.find(i => i === 999)",
+    name: "Find 999",
     // dependencies: [{ url: "", name: "" }],
   },
   // {
