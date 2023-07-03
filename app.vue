@@ -350,7 +350,14 @@ function startShare() {
           of the benchmark and it's run separately for each test case.
         </p>
         <BaseCodeEditor v-model="config.dataCode" />
-        <Dependencies v-model:test="config.globalTestConfig" global />
+        <Dependencies v-model:test="config.globalTestConfig" global>
+          <template #help>
+            <p>
+              Global dependencies are available in the setup function and every
+              test case.
+            </p>
+          </template>
+        </Dependencies>
       </div>
 
       <div class="flex justify-between items-center">
@@ -372,7 +379,7 @@ function startShare() {
             v-model="c.name"
             placeholder="Name"
             blendin
-            class="text-lg font-semibold"
+            class="text-xl font-semibold"
           />
           <!-- <button
             @click="removeCase(c)"

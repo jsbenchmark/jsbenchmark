@@ -30,7 +30,9 @@ const addDep = () => {
   <div>
     <div class="flex justify-start items-center">
       <div class="flex">
-        <h5 class="font-medium">{{ global ? "Global " : "" }}Dependencies</h5>
+        <h5 class="font-semibold text-base">
+          {{ global ? "Global " : "" }}Dependencies
+        </h5>
       </div>
 
       <div class="ml-4">
@@ -43,7 +45,12 @@ const addDep = () => {
         </button>
       </div>
     </div>
-    <div v-for="(dep, i) in test.dependencies" class="flex gap-3 mt-2">
+
+    <div v-if="!!$slots.help" class="text-gray-400 mt-1.5 text-sm">
+      <slot name="help" />
+    </div>
+
+    <div v-for="(dep, i) in test.dependencies" class="flex gap-3 mt-3">
       <BaseInput v-model="dep.url" placeholder="URL" />
       <BaseInput
         v-model="dep.name"
