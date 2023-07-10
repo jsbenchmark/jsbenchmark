@@ -6,7 +6,8 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "upgrade": "nuxi upgrade --force"
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",
@@ -16,7 +17,7 @@
     "@types/node": "^18",
     "@vueuse/core": "^10.2.0",
     "@vueuse/nuxt": "^10.2.0",
-    "nuxt": "^3.6.1",
+    "nuxt": "^3.6.2",
     "prettier": "^2.8.8",
     "typescript": "latest"
   },
