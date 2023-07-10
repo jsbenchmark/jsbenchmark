@@ -13,7 +13,7 @@ import { IconShare } from "@tabler/icons-vue";
 const title = computed(() => config.value.name);
 
 const config = ref({
-  name: "Test 123",
+  name: "Simple example test",
   parallel: true,
   globalTestConfig: {
     dependencies: [] as Dependency[],
@@ -253,8 +253,9 @@ const removeCase = (c: Case) => {
   cases.value = cases.value.filter((x) => x !== c);
 };
 
+const route = useRoute();
 onMounted(() => {
-  readStateFromUrl(useRoute().hash.slice(1));
+  readStateFromUrl(route.hash.slice(1));
 });
 
 const isAnyTestRunning = computed(() => {
@@ -295,10 +296,6 @@ const exportResults = async () => {
 
 const clipboard = useClipboard();
 
-const getUrl = () => {
-  return window.location.href;
-};
-
 const { share, isSupported } = useShare();
 
 function startShare() {
@@ -308,18 +305,37 @@ function startShare() {
     url: location.href,
   });
 }
+
+const clear = () => {
+  // if (!confirm("Are you sure?")) return;
+  cases.value = [];
+  config.value = {
+    name: "",
+    parallel: true,
+    dataCode: "",
+    globalTestConfig: {
+      dependencies: [] as Dependency[],
+    } as Case,
+  };
+};
 </script>
 
 <template>
   <div class="w-full max-w-screen-2xl mx-auto flex items-stretch min-h-screen">
     <div class="flex flex-col gap-8 flex-1 py-14 px-12">
-      <!-- <textarea v-model="dataCode" class="w-full" /> -->
+      <div>
+        <button @click="clear" class="flex">
+          <img src="/logo.svg" alt="JS Benchmark logo" class="h-6 mr-2" />
+          <span class="text-base font-semibold text-gray-300">jsbenchmark</span>
+        </button>
+      </div>
+
       <div class="flex justify-between items-start">
         <BaseInput
           v-model="config.name"
           placeholder="Name"
           blendin
-          class="text-[2.6rem] font-bold flex-1"
+          class="text-[2.3rem] font-bold flex-1"
         />
 
         <div class="ml-5 mt-1.5 h-[50px] flex gap-3">
