@@ -28,21 +28,45 @@ const addDep = () => {
 
 <template>
   <div>
-    <div class="flex justify-start items-center">
+    <div class="flex justify-between items-center">
       <div class="flex">
-        <h5 class="font-semibold text-base">
-          {{ global ? "Global " : "" }}Dependencies
-        </h5>
+        <div class="flex">
+          <h5 class="font-semibold text-base">
+            {{ global ? "Global " : "" }}Dependencies
+          </h5>
+        </div>
+
+        <div class="ml-4">
+          <button
+            @click="addDep"
+            class="text-[0.8rem] uppercase font-medium tracking-wider flex items-center bg-gray-800 rounded px-2 py-0.5 hover:bg-gray-700 transition"
+          >
+            <IconPlus class="mr-1 -ml-1" :size="16" :stroke-width="2.5" />
+            <span>Add</span>
+          </button>
+        </div>
       </div>
 
-      <div class="ml-4">
-        <button
-          @click="addDep"
-          class="text-[0.8rem] uppercase font-medium tracking-wider flex items-center bg-gray-800 rounded px-2 py-0.5 hover:bg-gray-700 transition"
+      <div>
+        <p
+          class="text-xs text-gray-500 transition hover:text-gray-300 cursor-help"
         >
-          <IconPlus class="mr-1 -ml-1" :size="16" :stroke-width="2.5" />
-          <span>Add</span>
-        </button>
+          Use sites like
+          <a
+            href="https://www.jsdelivr.com/"
+            target="_blank"
+            class="text-gray-400 transition hover:text-gray-100"
+            >jsDelivr</a
+          >
+          or
+          <a
+            href="https://www.skypack.dev/"
+            target="_blank"
+            class="text-gray-400 transition hover:text-gray-100"
+            >Skypack</a
+          >
+          to find URLs for packages.
+        </p>
       </div>
     </div>
 
@@ -51,7 +75,10 @@ const addDep = () => {
     </div>
 
     <div v-for="(dep, i) in test.dependencies" class="flex gap-3 mt-3">
-      <BaseInput v-model="dep.url" placeholder="URL" />
+      <BaseInput
+        v-model="dep.url"
+        placeholder="URL, e.g. https://cdn.jsdelivr.net/npm/lodash-es@4.17.21/+esm"
+      />
       <BaseInput
         v-model="dep.name"
         v-if="dep.esm"
