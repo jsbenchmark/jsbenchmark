@@ -115,8 +115,13 @@ const runCase = async (c: Case) => {
       //   (globalThis as any)[`DEP_${index}`] = dep;
       // }
 
-      for (let i = 0; i < 100; i++) {
-        await fn(data);
+      // Warmup.
+      let warmupTimes = 0;
+      const warmupStart = Date.now();
+
+      while (Date.now() - warmupStart < 500) {
+        await fn();
+        warmupTimes++;
       }
 
       // Run fixed times.
@@ -479,6 +484,14 @@ const clear = () => {
         </div>
 
         <Results :cases="cases" :state-by-test="stateByTest" />
+
+        <div class="mt-24 text-gray-400 text-sm">
+          <p>
+            <span class="font-bold">Note:</span> No statistical analysis is used
+            to validate the results. The tests are run for 3 seconds (with a
+            500ms warmup) and then operations per second are calculated.
+          </p>
+        </div>
       </div>
 
       <div
