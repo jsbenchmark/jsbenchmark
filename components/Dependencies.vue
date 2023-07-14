@@ -55,14 +55,14 @@ const addDep = () => {
           <a
             href="https://www.jsdelivr.com/"
             target="_blank"
-            class="text-gray-400 transition hover:text-gray-100"
+            class="text-gray-400 transition hover:text-white"
             >jsDelivr</a
           >
           or
           <a
             href="https://www.skypack.dev/"
             target="_blank"
-            class="text-gray-400 transition hover:text-gray-100"
+            class="text-gray-400 transition hover:text-white"
             >Skypack</a
           >
           to find URLs for packages.
