@@ -64,33 +64,23 @@ const cases = ref<Case[]>([
     id: nanoid(),
     code: "DATA.find(i => i === 99)",
     name: "Find 99",
-    // dependencies: [{ url: "", name: "" }],
   },
   {
     id: nanoid(),
     code: "DATA.find(i => i === 499)",
     name: "Find 499",
-    // dependencies: [{ url: "", name: "" }],
   },
   {
     id: nanoid(),
     code: "DATA.find(i => i === 999)",
     name: "Find 999",
-    // dependencies: [{ url: "", name: "" }],
   },
-  // {
-  //   esm: true,
-  //   dependencies: ["https://cdn.jsdelivr.net/npm/destr@2.0.0/+esm"],
-  //   code: "DEP_0.destr(data)",
-  // },
 ]);
 
 const stateByTest = ref<Record<string, TestState>>({});
 
-// import('https://cdn.jsdelivr.net/npm/destr@2.0.0/+esm').then(({destr}) => destr(data));
-
-// const WARMUP_ITERATIONS = 100;
 const ITERATIONS = 10_000;
+const WARMUP_TIME = 500;
 const TIME = 3000;
 
 const runCase = async (c: Case) => {
@@ -104,16 +94,14 @@ const runCase = async (c: Case) => {
     ...(c.dependencies || []),
   ].filter((d) => d.url);
 
-  const { workerFn, workerStatus, workerTerminate } = useWebWorkerFn(
-    async ({ iterations, code, dataCode, time }, d?: any) => {
-      // const timings = [];
-
+  const { workerFn, workerTerminate } = useWebWorkerFn(
+    async ({ code, dataCode, time, warmupTime }, d?: any) => {
       const AsyncFunction = Object.getPrototypeOf(
         async function () {}
       ).constructor;
+
       const dataFn = AsyncFunction(dataCode);
       const data = await dataFn(d);
-
       (globalThis as any).DATA = data;
 
       const fn = AsyncFunction(code);
@@ -127,21 +115,12 @@ const runCase = async (c: Case) => {
       let warmupTimes = 0;
       const warmupStart = Date.now();
 
-      while (Date.now() - warmupStart < 500) {
+      while (Date.now() - warmupStart < warmupTime) {
         await fn();
         warmupTimes++;
       }
 
-      // Run fixed times.
-      // for (let i = 0; i < iterations; i++) {
-      //   const start = performance.now();
-      //   const result = await fn(data);
-      //   const end = performance.now();
-
-      //   timings.push(end - start);
-      // }
-
-      // Run for fixed time.
+      // Actual test.
       let times = 0;
       const start = Date.now();
 
@@ -152,7 +131,6 @@ const runCase = async (c: Case) => {
 
       return {
         times,
-        // timings,
       };
     },
     {
@@ -169,6 +147,7 @@ const runCase = async (c: Case) => {
       iterations: ITERATIONS,
       dataCode: config.value.dataCode,
       time: TIME,
+      warmupTime: WARMUP_TIME,
     });
     // const average = res.timings.reduce((a, b) => a + b, 0) / ITERATIONS;
     // const opsPerSecond = 1000 / average;
@@ -324,7 +303,6 @@ const getUrl = () => {
 };
 
 const clear = () => {
-  // if (!confirm("Are you sure?")) return;
   cases.value = [];
   config.value = {
     name: "",
@@ -519,10 +497,16 @@ const clear = () => {
         </div>
       </div>
 
-      <!-- <label>
-        <input type="checkbox" v-model="config.parallel" />
-        Run in parallel (experimental)
-      </label> -->
+      <div>
+        <BaseButton
+          :icon="IconPlus"
+          outline
+          @click="addCase"
+          class="w-full mt-6"
+        >
+          <span>Add case</span>
+        </BaseButton>
+      </div>
     </div>
 
     <div
