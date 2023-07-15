@@ -342,11 +342,12 @@ const clear = () => {
             <img src="/logo.svg" alt="JS Benchmark logo" class="h-8 mr-3" />
           </button>
           <div>
-            <div
-              class="text-base font-semibold text-[#ff8362] uppercase tracking-wider leading-none"
+            <a
+              href="/"
+              class="text-base font-semibold text-[#ff8362] uppercase tracking-wider leading-none block"
             >
               jsbenchmark
-            </div>
+            </a>
             <div
               class="text-xs text-left text-gray-400 leading-none tracking-wide mt-0.5"
             >
