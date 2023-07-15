@@ -300,7 +300,7 @@ const exportResults = async () => {
 };
 
 const clipboard = useClipboard();
-const { share, isSupported } = useShare();
+const { share, isSupported: isShareSupported } = useShare();
 
 function startShare() {
   share({
@@ -309,6 +309,10 @@ function startShare() {
     url: location.href,
   });
 }
+
+const getUrl = () => {
+  return window.location.href;
+};
 
 const clear = () => {
   // if (!confirm("Are you sure?")) return;
@@ -345,14 +349,14 @@ const clear = () => {
 
         <div class="ml-10 mt-1.5 h-[50px] flex gap-3">
           <BaseButton
-            @click="startShare()"
+            @click="isShareSupported ? startShare() : clipboard.copy(getUrl())"
             :disabled="isAnyTestRunning"
             class="!px-0 aspect-square"
             outline
           >
-            <!-- <IconLink v-if="!clipboard.copied.value" />
-            <IconCheck v-else /> -->
-            <IconShare />
+            <IconShare v-if="isShareSupported" />
+            <IconLink v-else-if="!clipboard.copied.value" />
+            <IconCheck v-else />
           </BaseButton>
           <BaseButton
             @click="run"
