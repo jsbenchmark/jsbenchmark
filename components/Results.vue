@@ -49,7 +49,7 @@ const colors = computed(() => {
 </script>
 
 <template>
-  <div class="w-full space-y-[1.5em] text-[1em]">
+  <div class="w-full space-y-[1.25em] text-[1em]">
     <div v-for="(test, i) in cases" :key="test.id">
       <div class="flex justify-between items-center mb-2">
         <div class="font-semibold text-[1.125em]">
@@ -98,7 +98,7 @@ const colors = computed(() => {
           >ms</span
         >
       </div>
-      <hr v-if="i < cases.length - 1" class="mt-[1.5em] border-gray-800" />
+      <hr v-if="i < cases.length - 1" class="mt-[1.25em] border-gray-800" />
     </div>
   </div>
 </template>

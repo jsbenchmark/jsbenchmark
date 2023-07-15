@@ -571,12 +571,12 @@ const clear = () => {
           )}px`,
         }"
       >
-        <h1 class="font-extrabold text-[2.6em] mb-[0.75em] leading-none">
+        <h1 class="font-extrabold text-[2.6em] mb-[1em] leading-none">
           {{ config.name }}
         </h1>
         <Results :cases="cases" :state-by-test="stateByTest" />
         <div
-          class="absolute top-0 right-0 bg-gray-800 rounded-bl-md text-sm px-4 py-2 text-gray-400 tracking-wide font-medium"
+          class="absolute top-0 right-0 bg-gray-800 rounded-bl-md rounded-tr-xl text-xs px-3.5 py-1.5 text-gray-400 tracking-wide font-medium"
         >
           <span>Powered by</span>
           <span class="text-gray-300 inline-block ml-1">jsbenchmark.com</span>
