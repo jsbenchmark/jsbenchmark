@@ -334,9 +334,11 @@ const clear = () => {
 </script>
 
 <template>
-  <div class="w-full max-w-screen-2xl mx-auto flex items-stretch min-h-screen">
-    <div class="flex flex-col gap-8 flex-1 py-14 px-12">
-      <div class="flex justify-between items-center">
+  <div
+    class="w-full max-w-screen-2xl mx-auto flex-col lg:flex-row flex items-stretch min-h-screen"
+  >
+    <div class="flex flex-col gap-8 flex-1 py-14 px-6 lg:px-12">
+      <div class="flex-col lg:flex-row flex justify-between lg:items-center">
         <div class="flex items-center">
           <button @click="clear">
             <img src="/logo.svg" alt="JS Benchmark logo" class="h-8 mr-3" />
@@ -362,7 +364,7 @@ const clear = () => {
           </div>
         </div>
 
-        <div class="flex space-x-5">
+        <div class="flex space-x-5 mt-6 lg:mt-0">
           <button
             class="font-medium text-gray-400 transition hover:text-white text-sm"
             @click="clear"
@@ -379,16 +381,16 @@ const clear = () => {
         </div>
       </div>
 
-      <div class="flex justify-between items-start">
+      <div class="flex-col lg:flex-row flex justify-between lg:items-start">
         <BaseInput
           v-model="config.name"
           placeholder="Name"
           blendin
-          class="text-[2.3rem] font-bold flex-1"
+          class="text-[2.3rem] font-bold flex-1 max-w-full"
           type="textarea"
         />
 
-        <div class="ml-10 mt-1.5 h-[50px] flex gap-3">
+        <div class="mt-8 lg:ml-10 lg:mt-1.5 h-[50px] flex gap-3">
           <BaseButton
             @click="isShareSupported ? startShare() : clipboard.copy(getUrl())"
             :disabled="isAnyTestRunning"
@@ -403,7 +405,7 @@ const clear = () => {
             @click="run"
             :loading="isRunningAllTests"
             :disabled="isAnyTestRunning"
-            class="text-lg px-6"
+            class="text-lg px-6 flex-1 lg:flex-auto"
             >Run all</BaseButton
           >
         </div>
@@ -419,7 +421,11 @@ const clear = () => {
           of the benchmark and it's run separately for each test case.
         </p>
         <BaseCodeEditor v-model="config.dataCode" />
-        <Dependencies v-model:test="config.globalTestConfig" global>
+        <Dependencies
+          v-model:test="config.globalTestConfig"
+          global
+          class="mt-2"
+        >
           <template #help>
             <p>
               Global dependencies are available in the setup function and every
@@ -443,7 +449,7 @@ const clear = () => {
         :key="index"
         class="border rounded-xl border-gray-800 p-6 flex flex-col gap-4"
       >
-        <div class="flex items-center justify-between">
+        <div class="flex-col lg:flex-row flex lg:items-center justify-between">
           <BaseInput
             v-model="c.name"
             placeholder="Name"
@@ -456,9 +462,9 @@ const clear = () => {
           >
             <IconX />
           </button> -->
-          <div class="flex justify-end space-x-4 h-10">
+          <div class="flex lg:justify-end space-x-4 h-10">
             <div
-              class="rounded-md h-full px-0 mr-2 -border -bg-gray-800 flex items-center"
+              class="rounded-md h-full px-0 lg:mr-2 -border -bg-gray-800 flex items-center mr-auto"
             >
               <div class="flex items-center font-mono space-x-2 text-sm">
                 <div class="text-gray-400">Ops/s:</div>
@@ -515,7 +521,9 @@ const clear = () => {
       </label> -->
     </div>
 
-    <div class="w-[500px] min-w-[400px] py-14 px-12 relative">
+    <div
+      class="lg:w-[500px] lg:min-w-[400px] pb-10 lg:py-14 px-6 lg:px-12 relative"
+    >
       <div class="sticky top-14 z-10">
         <div class="flex justify-between items-center mb-12">
           <h2 class="text-3xl font-bold">Results</h2>
@@ -543,7 +551,7 @@ const clear = () => {
       </div>
 
       <div
-        class="absolute z-0 pointer-events-none inset-0 -right-[100vw] bg-gray-950/50"
+        class="hidden lg:block absolute z-0 pointer-events-none inset-0 -right-[100vw] bg-gray-950/50"
       ></div>
     </div>
 

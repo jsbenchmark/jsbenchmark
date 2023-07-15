@@ -32,7 +32,7 @@ const addDep = () => {
 
 <template>
   <div>
-    <div class="flex justify-between items-center">
+    <div class="flex-col lg:flex-row flex justify-between lg:items-center">
       <div class="flex">
         <div class="flex">
           <h5 class="font-semibold text-base">
@@ -51,7 +51,7 @@ const addDep = () => {
         </div>
       </div>
 
-      <div>
+      <div class="mt-2 lg:mt-0">
         <p
           class="text-xs text-gray-500 transition hover:text-gray-300 cursor-help"
         >
@@ -78,7 +78,10 @@ const addDep = () => {
       <slot name="help" />
     </div>
 
-    <div v-for="(dep, i) in test.dependencies" class="flex gap-3 mt-3">
+    <div
+      v-for="(dep, i) in test.dependencies"
+      class="flex-col lg:flex-row flex gap-3 mt-3"
+    >
       <BaseInput
         v-model="dep.url"
         placeholder="URL, e.g. https://cdn.jsdelivr.net/npm/lodash-es@4.17.21/+esm"
@@ -87,14 +90,14 @@ const addDep = () => {
         v-model="dep.name"
         v-if="dep.esm"
         :placeholder="`Import as: DEP_${nameIndexOffset + i}`"
-        class="!w-52 shrink-0 font-mono"
+        class="lg:!w-52 shrink-0 font-mono"
       />
 
       <label
-        class="flex items-center rounded-md border border-gray-700 px-4 cursor-pointer"
+        class="flex items-center rounded-md border border-gray-700 px-4 cursor-pointer justify-center"
       >
         <input type="checkbox" v-model="dep.esm" />
-        <span class="ml-2">ESM</span>
+        <span class="ml-2 py-2 lg:py-0">ESM</span>
       </label>
 
       <BaseButton
