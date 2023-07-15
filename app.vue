@@ -532,8 +532,8 @@ const clear = () => {
         <div class="mt-24 text-gray-400 text-sm">
           <p>
             <span class="font-bold">Note:</span> No statistical analysis is used
-            to validate the results. The tests are run for 3 seconds (with a
-            500ms warmup) and then operations per second are calculated.
+            to validate the results. The tests are run in parallel for 3 seconds
+            (with a 500ms warmup) and then operations per second are calculated.
           </p>
         </div>
       </div>
