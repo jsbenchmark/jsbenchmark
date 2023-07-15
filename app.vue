@@ -200,6 +200,7 @@ const runCase = async (c: Case) => {
       error: error,
       result: undefined,
     };
+    workerTerminate();
   }
 };
 
