@@ -12,6 +12,9 @@ import { IconShare } from "@tabler/icons-vue";
 import { IconCheck } from "@tabler/icons-vue";
 import { IconLink } from "@tabler/icons-vue";
 
+const ADVANCED_EXAMPLE_URL =
+  "/#eyJjYXNlcyI6W3siaWQiOiJTemFvbUxmNWhudG45UHY5SkplZnoiLCJjb2RlIjoic3RydWN0dXJlZENsb25lKERBVEEpIiwibmFtZSI6IlN0cnVjdHVyZWQgY2xvbmUifSx7ImlkIjoiZlJ2LUtWZFZ6LVlzejQ0VWF6RFZyIiwiY29kZSI6ImxvZGFzaC5jbG9uZURlZXAoREFUQSkiLCJuYW1lIjoiTG9kYXNoIiwiZGVwZW5kZW5jaWVzIjpbeyJ1cmwiOiJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2xvZGFzaC1lc0A0LjE3LjIxLytlc20iLCJuYW1lIjoibG9kYXNoIiwiZXNtIjp0cnVlfV19LHsiaWQiOiJOdEpEMHh5Y0oyNl9LdUpyd1UyUGwiLCJjb2RlIjoiY29uc3QgeyBrbG9uYSB9ID0gS0xPTkFcbmtsb25hKERBVEEpIiwiZGVwZW5kZW5jaWVzIjpbeyJ1cmwiOiJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2tsb25hQDIuMC42Lytlc20iLCJuYW1lIjoiS0xPTkEiLCJlc20iOnRydWV9XSwibmFtZSI6Imtsb25hIn0seyJpZCI6IlRyQ3Y2WVNTY1pnNTBtaVZGMEt3UyIsImNvZGUiOiJjbG9uZURlZXAoREFUQSkiLCJkZXBlbmRlbmNpZXMiOlt7InVybCI6Imh0dHBzOi8vY2RuLmpzZGVsaXZyLm5ldC9ucG0vY2xvbmUtZGVlcEA0LjAuMS8rZXNtIiwibmFtZSI6ImNsb25lRGVlcCIsImVzbSI6dHJ1ZX1dLCJuYW1lIjoiY2xvbmUtZGVlcCJ9LHsiaWQiOiJ3X2oyNGNYQjlxc0RkU0ttc2VTQXciLCJjb2RlIjoiSlNPTi5wYXJzZShKU09OLnN0cmluZ2lmeShEQVRBKSkiLCJkZXBlbmRlbmNpZXMiOltdLCJuYW1lIjoiSlNPTi5wYXJzZSJ9XSwiY29uZmlnIjp7Im5hbWUiOiJDbG9uaW5nIGEgbGFyZ2UgYXJyYXkgb2Ygb2JqZWN0cyIsInBhcmFsbGVsIjp0cnVlLCJnbG9iYWxUZXN0Q29uZmlnIjp7ImRlcGVuZGVuY2llcyI6W3sidXJsIjoiaHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L25wbS9AZmFrZXItanMvZmFrZXJAOC4wLjIvK2VzbSIsIm5hbWUiOiIiLCJlc20iOnRydWV9XX0sImRhdGFDb2RlIjoiY29uc3QgeyBmYWtlciB9ID0gREVQXzBcblxuZnVuY3Rpb24gY3JlYXRlUmFuZG9tVXNlcigpIHtcbiAgcmV0dXJuIHtcbiAgICB1c2VySWQ6IGZha2VyLnN0cmluZy51dWlkKCksXG4gICAgdXNlcm5hbWU6IGZha2VyLmludGVybmV0LnVzZXJOYW1lKCksXG4gICAgZW1haWw6IGZha2VyLmludGVybmV0LmVtYWlsKCksXG4gICAgYXZhdGFyOiBmYWtlci5pbWFnZS5hdmF0YXIoKSxcbiAgICBwYXNzd29yZDogZmFrZXIuaW50ZXJuZXQucGFzc3dvcmQoKSxcbiAgICBiaXJ0aGRhdGU6IGZha2VyLmRhdGUuYmlydGhkYXRlKCksXG4gICAgcmVnaXN0ZXJlZEF0OiBmYWtlci5kYXRlLnBhc3QoKSxcbiAgfTtcbn1cblxucmV0dXJuIERBVEEgPSBmYWtlci5oZWxwZXJzLm11bHRpcGxlKGNyZWF0ZVJhbmRvbVVzZXIsIHtcbiAgY291bnQ6IDEwMCxcbn0pOyJ9fQ==";
+
 const title = computed(() => config.value.name);
 
 const config = ref({
@@ -333,7 +336,7 @@ const clear = () => {
 <template>
   <div class="w-full max-w-screen-2xl mx-auto flex items-stretch min-h-screen">
     <div class="flex flex-col gap-8 flex-1 py-14 px-12">
-      <div>
+      <div class="flex justify-between items-center">
         <div class="flex items-center">
           <button @click="clear">
             <img src="/logo.svg" alt="JS Benchmark logo" class="h-8 mr-3" />
@@ -356,6 +359,22 @@ const clear = () => {
               >
             </div>
           </div>
+        </div>
+
+        <div class="flex space-x-5">
+          <button
+            class="font-medium text-gray-400 transition hover:text-white text-sm"
+            @click="clear"
+          >
+            Clear
+          </button>
+          <a
+            class="font-medium text-gray-400 transition hover:text-white text-sm"
+            target="_blank"
+            :href="ADVANCED_EXAMPLE_URL"
+          >
+            View advanced example
+          </a>
         </div>
       </div>
 
