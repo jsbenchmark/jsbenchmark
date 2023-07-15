@@ -10,6 +10,10 @@ const props = defineProps({
     default: () => ({}),
   },
   global: Boolean,
+  nameIndexOffset: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const emit = defineEmits<{
@@ -82,8 +86,8 @@ const addDep = () => {
       <BaseInput
         v-model="dep.name"
         v-if="dep.esm"
-        :placeholder="`Import as: DEP_${i}`"
-        class="!w-44 shrink-0"
+        :placeholder="`Import as: DEP_${nameIndexOffset + i}`"
+        class="!w-52 shrink-0 font-mono"
       />
 
       <label
