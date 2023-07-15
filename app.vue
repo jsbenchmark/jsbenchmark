@@ -9,6 +9,8 @@ import { IconTrash } from "@tabler/icons-vue";
 import slugify from "slugify";
 import * as htmlToImage from "html-to-image";
 import { IconShare } from "@tabler/icons-vue";
+import { IconCheck } from "@tabler/icons-vue";
+import { IconLink } from "@tabler/icons-vue";
 
 const title = computed(() => config.value.name);
 
@@ -332,10 +334,29 @@ const clear = () => {
   <div class="w-full max-w-screen-2xl mx-auto flex items-stretch min-h-screen">
     <div class="flex flex-col gap-8 flex-1 py-14 px-12">
       <div>
-        <button @click="clear" class="flex">
-          <img src="/logo.svg" alt="JS Benchmark logo" class="h-6 mr-2" />
-          <span class="text-base font-semibold text-gray-300">jsbenchmark</span>
-        </button>
+        <div class="flex items-center">
+          <button @click="clear">
+            <img src="/logo.svg" alt="JS Benchmark logo" class="h-8 mr-3" />
+          </button>
+          <div>
+            <div
+              class="text-base font-semibold text-[#ff8362] uppercase tracking-wider leading-none"
+            >
+              jsbenchmark
+            </div>
+            <div
+              class="text-xs text-left text-gray-400 leading-none tracking-wide mt-0.5"
+            >
+              by
+              <a
+                href="https://pabue.co"
+                target="_blank"
+                class="transition hover:text-white"
+                >pabue.co</a
+              >
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="flex justify-between items-start">
