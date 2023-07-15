@@ -12,7 +12,7 @@ export default {
 
       fontFamily: {
         mono: ["JetBrains Mono Variable", ...defaultTheme.fontFamily.mono],
-        sans: ["Pathway Extreme", ...defaultTheme.fontFamily.sans],
+        sans: ["Pathway Extreme Variable", ...defaultTheme.fontFamily.sans],
       },
     },
   },

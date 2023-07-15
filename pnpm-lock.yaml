@@ -17,6 +17,9 @@ dependencies:
   '@fontsource-variable/jetbrains-mono':
     specifier: ^5.0.4
     version: 5.0.6
+  '@fontsource-variable/pathway-extreme':
+    specifier: ^5.0.6
+    version: 5.0.6
   '@tabler/icons-vue':
     specifier: ^2.23.0
     version: 2.24.0(vue@3.3.4)
@@ -939,6 +942,10 @@ packages:
 
   /@fontsource-variable/jetbrains-mono@5.0.6:
     resolution: {integrity: sha512-EwcHm7hU8FlosfeW5RRGEB9A3w7Yg7pkF/CgMlekkkDArnbu1YYGlroZw361IG0CFkzjjjPo73vFycdcH+1pbg==}
+    dev: false
+
+  /@fontsource-variable/pathway-extreme@5.0.6:
+    resolution: {integrity: sha512-jDOk9B1EaKAXpkvaQo8n4aSvrSaEcurLKMpQsHgyE2bGLQGS5ctwjqYDfknwTOJB9e0pTxWeqIBSy7llISP3Dw==}
     dev: false
 
   /@hapi/hoek@9.3.0:
