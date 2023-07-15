@@ -300,7 +300,6 @@ const exportResults = async () => {
 };
 
 const clipboard = useClipboard();
-
 const { share, isSupported } = useShare();
 
 function startShare() {
@@ -341,9 +340,10 @@ const clear = () => {
           placeholder="Name"
           blendin
           class="text-[2.3rem] font-bold flex-1"
+          type="textarea"
         />
 
-        <div class="ml-5 mt-1.5 h-[50px] flex gap-3">
+        <div class="ml-10 mt-1.5 h-[50px] flex gap-3">
           <BaseButton
             @click="startShare()"
             :disabled="isAnyTestRunning"
@@ -532,10 +532,6 @@ const clear = () => {
 <style>
 :root {
   color-scheme: dark;
-}
-
-textarea {
-  @apply font-mono;
 }
 
 input {
