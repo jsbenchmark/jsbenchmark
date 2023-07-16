@@ -23,9 +23,9 @@ useTextareaAutosize({
     v-if="type !== 'textarea'"
     :value="modelValue"
     @input="e => emit('update:modelValue', (e.target as HTMLInputElement).value)"
-    class="max-w-none min-w-0 outline-none"
+    class="max-w-none min-w-0 w-full outline-none overflow-hidden"
     :class="{
-      'bg-black rounded-md border border-gray-700 px-4 h-11 w-full': !blendin,
+      'bg-black rounded-md border border-gray-700 px-4 h-11': !blendin,
       'bg-transparent': blendin,
     }"
   />
@@ -33,9 +33,9 @@ useTextareaAutosize({
     v-else
     :value="modelValue"
     @input="e => emit('update:modelValue', (e.target as HTMLTextAreaElement).value)"
-    class="max-w-none min-w-0 outline-none resize-none"
+    class="max-w-none min-w-0 w-full outline-none resize-none overflow-hidden"
     :class="{
-      'bg-black rounded-md border border-gray-700 px-4 h-11 w-full': !blendin,
+      'bg-black rounded-md border border-gray-700 px-4 h-11': !blendin,
       'bg-transparent': blendin,
     }"
     ref="inputRef"

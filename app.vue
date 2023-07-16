@@ -510,7 +510,7 @@ const clear = () => {
     </div>
 
     <div
-      class="lg:w-[500px] lg:min-w-[400px] pb-10 lg:py-14 px-6 lg:px-12 relative"
+      class="lg:w-[400px] xl:w-[500px] lg:min-w-[400px] pb-10 lg:py-14 px-6 lg:px-12 relative shrink-0"
     >
       <div class="sticky top-14 z-10">
         <div class="flex justify-between items-center mb-12">
