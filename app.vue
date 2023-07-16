@@ -175,7 +175,9 @@ const runCase = async (c: Case) => {
       },
     };
   } catch (e) {
-    const error = e as Error;
+    const error = (
+      (e as Error).message ? e : new Error("Unknown error")
+    ) as Error;
     console.error(`Worker failed with error: ${error.message}`);
     stateByTest.value[c.id] = {
       status: "error",

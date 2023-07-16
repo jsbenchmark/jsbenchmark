@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { PropType } from "vue";
 import { IconPlus } from "@tabler/icons-vue";
-import { Case } from "types";
+import { Case, Dependency } from "types";
 import { IconTrash } from "@tabler/icons-vue";
+import { debounce, camelCase } from "lodash-es";
 
 const props = defineProps({
   test: {
@@ -27,6 +28,52 @@ const addDep = () => {
     url: "",
     name: "",
   });
+};
+
+type DependencySearchEntry = {
+  name: string;
+  version: string;
+};
+
+const searchResults = ref<DependencySearchEntry[]>([]);
+const isSearching = ref(false);
+const searchPackage = debounce(async (value: string) => {
+  const res = await $fetch<{ results: DependencySearchEntry[] }>(
+    "/api/search-package",
+    {
+      query: {
+        q: value,
+      },
+    }
+  );
+  isSearching.value = false;
+
+  searchResults.value = res.results.slice(0, 10);
+}, 500);
+
+const handleUrlUpdate = (value: string, dep: Dependency) => {
+  searchResults.value = [];
+  value = value.trim();
+
+  if (!value) {
+    return;
+  }
+
+  if (value.startsWith("http")) {
+    if (value?.endsWith("+esm")) {
+      dep.esm = true;
+    }
+
+    if (value) {
+      // Get name between last / and @
+      const name = value.match(/\/([^\/]+)@/)?.[1] || "";
+      dep.name = camelCase(name);
+    }
+    return;
+  }
+
+  isSearching.value = true;
+  searchPackage(value);
 };
 </script>
 
@@ -80,12 +127,35 @@ const addDep = () => {
 
     <div
       v-for="(dep, i) in test.dependencies"
-      class="flex-col lg:flex-row flex gap-3 mt-3"
+      class="flex-col lg:flex-row flex items-start gap-3 mt-3"
     >
-      <BaseInput
+      <BaseAutocomplete
         v-model="dep.url"
-        placeholder="URL, e.g. https://cdn.jsdelivr.net/npm/lodash-es@4.17.21/+esm"
-      />
+        :options="searchResults"
+        placeholder="Type to search or paste direct URL"
+        @update:model-value="(v) => handleUrlUpdate(v, dep)"
+        value-field="url"
+        :show-options="!dep.url.startsWith('http')"
+        :error="
+          dep.url && !dep.url.startsWith('http') ? 'Invalid URL' : undefined
+        "
+      >
+        <template #option="{ option }">
+          <div class="flex items-center flex-nowrap">
+            <span class="truncate flex-1 mr-2 font-medium">
+              {{ option.name }}
+            </span>
+            <span class="text-gray-500 font-mono text-sm ml-auto">
+              {{ option.version }}
+            </span>
+          </div>
+        </template>
+
+        <template #empty>
+          <div v-if="isSearching">Searching...</div>
+          <div v-else>No packages found.</div>
+        </template>
+      </BaseAutocomplete>
       <BaseInput
         v-model="dep.name"
         v-if="dep.esm"
@@ -94,7 +164,7 @@ const addDep = () => {
       />
 
       <label
-        class="flex items-center rounded-md border border-gray-700 px-4 cursor-pointer justify-center"
+        class="flex items-center rounded-md border border-gray-700 px-4 cursor-pointer justify-center h-11"
       >
         <input type="checkbox" v-model="dep.esm" />
         <span class="ml-2 py-2 lg:py-0">ESM</span>
