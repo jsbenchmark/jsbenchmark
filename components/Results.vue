@@ -14,15 +14,6 @@ const props = defineProps({
   },
 });
 
-const getColorByPercentage = (percentage: number) => {
-  const hue = percentage * 120;
-  return `hsl(${hue}, 100%, 50%)`;
-};
-
-const getOpacityByPercentage = (percentage: number) => {
-  return clamp(percentage, 0.2, 1);
-};
-
 const maxOpsPerSecond = computed(() => {
   return Math.max(
     ...props.cases.map((c) => {
@@ -37,6 +28,7 @@ const colorScale = chroma
   .scale(["#4e2e94", "#ff8362"])
   .mode("lch")
   .domain([0, 1]);
+
 const colors = computed(() => {
   return props.cases.map((c) => {
     const state = props.stateByTest[c.id];
@@ -75,13 +67,6 @@ const colors = computed(() => {
           }"
           :style="{
             backgroundColor: colors[i],
-            // opacity:
-            //   stateByTest[test.id]?.status === 'success'
-            //     ? getOpacityByPercentage(
-            //         (stateByTest[test.id]?.result?.opsPerSecond || 0) /
-            //           maxOpsPerSecond
-            //       )
-            //     : 1,
             width: !stateByTest[test.id]?.result
               ? '100%'
               : ((stateByTest[test.id]?.result?.opsPerSecond || 0) /

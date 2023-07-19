@@ -14,11 +14,8 @@ import {
   IconPlus,
 } from "@tabler/icons-vue";
 import "@fontsource-variable/pathway-extreme";
-
-const ADVANCED_EXAMPLE_URL =
-  "/#eyJjYXNlcyI6W3siaWQiOiJTemFvbUxmNWhudG45UHY5SkplZnoiLCJjb2RlIjoic3RydWN0dXJlZENsb25lKERBVEEpIiwibmFtZSI6IlN0cnVjdHVyZWQgY2xvbmUifSx7ImlkIjoiZlJ2LUtWZFZ6LVlzejQ0VWF6RFZyIiwiY29kZSI6ImxvZGFzaC5jbG9uZURlZXAoREFUQSkiLCJuYW1lIjoiTG9kYXNoIiwiZGVwZW5kZW5jaWVzIjpbeyJ1cmwiOiJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2xvZGFzaC1lc0A0LjE3LjIxLytlc20iLCJuYW1lIjoibG9kYXNoIiwiZXNtIjp0cnVlfV19LHsiaWQiOiJOdEpEMHh5Y0oyNl9LdUpyd1UyUGwiLCJjb2RlIjoiY29uc3QgeyBrbG9uYSB9ID0gREVQXzFcbmtsb25hKERBVEEpIiwiZGVwZW5kZW5jaWVzIjpbeyJ1cmwiOiJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2tsb25hQDIuMC42Lytlc20iLCJuYW1lIjoiIiwiZXNtIjp0cnVlfV0sIm5hbWUiOiJrbG9uYSJ9LHsiaWQiOiJUckN2NllTU2NaZzUwbWlWRjBLd1MiLCJjb2RlIjoiY2xvbmVEZWVwKERBVEEpIiwiZGVwZW5kZW5jaWVzIjpbeyJ1cmwiOiJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvbnBtL2Nsb25lLWRlZXBANC4wLjEvK2VzbSIsIm5hbWUiOiJjbG9uZURlZXAiLCJlc20iOnRydWV9XSwibmFtZSI6ImNsb25lLWRlZXAifSx7ImlkIjoid19qMjRjWEI5cXNEZFNLbXNlU0F3IiwiY29kZSI6IkpTT04ucGFyc2UoSlNPTi5zdHJpbmdpZnkoREFUQSkpIiwiZGVwZW5kZW5jaWVzIjpbXSwibmFtZSI6IkpTT04ucGFyc2UifV0sImNvbmZpZyI6eyJuYW1lIjoiQ2xvbmluZyBhIGxhcmdlIGFycmF5IG9mIG9iamVjdHMiLCJwYXJhbGxlbCI6dHJ1ZSwiZ2xvYmFsVGVzdENvbmZpZyI6eyJkZXBlbmRlbmNpZXMiOlt7InVybCI6Imh0dHBzOi8vY2RuLmpzZGVsaXZyLm5ldC9ucG0vQGZha2VyLWpzL2Zha2VyQDguMC4yLytlc20iLCJuYW1lIjoiRkFLRVIiLCJlc20iOnRydWV9XX0sImRhdGFDb2RlIjoiY29uc3QgeyBmYWtlciB9ID0gRkFLRVJcblxuZnVuY3Rpb24gY3JlYXRlUmFuZG9tVXNlcigpIHtcbiAgcmV0dXJuIHtcbiAgICB1c2VySWQ6IGZha2VyLnN0cmluZy51dWlkKCksXG4gICAgdXNlcm5hbWU6IGZha2VyLmludGVybmV0LnVzZXJOYW1lKCksXG4gICAgZW1haWw6IGZha2VyLmludGVybmV0LmVtYWlsKCksXG4gICAgYXZhdGFyOiBmYWtlci5pbWFnZS5hdmF0YXIoKSxcbiAgICBwYXNzd29yZDogZmFrZXIuaW50ZXJuZXQucGFzc3dvcmQoKSxcbiAgICBiaXJ0aGRhdGU6IGZha2VyLmRhdGUuYmlydGhkYXRlKCksXG4gICAgcmVnaXN0ZXJlZEF0OiBmYWtlci5kYXRlLnBhc3QoKSxcbiAgfTtcbn1cblxucmV0dXJuIERBVEEgPSBmYWtlci5oZWxwZXJzLm11bHRpcGxlKGNyZWF0ZVJhbmRvbVVzZXIsIHtcbiAgY291bnQ6IDEwMCxcbn0pOyJ9fQ==";
-
-const title = computed(() => config.value.name);
+import { ADVANCED_EXAMPLE_URL, TEST_TIME, TEST_TIMEOUT, WARMUP_TIME } from "./utils/constants";
+import { getUrl, serialize, deserialize } from './utils'
 
 const config = ref({
   name: "Simple example test",
@@ -30,7 +27,7 @@ const config = ref({
 });
 
 useHead({
-  title,
+  title: computed(() => config.value.name),
   titleTemplate: (sub) => {
     return sub ? `${sub} - JS Benchmark` : "JS Benchmark";
   },
@@ -59,6 +56,17 @@ useHead({
   ],
 });
 
+const clipboard = useClipboard();
+const { share, isSupported: isShareSupported } = useShare();
+
+function startShare() {
+  share({
+    title: "jsbenchmark.com",
+    text: `Check out this benchmark on jsbenchmark.com!`,
+    url: getUrl(),
+  });
+}
+
 const cases = ref<Case[]>([
   {
     id: nanoid(),
@@ -78,10 +86,6 @@ const cases = ref<Case[]>([
 ]);
 
 const stateByTest = ref<Record<string, TestState>>({});
-
-const ITERATIONS = 10_000;
-const WARMUP_TIME = 500;
-const TIME = 3000;
 
 const runCase = async (c: Case) => {
   stateByTest.value[c.id] = {
@@ -106,25 +110,20 @@ const runCase = async (c: Case) => {
 
       const fn = AsyncFunction(code);
 
-      // for (const [index, dependency] of dependencies.entries()) {
-      //   const dep = await import(/* @vite-ignore */ dependency);
-      //   (globalThis as any)[`DEP_${index}`] = dep;
-      // }
-
       // Warmup.
       let warmupTimes = 0;
-      const warmupStart = Date.now();
+      const warmupStart = performance.now();
 
-      while (Date.now() - warmupStart < warmupTime) {
+      while (performance.now() - warmupStart < warmupTime) {
         await fn();
         warmupTimes++;
       }
 
       // Actual test.
       let times = 0;
-      const start = Date.now();
+      const start = performance.now();
 
-      while (Date.now() - start < time) {
+      while (performance.now() - start < time) {
         await fn();
         times++;
       }
@@ -134,7 +133,7 @@ const runCase = async (c: Case) => {
       };
     },
     {
-      timeout: 5000,
+      timeout: TEST_TIMEOUT,
       dependencies: unref(dependencies),
       esm: dependencies.some((d) => d.esm),
     }
@@ -144,20 +143,17 @@ const runCase = async (c: Case) => {
   try {
     res = await workerFn({
       code: c.code,
-      iterations: ITERATIONS,
       dataCode: config.value.dataCode,
-      time: TIME,
+      time: TEST_TIME,
       warmupTime: WARMUP_TIME,
     });
-    // const average = res.timings.reduce((a, b) => a + b, 0) / ITERATIONS;
-    // const opsPerSecond = 1000 / average;
-    const opsPerSecond = Math.round(res.times / (TIME / 1000));
+
+    const opsPerSecond = Math.round(res.times / (TEST_TIME / 1000));
 
     const averageTime = 1000 / opsPerSecond;
     let averageTimeFormatted = averageTime.toFixed(2);
 
     const isSubSecond = averageTime < 1;
-
     if (isSubSecond) {
       const zeroCountAfterDot = averageTime
         .toString()
@@ -189,6 +185,7 @@ const runCase = async (c: Case) => {
 };
 
 const isRunningAllTests = ref(false);
+
 const run = async () => {
   isRunningAllTests.value = true;
   if (config.value.parallel) {
@@ -200,41 +197,6 @@ const run = async () => {
   }
   isRunningAllTests.value = false;
 };
-
-const serializeState = () => {
-  const state = {
-    cases: cases.value,
-    config: config.value,
-  };
-
-  const string = JSON.stringify(state);
-
-  const encoded = btoa(string);
-
-  return encoded;
-};
-
-const readStateFromUrl = (encoded: string) => {
-  if (!encoded) return;
-  const string = atob(encoded);
-
-  const state = JSON.parse(string);
-
-  cases.value = state.cases;
-  config.value = state.config;
-};
-
-watch(
-  [cases, config],
-  () => {
-    const encoded = serializeState();
-
-    useRouter().replace({
-      hash: `#${encoded}`,
-    });
-  },
-  { deep: true }
-);
 
 const addCase = () => {
   cases.value.push({
@@ -249,9 +211,29 @@ const removeCase = (c: Case) => {
 };
 
 const route = useRoute();
+
+// Read state from URL.
 onMounted(() => {
-  readStateFromUrl(route.hash.slice(1));
+  const urlState = deserialize(route.hash.slice(1));
+  cases.value = urlState.cases;
+  config.value = urlState.config;
 });
+
+// Write state to URL.
+watch(
+  [cases, config],
+  () => {
+    const encoded = serialize({
+      cases: cases.value,
+      config: config.value,
+    });
+
+    useRouter().replace({
+      hash: `#${encoded}`,
+    });
+  },
+  { deep: true }
+);
 
 const isAnyTestRunning = computed(() => {
   return cases.value.some((c) => {
@@ -287,21 +269,6 @@ const exportResults = async () => {
   setTimeout(() => {
     isExporting.value = false;
   }, 1000);
-};
-
-const clipboard = useClipboard();
-const { share, isSupported: isShareSupported } = useShare();
-
-function startShare() {
-  share({
-    title: "jsbenchmark.com",
-    text: `Check out this benchmark on jsbenchmark.com!`,
-    url: location.href,
-  });
-}
-
-const getUrl = () => {
-  return window.location.href;
 };
 
 const clear = () => {
