@@ -4,7 +4,7 @@ export type Dependency = {
   esm?: boolean;
 };
 
-export type Case = {
+export type TestCase = {
   id: string;
   name?: string;
   code: string;

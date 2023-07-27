@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { clamp } from "lodash-es";
-import { Case, TestState } from "types";
+import { TestCase, TestState } from "types";
 import chroma from "chroma-js";
+
+const COLORS = {
+  ERROR: "#ff8362",
+  GRADIENT: ["#4e2e94", "#ff8362"]
+}
 
 const props = defineProps({
   cases: {
-    type: Array as PropType<Case[]>,
+    type: Array as PropType<TestCase[]>,
     default: () => [],
   },
   stateByTest: {
@@ -25,14 +29,14 @@ const maxOpsPerSecond = computed(() => {
 });
 
 const colorScale = chroma
-  .scale(["#4e2e94", "#ff8362"])
+  .scale(COLORS.GRADIENT)
   .mode("lch")
   .domain([0, 1]);
 
 const colors = computed(() => {
   return props.cases.map((c) => {
     const state = props.stateByTest[c.id];
-    if (!state || state.status !== "success") return "#ff8362";
+    if (!state || state.status !== "success") return COLORS.ERROR;
     const percentage =
       (state.result?.opsPerSecond || 0) / maxOpsPerSecond.value;
     return colorScale(percentage).hex();

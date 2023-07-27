@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { PropType } from "vue";
 import { IconPlus } from "@tabler/icons-vue";
-import { Case, Dependency } from "types";
+import { TestCase, Dependency } from "types";
 import { IconTrash } from "@tabler/icons-vue";
 import { debounce, camelCase } from "lodash-es";
 
 const props = defineProps({
   test: {
-    type: Object as PropType<Case>,
+    type: Object as PropType<TestCase>,
     default: () => ({}),
   },
   global: Boolean,
@@ -18,7 +18,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits<{
-  (event: "update:test", value: Case): void;
+  (event: "update:test", value: TestCase): void;
 }>();
 
 const model = useVModel(props, "test", emit);
@@ -100,9 +100,9 @@ const handleUrlUpdate = (value: string, dep: Dependency) => {
 
       <div class="mt-2 lg:mt-0">
         <p
-          class="text-xs text-gray-500 transition hover:text-gray-300 cursor-help"
+          class="text-xs text-gray-500 transition cursor-help"
         >
-          Use sites like
+          You can use sites like
           <a
             href="https://www.jsdelivr.com/"
             target="_blank"

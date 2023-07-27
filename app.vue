@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useWebWorkerFn } from "./utils/worker";
 import "@fontsource-variable/jetbrains-mono";
-import { Case, Dependency, TestState } from "types";
+import { TestCase, Dependency, TestState } from "types";
 import { nanoid } from "nanoid";
 import { clamp } from "@vueuse/core";
 import slugify from "slugify";
@@ -22,7 +22,7 @@ const config = ref({
   parallel: true,
   globalTestConfig: {
     dependencies: [] as Dependency[],
-  } as Case,
+  } as TestCase,
   dataCode: "return [...Array(1000).keys()]",
 });
 
@@ -67,7 +67,7 @@ function startShare() {
   });
 }
 
-const cases = ref<Case[]>([
+const cases = ref<TestCase[]>([
   {
     id: nanoid(),
     code: "DATA.find(i => i === 99)",
@@ -87,7 +87,7 @@ const cases = ref<Case[]>([
 
 const stateByTest = ref<Record<string, TestState>>({});
 
-const runCase = async (c: Case) => {
+const runCase = async (c: TestCase) => {
   stateByTest.value[c.id] = {
     status: "running",
     error: null,
@@ -205,7 +205,7 @@ const addCase = () => {
     dependencies: [],
   });
 };
-const removeCase = (c: Case) => {
+const removeCase = (c: TestCase) => {
   if (!confirm("Are you sure?")) return;
   cases.value = cases.value.filter((x) => x !== c);
 };
@@ -215,8 +215,10 @@ const route = useRoute();
 // Read state from URL.
 onMounted(() => {
   const urlState = deserialize(route.hash.slice(1));
-  cases.value = urlState.cases;
-  config.value = urlState.config;
+  if (urlState) {
+    cases.value = urlState.cases;
+    config.value = urlState.config;
+  }
 });
 
 // Write state to URL.
@@ -279,7 +281,7 @@ const clear = () => {
     dataCode: "",
     globalTestConfig: {
       dependencies: [] as Dependency[],
-    } as Case,
+    } as TestCase,
   };
 };
 </script>
@@ -407,12 +409,6 @@ const clear = () => {
             blendin
             class="text-xl font-semibold"
           />
-          <!-- <button
-            @click="removeCase(c)"
-            class="text-gray-500 hover:text-white transition"
-          >
-            <IconX />
-          </button> -->
           <div class="flex lg:justify-end space-x-4 h-10">
             <div
               class="rounded-md h-full px-0 lg:mr-2 -border -bg-gray-800 flex items-center mr-auto"
@@ -429,13 +425,6 @@ const clear = () => {
                   }}
                 </div>
               </div>
-
-              <!-- <div
-                class="border-l border-gray-800 h-full flex items-center justify-center"
-              >
-                <IconPlayerPlay />
-                <span>Run</span>
-              </div> -->
             </div>
             <BaseButton
               @click="runCase(c)"
