@@ -1,225 +1,213 @@
 <script setup lang="ts">
-import { useWebWorkerFn } from "./utils/worker";
-import "@fontsource-variable/jetbrains-mono";
-import { TestCase, Dependency, TestState } from "types";
-import { nanoid } from "nanoid";
-import { clamp } from "@vueuse/core";
-import slugify from "slugify";
-import * as htmlToImage from "html-to-image";
-import {
-  IconShare,
-  IconCheck,
-  IconLink,
-  IconTrash,
-  IconPlus,
-} from "@tabler/icons-vue";
-import "@fontsource-variable/pathway-extreme";
-import { ADVANCED_EXAMPLE_URL, TEST_TIME, TEST_TIMEOUT, WARMUP_TIME } from "./utils/constants";
+import { useWebWorkerFn } from './utils/worker'
+import '@fontsource-variable/jetbrains-mono'
+import { TestCase, Dependency, TestState } from 'types'
+import { nanoid } from 'nanoid'
+import { clamp } from '@vueuse/core'
+import slugify from 'slugify'
+import * as htmlToImage from 'html-to-image'
+import { IconShare, IconCheck, IconLink, IconTrash, IconPlus } from '@tabler/icons-vue'
+import '@fontsource-variable/pathway-extreme'
+import { ADVANCED_EXAMPLE_URL, TEST_TIME, TEST_TIMEOUT, WARMUP_TIME } from './utils/constants'
 import { getUrl, serialize, deserialize } from './utils'
 
 const config = ref({
-  name: "Simple example test",
+  name: 'Simple example test',
   parallel: true,
   globalTestConfig: {
     dependencies: [] as Dependency[],
   } as TestCase,
-  dataCode: "return [...Array(1000).keys()]",
-});
+  dataCode: 'return [...Array(1000).keys()]',
+})
 
 useHead({
   title: computed(() => config.value.name),
   titleTemplate: (sub) => {
-    return sub ? `${sub} - JS Benchmark` : "JS Benchmark";
+    return sub ? `${sub} - JS Benchmark` : 'JS Benchmark'
   },
   htmlAttrs: {
-    class: "bg-gray-900 text-white font-sans overflow-x-hidden",
+    class: 'bg-gray-900 text-white font-sans overflow-x-hidden',
   },
   meta: [
     {
-      name: "description",
+      name: 'description',
       content:
-        "A straight forward JavaScript benchmarking tool with support for ES modules and libraries.",
+        'A straight forward JavaScript benchmarking tool with support for ES modules and libraries.',
     },
     {
-      name: "keywords",
+      name: 'keywords',
       content:
-        "javascript, benchmark, js, performance, esm, module, library, measure, compare, testing, tool",
+        'javascript, benchmark, js, performance, esm, module, library, measure, compare, testing, tool',
     },
     {
-      name: "author",
-      content: "pabue.co",
+      name: 'author',
+      content: 'pabue.co',
     },
     {
-      name: "viewport",
-      content: "width=device-width, initial-scale=1.0",
+      name: 'viewport',
+      content: 'width=device-width, initial-scale=1.0',
     },
   ],
-});
+})
 
-const clipboard = useClipboard();
-const { share, isSupported: isShareSupported } = useShare();
+const clipboard = useClipboard()
+const { share, isSupported: isShareSupported } = useShare()
 
 function startShare() {
   share({
-    title: "jsbenchmark.com",
+    title: 'jsbenchmark.com',
     text: `Check out this benchmark on jsbenchmark.com!`,
     url: getUrl(),
-  });
+  })
 }
 
 const cases = ref<TestCase[]>([
   {
     id: nanoid(),
-    code: "DATA.find(i => i === 99)",
-    name: "Find 99",
+    code: 'DATA.find(i => i === 99)',
+    name: 'Find 99',
   },
   {
     id: nanoid(),
-    code: "DATA.find(i => i === 499)",
-    name: "Find 499",
+    code: 'DATA.find(i => i === 499)',
+    name: 'Find 499',
   },
   {
     id: nanoid(),
-    code: "DATA.find(i => i === 999)",
-    name: "Find 999",
+    code: 'DATA.find(i => i === 999)',
+    name: 'Find 999',
   },
-]);
+])
 
-const stateByTest = ref<Record<string, TestState>>({});
+const stateByTest = ref<Record<string, TestState>>({})
 
 const runCase = async (c: TestCase) => {
   stateByTest.value[c.id] = {
-    status: "running",
+    status: 'running',
     error: null,
-  };
+  }
 
   const dependencies = [
     ...(config.value.globalTestConfig.dependencies || []),
     ...(c.dependencies || []),
-  ].filter((d) => d.url);
+  ].filter((d) => d.url)
 
   const { workerFn, workerTerminate } = useWebWorkerFn(
     async ({ code, dataCode, time, warmupTime }, d?: any) => {
-      const AsyncFunction = Object.getPrototypeOf(
-        async function () {}
-      ).constructor;
+      const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
 
-      const dataFn = AsyncFunction(dataCode);
-      const data = await dataFn(d);
-      (globalThis as any).DATA = data;
+      const dataFn = AsyncFunction(dataCode)
+      const data = await dataFn(d)
+      ;(globalThis as any).DATA = data
 
-      const fn = AsyncFunction(code);
+      const fn = AsyncFunction(code)
 
       // Warmup.
-      let warmupTimes = 0;
-      const warmupStart = performance.now();
+      let warmupTimes = 0
+      const warmupStart = performance.now()
 
       while (performance.now() - warmupStart < warmupTime) {
-        await fn();
-        warmupTimes++;
+        await fn()
+        warmupTimes++
       }
 
       // Actual test.
-      let times = 0;
-      const start = performance.now();
+      let times = 0
+      const start = performance.now()
 
       while (performance.now() - start < time) {
-        await fn();
-        times++;
+        await fn()
+        times++
       }
 
       return {
         times,
-      };
+      }
     },
     {
       timeout: TEST_TIMEOUT,
       dependencies: unref(dependencies),
       esm: dependencies.some((d) => d.esm),
     }
-  );
+  )
 
-  let res;
+  let res
   try {
     res = await workerFn({
       code: c.code,
       dataCode: config.value.dataCode,
       time: TEST_TIME,
       warmupTime: WARMUP_TIME,
-    });
+    })
 
-    const opsPerSecond = Math.round(res.times / (TEST_TIME / 1000));
+    const opsPerSecond = Math.round(res.times / (TEST_TIME / 1000))
 
-    const averageTime = 1000 / opsPerSecond;
-    let averageTimeFormatted = averageTime.toFixed(2);
+    const averageTime = 1000 / opsPerSecond
+    let averageTimeFormatted = averageTime.toFixed(2)
 
-    const isSubSecond = averageTime < 1;
+    const isSubSecond = averageTime < 1
     if (isSubSecond) {
-      const zeroCountAfterDot = averageTime
-        .toString()
-        .match(/\.(0+)/)?.[1].length;
-      averageTimeFormatted = averageTime.toFixed((zeroCountAfterDot || 0) + 2);
+      const zeroCountAfterDot = averageTime.toString().match(/\.(0+)/)?.[1].length
+      averageTimeFormatted = averageTime.toFixed((zeroCountAfterDot || 0) + 2)
     }
 
     stateByTest.value[c.id] = {
-      status: "success",
+      status: 'success',
       error: null,
       result: {
         opsPerSecond,
         averageTime,
         averageTimeFormatted,
       },
-    };
+    }
   } catch (e) {
-    const error = (
-      (e as Error).message ? e : new Error("Unknown error")
-    ) as Error;
-    console.error(`Worker failed with error: ${error.message}`);
+    const error = ((e as Error).message ? e : new Error('Unknown error')) as Error
+    console.error(`Worker failed with error: ${error.message}`)
     stateByTest.value[c.id] = {
-      status: "error",
+      status: 'error',
       error: error,
       result: undefined,
-    };
-    workerTerminate();
+    }
+    workerTerminate()
   }
-};
+}
 
-const isRunningAllTests = ref(false);
+const isRunningAllTests = ref(false)
 
 const run = async () => {
-  isRunningAllTests.value = true;
+  isRunningAllTests.value = true
   if (config.value.parallel) {
-    await Promise.all(cases.value.map(runCase));
+    await Promise.all(cases.value.map(runCase))
   } else {
     for (const c of cases.value) {
-      await runCase(c);
+      await runCase(c)
     }
   }
-  isRunningAllTests.value = false;
-};
+  isRunningAllTests.value = false
+}
 
 const addCase = () => {
   cases.value.push({
     id: nanoid(),
-    code: "",
+    code: '',
     dependencies: [],
-  });
-};
+  })
+}
 const removeCase = (c: TestCase) => {
-  if (!confirm("Are you sure?")) return;
-  cases.value = cases.value.filter((x) => x !== c);
-};
+  if (!confirm('Are you sure?')) return
+  cases.value = cases.value.filter((x) => x !== c)
+}
 
-const route = useRoute();
+const route = useRoute()
 
 // Read state from URL.
 onMounted(() => {
-  const urlState = deserialize(route.hash.slice(1));
+  const urlState = deserialize(route.hash.slice(1))
   if (urlState) {
-    cases.value = urlState.cases;
-    config.value = urlState.config;
+    cases.value = urlState.cases
+    config.value = urlState.config
   }
-});
+})
 
 // Write state to URL.
 watch(
@@ -228,68 +216,66 @@ watch(
     const encoded = serialize({
       cases: cases.value,
       config: config.value,
-    });
+    })
 
     useRouter().replace({
       hash: `#${encoded}`,
-    });
+    })
   },
   { deep: true }
-);
+)
 
 const isAnyTestRunning = computed(() => {
   return cases.value.some((c) => {
-    const state = stateByTest.value[c.id];
-    return state?.status === "running";
-  });
-});
+    const state = stateByTest.value[c.id]
+    return state?.status === 'running'
+  })
+})
 
 const allTestsHaveResults = computed(() => {
   return cases.value.every((c) => {
-    const state = stateByTest.value[c.id];
-    return state?.status === "success" || state?.status === "error";
-  });
-});
+    const state = stateByTest.value[c.id]
+    return state?.status === 'success' || state?.status === 'error'
+  })
+})
 
-const exportViewRef = ref<HTMLElement | null>(null);
-const isExporting = ref(false);
+const exportViewRef = ref<HTMLElement | null>(null)
+const isExporting = ref(false)
 
 const exportResults = async () => {
-  isExporting.value = true;
-  await nextTick();
+  isExporting.value = true
+  await nextTick()
 
   // Fix fonts: https://github.com/bubkoo/html-to-image/issues/49#issuecomment-762222100
   const dataUrl = await htmlToImage.toPng(exportViewRef.value!, {
     canvasWidth: 1600 * 2,
     canvasHeight: 900 * 2,
-  });
-  const link = document.createElement("a");
-  link.download = `${slugify(config.value.name).toLowerCase()}.png`;
-  link.href = dataUrl;
-  link.click();
+  })
+  const link = document.createElement('a')
+  link.download = `${slugify(config.value.name).toLowerCase()}.png`
+  link.href = dataUrl
+  link.click()
 
   setTimeout(() => {
-    isExporting.value = false;
-  }, 1000);
-};
+    isExporting.value = false
+  }, 1000)
+}
 
 const clear = () => {
-  cases.value = [];
+  cases.value = []
   config.value = {
-    name: "",
+    name: '',
     parallel: true,
-    dataCode: "",
+    dataCode: '',
     globalTestConfig: {
       dependencies: [] as Dependency[],
     } as TestCase,
-  };
-};
+  }
+}
 </script>
 
 <template>
-  <div
-    class="w-full max-w-screen-2xl mx-auto flex-col lg:flex-row flex items-stretch min-h-screen"
-  >
+  <div class="w-full max-w-screen-2xl mx-auto flex-col lg:flex-row flex items-stretch min-h-screen">
     <div class="flex flex-col gap-8 flex-1 pt-14 pb-20 lg:pb-32 px-6 lg:px-12">
       <div class="flex-col lg:flex-row flex justify-between lg:items-center">
         <div class="flex items-center">
@@ -303,14 +289,9 @@ const clear = () => {
             >
               jsbenchmark
             </a>
-            <div
-              class="text-xs text-left text-gray-400 leading-none tracking-wide mt-0.5"
-            >
+            <div class="text-xs text-left text-gray-400 leading-none tracking-wide mt-0.5">
               by
-              <a
-                href="https://pabue.co"
-                target="_blank"
-                class="transition hover:text-white"
+              <a href="https://pabue.co" target="_blank" class="transition hover:text-white"
                 >pabue.co</a
               >
             </div>
@@ -367,23 +348,16 @@ const clear = () => {
       <div class="flex flex-col gap-3">
         <h3 class="text-2xl font-bold">Setup</h3>
         <p class="text-gray-400 text-sm">
-          This setup function should return the stuff you need in the tests.
-          Anything returned will be available via the
+          This setup function should return the stuff you need in the tests. Anything returned will
+          be available via the
           <code class="text-white">DATA</code>
-          variable inside the test cases. Running the setup function is not part
-          of the benchmark and it's run separately for each test case.
+          variable inside the test cases. Running the setup function is not part of the benchmark
+          and it's run separately for each test case.
         </p>
         <BaseCodeEditor v-model="config.dataCode" />
-        <Dependencies
-          v-model:test="config.globalTestConfig"
-          global
-          class="mt-2"
-        >
+        <Dependencies v-model:test="config.globalTestConfig" global class="mt-2">
           <template #help>
-            <p>
-              Global dependencies are available in the setup function and every
-              test case.
-            </p>
+            <p>Global dependencies are available in the setup function and every test case.</p>
           </template>
         </Dependencies>
       </div>
@@ -403,12 +377,7 @@ const clear = () => {
         class="border rounded-xl border-gray-800 p-6 flex flex-col gap-4"
       >
         <div class="flex-col lg:flex-row flex lg:items-center justify-between">
-          <BaseInput
-            v-model="c.name"
-            placeholder="Name"
-            blendin
-            class="text-xl font-semibold"
-          />
+          <BaseInput v-model="c.name" placeholder="Name" blendin class="text-xl font-semibold" />
           <div class="flex lg:justify-end space-x-4 h-10">
             <div
               class="rounded-md h-full px-0 lg:mr-2 -border -bg-gray-800 flex items-center mr-auto"
@@ -418,10 +387,8 @@ const clear = () => {
                 <div>
                   {{
                     stateByTest[c.id]?.result
-                      ? Number(
-                          stateByTest[c.id]?.result?.opsPerSecond
-                        ).toLocaleString()
-                      : "?"
+                      ? Number(stateByTest[c.id]?.result?.opsPerSecond).toLocaleString()
+                      : '?'
                   }}
                 </div>
               </div>
@@ -456,12 +423,7 @@ const clear = () => {
       </div>
 
       <div>
-        <BaseButton
-          :icon="IconPlus"
-          outline
-          @click="addCase"
-          class="w-full mt-6"
-        >
+        <BaseButton :icon="IconPlus" outline @click="addCase" class="w-full mt-6">
           <span>Add case</span>
         </BaseButton>
       </div>
@@ -489,9 +451,9 @@ const clear = () => {
 
         <div class="mt-24 text-gray-400 text-sm">
           <p>
-            <span class="font-bold">Note:</span> No statistical analysis is used
-            to validate the results. The tests are run in parallel for 3 seconds
-            (with a 500ms warmup) and then operations per second are calculated.
+            <span class="font-bold">Note:</span> No statistical analysis is used to validate the
+            results. The tests are run in parallel for 3 seconds (with a 500ms warmup) and then
+            operations per second are calculated.
           </p>
         </div>
       </div>
@@ -509,11 +471,7 @@ const clear = () => {
         ref="exportViewRef"
         class="w-[1600px] h-[900px] rounded-xl bg-gray-900 p-20 flex flex-col justify-center"
         :style="{
-          fontSize: `${clamp(
-            40 * (2 / Math.max(cases.length, 2)) * 0.95,
-            10,
-            35
-          )}px`,
+          fontSize: `${clamp(40 * (2 / Math.max(cases.length, 2)) * 0.95, 10, 35)}px`,
         }"
       >
         <h1 class="font-extrabold text-[2.6em] mb-[1em] leading-none">
@@ -571,10 +529,9 @@ input {
 .text-shadow {
   --width: 2px;
   --width-negative: calc(var(--width) * -1);
-  text-shadow: var(--width-negative) var(--width-negative) 0 #000,
-    0 var(--width-negative) 0 #000, var(--width) var(--width-negative) 0 #000,
-    var(--width) 0 0 #000, var(--width) var(--width) 0 #000,
-    0 var(--width) 0 #000, var(--width-negative) var(--width) 0 #000,
-    var(--width-negative) 0 0 #000;
+  text-shadow: var(--width-negative) var(--width-negative) 0 #000, 0 var(--width-negative) 0 #000,
+    var(--width) var(--width-negative) 0 #000, var(--width) 0 0 #000,
+    var(--width) var(--width) 0 #000, 0 var(--width) 0 #000,
+    var(--width-negative) var(--width) 0 #000, var(--width-negative) 0 0 #000;
 }
 </style>

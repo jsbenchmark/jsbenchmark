@@ -1,5 +1,5 @@
-import colors from "tailwindcss/colors";
-import defaultTheme from "tailwindcss/defaultTheme";
+import colors from 'tailwindcss/colors'
+import defaultTheme from 'tailwindcss/defaultTheme'
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -11,10 +11,10 @@ export default {
       },
 
       fontFamily: {
-        mono: ["JetBrains Mono Variable", ...defaultTheme.fontFamily.mono],
-        sans: ["Pathway Extreme Variable", ...defaultTheme.fontFamily.sans],
+        mono: ['JetBrains Mono Variable', ...defaultTheme.fontFamily.mono],
+        sans: ['Pathway Extreme Variable', ...defaultTheme.fontFamily.sans],
       },
     },
   },
-  plugins: [require("@headlessui/tailwindcss")],
-};
+  plugins: [require('@headlessui/tailwindcss')],
+}

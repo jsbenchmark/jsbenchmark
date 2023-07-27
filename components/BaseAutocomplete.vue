@@ -1,29 +1,24 @@
 <script setup lang="ts">
-import {
-  Combobox,
-  ComboboxInput,
-  ComboboxOptions,
-  ComboboxOption,
-} from "@headlessui/vue";
+import { Combobox, ComboboxInput, ComboboxOptions, ComboboxOption } from '@headlessui/vue'
 
 defineProps<{
-  modelValue?: string;
-  options: any[];
-  valueField: string;
-  placeholder?: string;
-  showOptions?: boolean;
-  error?: string;
-}>();
+  modelValue?: string
+  options: any[]
+  valueField: string
+  placeholder?: string
+  showOptions?: boolean
+  error?: string
+}>()
 
 const emit = defineEmits<{
-  (event: "update:modelValue", value: string): void;
-  (event: "input", value: string): void;
-}>();
+  (event: 'update:modelValue', value: string): void
+  (event: 'input', value: string): void
+}>()
 
 const handleChange = (value: string) => {
-  emit("input", value);
-  emit("update:modelValue", value);
-};
+  emit('input', value)
+  emit('update:modelValue', value)
+}
 </script>
 
 <template>
@@ -43,10 +38,7 @@ const handleChange = (value: string) => {
       :placeholder="placeholder"
     />
 
-    <div
-      v-show="open && (showOptions === undefined || showOptions)"
-      class="relative z-10 w-full"
-    >
+    <div v-show="open && (showOptions === undefined || showOptions)" class="relative z-10 w-full">
       <ComboboxOptions
         static
         class="absolute top-1 left-0 bg-gray-800 border-gray-700 rounded-md border w-64 p-1.5 shadow-xl shadow-black/40"

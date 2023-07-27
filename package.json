@@ -7,7 +7,8 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "upgrade": "nuxi upgrade --force"
+    "upgrade": "nuxi upgrade --force",
+    "format": "prettier '**/*.{ts,vue}' --write"
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",

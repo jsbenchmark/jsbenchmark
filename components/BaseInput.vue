@@ -1,21 +1,21 @@
 <script setup lang="ts">
 const $props = defineProps<{
-  modelValue?: string;
-  blendin?: boolean;
-  type?: string;
-}>();
+  modelValue?: string
+  blendin?: boolean
+  type?: string
+}>()
 
 const emit = defineEmits<{
-  (event: "update:modelValue", value: string): void;
-}>();
+  (event: 'update:modelValue', value: string): void
+}>()
 
-const inputRef = ref<HTMLInputElement | HTMLTextAreaElement>();
-const value = computed(() => $props.modelValue);
+const inputRef = ref<HTMLInputElement | HTMLTextAreaElement>()
+const value = computed(() => $props.modelValue)
 
 useTextareaAutosize({
   element: inputRef as Ref<HTMLTextAreaElement>,
   input: value,
-});
+})
 </script>
 
 <template>

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 // import { basicSetup } from "codemirror";
-import { javascript } from "@codemirror/lang-javascript";
-import { oneDark } from "@codemirror/theme-one-dark";
-import { debounce } from "lodash-es";
+import { javascript } from '@codemirror/lang-javascript'
+import { oneDark } from '@codemirror/theme-one-dark'
+import { debounce } from 'lodash-es'
 import {
   lineNumbers,
   highlightActiveLineGutter,
@@ -15,8 +15,8 @@ import {
   keymap,
   placeholder,
   EditorView,
-} from "@codemirror/view";
-import { EditorState } from "@codemirror/state";
+} from '@codemirror/view'
+import { EditorState } from '@codemirror/state'
 import {
   foldGutter,
   indentOnInput,
@@ -24,74 +24,74 @@ import {
   defaultHighlightStyle,
   bracketMatching,
   foldKeymap,
-} from "@codemirror/language";
-import { history, defaultKeymap, historyKeymap } from "@codemirror/commands";
-import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
+} from '@codemirror/language'
+import { history, defaultKeymap, historyKeymap } from '@codemirror/commands'
+import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
 import {
   closeBrackets,
   autocompletion,
   closeBracketsKeymap,
   completionKeymap,
-} from "@codemirror/autocomplete";
-import { lintKeymap } from "@codemirror/lint";
+} from '@codemirror/autocomplete'
+import { lintKeymap } from '@codemirror/lint'
 
 const props = defineProps({
   modelValue: String,
-});
+})
 
 const emit = defineEmits<{
-  (event: "update:modelValue", value: string): void;
-}>();
+  (event: 'update:modelValue', value: string): void
+}>()
 
-const editor = shallowRef<EditorView>();
-const editorRef = ref<HTMLElement>();
+const editor = shallowRef<EditorView>()
+const editorRef = ref<HTMLElement>()
 
 const emitUpdateDebounced = debounce((value: string) => {
-  emit("update:modelValue", value);
-}, 250);
+  emit('update:modelValue', value)
+}, 250)
 const updateListener = EditorView.updateListener.of((v) => {
-  emitUpdateDebounced(v.state.doc.toString());
-});
+  emitUpdateDebounced(v.state.doc.toString())
+})
 
 const theme = EditorView.theme({
-  "&": {
-    fontSize: "16px",
+  '&': {
+    fontSize: '16px',
   },
-  ".cm-scroller": { fontFamily: "inherit" },
-  "&.cm-editor": {
-    backgroundColor: "transparent !important",
-    outline: "none",
+  '.cm-scroller': { fontFamily: 'inherit' },
+  '&.cm-editor': {
+    backgroundColor: 'transparent !important',
+    outline: 'none',
   },
-  ".cm-gutters": {
-    backgroundColor: "transparent !important",
+  '.cm-gutters': {
+    backgroundColor: 'transparent !important',
   },
-  "& .cm-gutterElement": {
-    display: "flex !important",
-    alignItems: "center !important",
-    justifyContent: "center !important",
+  '& .cm-gutterElement': {
+    display: 'flex !important',
+    alignItems: 'center !important',
+    justifyContent: 'center !important',
   },
-  ".cm-content": {
-    lineHeight: "1.8",
-    padding: "0 !important",
+  '.cm-content': {
+    lineHeight: '1.8',
+    padding: '0 !important',
   },
-  ".cm-activeLine": {
-    backgroundColor: "transparent !important",
-    borderRadius: "0 3px 3px 0",
+  '.cm-activeLine': {
+    backgroundColor: 'transparent !important',
+    borderRadius: '0 3px 3px 0',
   },
-  "&.cm-focused .cm-activeLine": {
-    backgroundColor: "rgba(255,255,255,0.05) !important",
-    borderRadius: "0 3px 3px 0",
+  '&.cm-focused .cm-activeLine': {
+    backgroundColor: 'rgba(255,255,255,0.05) !important',
+    borderRadius: '0 3px 3px 0',
   },
-  ".cm-activeLineGutter": {
-    backgroundColor: "transparent !important",
+  '.cm-activeLineGutter': {
+    backgroundColor: 'transparent !important',
   },
-  "&.cm-focused .cm-activeLineGutter": {
-    backgroundColor: "rgba(255,255,255,0.05) !important",
+  '&.cm-focused .cm-activeLineGutter': {
+    backgroundColor: 'rgba(255,255,255,0.05) !important',
   },
-  ".cm-lineNumbers .cm-activeLineGutter": {
-    borderRadius: "3px 0 0 3px",
+  '.cm-lineNumbers .cm-activeLineGutter': {
+    borderRadius: '3px 0 0 3px',
   },
-});
+})
 
 const setup = () => [
   lineNumbers(),
@@ -120,7 +120,7 @@ const setup = () => [
     ...completionKeymap,
     ...lintKeymap,
   ]),
-];
+]
 
 onMounted(() => {
   editor.value = new EditorView({
@@ -132,19 +132,19 @@ onMounted(() => {
       updateListener,
       oneDark,
       theme,
-      placeholder("Your code goes here..."),
+      placeholder('Your code goes here...'),
     ],
     parent: editorRef.value,
     doc: props.modelValue,
-  });
-});
+  })
+})
 
 watch(
   () => props.modelValue,
   (value) => {
     if (editor.value) {
       if (value === editor.value.state.doc.toString()) {
-        return;
+        return
       }
 
       editor.value.dispatch({
@@ -153,11 +153,11 @@ watch(
           to: editor.value.state.doc.length,
           insert: value,
         },
-      });
+      })
     }
   },
   { immediate: true }
-);
+)
 </script>
 
 <template>

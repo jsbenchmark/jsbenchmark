@@ -1,5 +1,5 @@
-import jobRunner from "./jobRunner";
-import depsParser from "./depsParser";
+import jobRunner from './jobRunner'
+import depsParser from './depsParser'
 
 /**
  * Converts the "fn" function into the syntax needed to be executed within a web worker
@@ -20,13 +20,10 @@ function createWorkerBlobUrl(
   deps: { url: string; name?: string }[],
   esm: boolean = false
 ) {
-  const blobCode = `${depsParser(
-    deps,
-    esm
-  )} \n onmessage=(${jobRunner})(${fn})`;
-  const blob = new Blob([blobCode], { type: "text/javascript" });
-  const url = URL.createObjectURL(blob);
-  return url;
+  const blobCode = `${depsParser(deps, esm)} \n onmessage=(${jobRunner})(${fn})`
+  const blob = new Blob([blobCode], { type: 'text/javascript' })
+  const url = URL.createObjectURL(blob)
+  return url
 }
 
-export default createWorkerBlobUrl;
+export default createWorkerBlobUrl

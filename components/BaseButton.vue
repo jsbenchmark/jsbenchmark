@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { IconLoader } from "@tabler/icons-vue";
+import { IconLoader } from '@tabler/icons-vue'
 
 defineProps({
   tag: {
     type: String,
-    default: "button",
+    default: 'button',
   },
   disabled: Boolean,
   loading: Boolean,
@@ -12,7 +12,7 @@ defineProps({
     type: null,
   },
   outline: Boolean,
-});
+})
 </script>
 
 <template>

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { PropType } from "vue";
-import { IconPlus } from "@tabler/icons-vue";
-import { TestCase, Dependency } from "types";
-import { IconTrash } from "@tabler/icons-vue";
-import { debounce, camelCase } from "lodash-es";
+import { PropType } from 'vue'
+import { IconPlus } from '@tabler/icons-vue'
+import { TestCase, Dependency } from 'types'
+import { IconTrash } from '@tabler/icons-vue'
+import { debounce, camelCase } from 'lodash-es'
 
 const props = defineProps({
   test: {
@@ -15,66 +15,63 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
-});
+})
 
 const emit = defineEmits<{
-  (event: "update:test", value: TestCase): void;
-}>();
+  (event: 'update:test', value: TestCase): void
+}>()
 
-const model = useVModel(props, "test", emit);
+const model = useVModel(props, 'test', emit)
 
 const addDep = () => {
-  (model.value.dependencies ||= []).push({
-    url: "",
-    name: "",
-  });
-};
+  ;(model.value.dependencies ||= []).push({
+    url: '',
+    name: '',
+  })
+}
 
 type DependencySearchEntry = {
-  name: string;
-  version: string;
-};
+  name: string
+  version: string
+}
 
-const searchResults = ref<DependencySearchEntry[]>([]);
-const isSearching = ref(false);
+const searchResults = ref<DependencySearchEntry[]>([])
+const isSearching = ref(false)
 const searchPackage = debounce(async (value: string) => {
-  const res = await $fetch<{ results: DependencySearchEntry[] }>(
-    "/api/search-package",
-    {
-      query: {
-        q: value,
-      },
-    }
-  );
-  isSearching.value = false;
+  const res = await $fetch<{ results: DependencySearchEntry[] }>('/api/search-package', {
+    query: {
+      q: value,
+    },
+  })
+  isSearching.value = false
 
-  searchResults.value = res.results.slice(0, 10);
-}, 500);
+  searchResults.value = res.results.slice(0, 10)
+}, 500)
 
 const handleUrlUpdate = (value: string, dep: Dependency) => {
-  searchResults.value = [];
-  value = value.trim();
+  searchResults.value = []
+  value = value.trim()
 
   if (!value) {
-    return;
+    return
   }
 
-  if (value.startsWith("http")) {
-    if (value?.endsWith("+esm")) {
-      dep.esm = true;
+  if (value.startsWith('http')) {
+    if (value?.endsWith('+esm')) {
+      dep.esm = true
     }
 
     if (value) {
       // Get name between last / and @
-      const name = value.match(/\/([^\/]+)@/)?.[1] || "";
-      dep.name = camelCase(name);
+      const name = value.match(/\/([^\/]+)@/)?.[1] || ''
+      dep.name = camelCase(name)
     }
-    return;
+    return
   }
 
-  isSearching.value = true;
-  searchPackage(value);
-};
+  isSearching.value = true
+  searchPackage(value)
+}
 </script>
 
 <template>
@@ -82,9 +79,7 @@ const handleUrlUpdate = (value: string, dep: Dependency) => {
     <div class="flex-col lg:flex-row flex justify-between lg:items-center">
       <div class="flex">
         <div class="flex">
-          <h5 class="font-semibold text-base">
-            {{ global ? "Global " : "" }}Dependencies
-          </h5>
+          <h5 class="font-semibold text-base">{{ global ? 'Global ' : '' }}Dependencies</h5>
         </div>
 
         <div class="ml-4">
@@ -99,9 +94,7 @@ const handleUrlUpdate = (value: string, dep: Dependency) => {
       </div>
 
       <div class="mt-2 lg:mt-0">
-        <p
-          class="text-xs text-gray-500 transition cursor-help"
-        >
+        <p class="text-xs text-gray-500 transition cursor-help">
           You can use sites like
           <a
             href="https://www.jsdelivr.com/"
@@ -136,9 +129,7 @@ const handleUrlUpdate = (value: string, dep: Dependency) => {
         @update:model-value="(v) => handleUrlUpdate(v, dep)"
         value-field="url"
         :show-options="!dep.url.startsWith('http')"
-        :error="
-          dep.url && !dep.url.startsWith('http') ? 'Invalid URL' : undefined
-        "
+        :error="dep.url && !dep.url.startsWith('http') ? 'Invalid URL' : undefined"
       >
         <template #option="{ option }">
           <div class="flex items-center flex-nowrap">

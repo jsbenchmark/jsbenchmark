@@ -1,4 +1,4 @@
-import { Dependency } from "types";
+import { Dependency } from 'types'
 
 /**
  *
@@ -13,27 +13,27 @@ import { Dependency } from "types";
  * depsParser(['demo1', 'demo2']) // return importScripts('demo1', 'demo2')
  */
 function depsParser(deps: Dependency[], esm: boolean = false) {
-  if (!deps?.length) return "";
+  if (!deps?.length) return ''
 
   if (esm) {
     return deps
       .map((dep, i) => {
         if (!dep.esm) {
-          return `import '${dep.url}';`;
+          return `import '${dep.url}';`
         }
 
-        const name = dep.name || `DEP_${i}`;
+        const name = dep.name || `DEP_${i}`
 
-        return `import * as ${name} from '${dep.url}';\nglobalThis.${name} = Object.keys(${name}).length === 1 && ${name}.default ? ${name}.default : ${name};\n`;
+        return `import * as ${name} from '${dep.url}';\nglobalThis.${name} = Object.keys(${name}).length === 1 && ${name}.default ? ${name}.default : ${name};\n`
       })
-      .join("\n");
+      .join('\n')
   } else {
-    const depsString = deps.map((dep) => `'${dep.url}'`).toString();
-    return `importScripts(${depsString});`;
+    const depsString = deps.map((dep) => `'${dep.url}'`).toString()
+    return `importScripts(${depsString});`
     // return deps.map((dep) => `import '${dep.url}'`).toString();
   }
 
   // return `import * as DESTR from 'https://cdn.jsdelivr.net/npm/destr@2.0.0/+esm'`;
 }
 
-export default depsParser;
+export default depsParser

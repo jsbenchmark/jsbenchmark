@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { TestCase, TestState } from "types";
-import chroma from "chroma-js";
+import { TestCase, TestState } from 'types'
+import chroma from 'chroma-js'
 
 const COLORS = {
-  ERROR: "#ff8362",
-  GRADIENT: ["#4e2e94", "#ff8362"]
+  ERROR: '#ff8362',
+  GRADIENT: ['#4e2e94', '#ff8362'],
 }
 
 const props = defineProps({
@@ -16,32 +16,28 @@ const props = defineProps({
     type: Object as PropType<Record<string, TestState>>,
     default: () => ({}),
   },
-});
+})
 
 const maxOpsPerSecond = computed(() => {
   return Math.max(
     ...props.cases.map((c) => {
-      const state = props.stateByTest[c.id];
-      if (!state || state.status !== "success") return 0;
-      return state.result?.opsPerSecond || 0;
+      const state = props.stateByTest[c.id]
+      if (!state || state.status !== 'success') return 0
+      return state.result?.opsPerSecond || 0
     })
-  );
-});
+  )
+})
 
-const colorScale = chroma
-  .scale(COLORS.GRADIENT)
-  .mode("lch")
-  .domain([0, 1]);
+const colorScale = chroma.scale(COLORS.GRADIENT).mode('lch').domain([0, 1])
 
 const colors = computed(() => {
   return props.cases.map((c) => {
-    const state = props.stateByTest[c.id];
-    if (!state || state.status !== "success") return COLORS.ERROR;
-    const percentage =
-      (state.result?.opsPerSecond || 0) / maxOpsPerSecond.value;
-    return colorScale(percentage).hex();
-  });
-});
+    const state = props.stateByTest[c.id]
+    if (!state || state.status !== 'success') return COLORS.ERROR
+    const percentage = (state.result?.opsPerSecond || 0) / maxOpsPerSecond.value
+    return colorScale(percentage).hex()
+  })
+})
 </script>
 
 <template>
@@ -53,9 +49,7 @@ const colors = computed(() => {
         </div>
         <div class="font-mono">
           <span class="text-gray-400">Ops/s:</span>
-          {{
-            stateByTest[test.id]?.result?.opsPerSecond?.toLocaleString() || "?"
-          }}
+          {{ stateByTest[test.id]?.result?.opsPerSecond?.toLocaleString() || '?' }}
         </div>
       </div>
       <div class="relative">
@@ -64,8 +58,7 @@ const colors = computed(() => {
           :class="{
             '!bg-gray-700': stateByTest[test.id]?.status === 'running',
             '!bg-gray-800':
-              stateByTest[test.id]?.status !== 'running' &&
-              !stateByTest[test.id]?.result,
+              stateByTest[test.id]?.status !== 'running' && !stateByTest[test.id]?.result,
             'striped-animated': stateByTest[test.id]?.status === 'running',
             '!bg-red-600': stateByTest[test.id]?.status === 'error',
           }"
@@ -73,19 +66,14 @@ const colors = computed(() => {
             backgroundColor: colors[i],
             width: !stateByTest[test.id]?.result
               ? '100%'
-              : ((stateByTest[test.id]?.result?.opsPerSecond || 0) /
-                  maxOpsPerSecond) *
-                  100 +
-                '%',
+              : ((stateByTest[test.id]?.result?.opsPerSecond || 0) / maxOpsPerSecond) * 100 + '%',
           }"
         ></div>
       </div>
       <div class="text-[0.8em] mt-2.5 font-mono">
         <span class="text-gray-400">Average run time:</span>
-        {{ stateByTest[test.id]?.result?.averageTimeFormatted || "?" }}
-        <span v-if="stateByTest[test.id]?.result" class="text-gray-400"
-          >ms</span
-        >
+        {{ stateByTest[test.id]?.result?.averageTimeFormatted || '?' }}
+        <span v-if="stateByTest[test.id]?.result" class="text-gray-400">ms</span>
       </div>
       <hr v-if="i < cases.length - 1" class="mt-[1.25em] border-gray-800" />
     </div>
