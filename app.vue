@@ -200,31 +200,6 @@ const removeCase = (c: TestCase) => {
 
 const route = useRoute()
 
-// Read state from URL.
-onMounted(() => {
-  const urlState = deserialize(route.hash.slice(1))
-  if (urlState) {
-    cases.value = urlState.cases
-    config.value = urlState.config
-  }
-})
-
-// Write state to URL.
-watch(
-  [cases, config],
-  () => {
-    const encoded = serialize({
-      cases: cases.value,
-      config: config.value,
-    })
-
-    useRouter().replace({
-      hash: `#${encoded}`,
-    })
-  },
-  { deep: true }
-)
-
 const isAnyTestRunning = computed(() => {
   return cases.value.some((c) => {
     const state = stateByTest.value[c.id]
@@ -272,6 +247,31 @@ const clear = () => {
     } as TestCase,
   }
 }
+
+// Read state from URL.
+onMounted(() => {
+  const urlState = deserialize(route.hash.slice(1))
+  if (urlState) {
+    cases.value = urlState.cases
+    config.value = urlState.config
+  }
+})
+
+// Write state to URL.
+watch(
+  [cases, config],
+  () => {
+    const encoded = serialize({
+      cases: cases.value,
+      config: config.value,
+    })
+
+    useRouter().replace({
+      hash: `#${encoded}`,
+    })
+  },
+  { deep: true }
+)
 </script>
 
 <template>
