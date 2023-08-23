@@ -8,11 +8,17 @@ import slugify from 'slugify'
 import * as htmlToImage from 'html-to-image'
 import { IconShare, IconCheck, IconLink, IconTrash, IconPlus } from '@tabler/icons-vue'
 import '@fontsource-variable/pathway-extreme'
-import { ADVANCED_EXAMPLE_URL, TEST_TIME, TEST_TIMEOUT, WARMUP_TIME } from './utils/constants'
+import {
+  ADVANCED_EXAMPLE_URL,
+  DEFAULT_TEST_NAME,
+  TEST_TIME,
+  TEST_TIMEOUT,
+  WARMUP_TIME,
+} from './utils/constants'
 import { getUrl, serialize, deserialize } from './utils'
 
 const config = ref({
-  name: 'Simple example test',
+  name: DEFAULT_TEST_NAME,
   parallel: true,
   globalTestConfig: {
     dependencies: [] as Dependency[],
@@ -28,26 +34,18 @@ useHead({
   htmlAttrs: {
     class: 'bg-gray-900 text-white font-sans overflow-x-hidden',
   },
-  meta: [
-    {
-      name: 'description',
-      content:
-        'A straight forward JavaScript benchmarking tool with support for ES modules and libraries.',
-    },
-    {
-      name: 'keywords',
-      content:
-        'javascript, benchmark, js, performance, esm, module, library, measure, compare, testing, tool',
-    },
-    {
-      name: 'author',
-      content: 'pabue.co',
-    },
-    {
-      name: 'viewport',
-      content: 'width=device-width, initial-scale=1.0',
-    },
-  ],
+})
+
+useServerSeoMeta({
+  title: 'JS Benchmark',
+  ogTitle: 'JS Benchmark',
+  description:
+    'A straight forward JavaScript benchmarking tool with support for ES modules and libraries.',
+  ogDescription:
+    'A straight forward JavaScript benchmarking tool with support for ES modules and libraries.',
+  keywords:
+    'javascript, benchmark, js, performance, esm, module, library, measure, compare, testing, tool',
+  author: 'pabue.co',
 })
 
 const clipboard = useClipboard()
