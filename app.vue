@@ -287,10 +287,17 @@ watch(
             >
               jsbenchmark
             </a>
-            <div class="text-xs text-left text-gray-400 leading-none tracking-wide mt-0.5">
+            <div class="text-xs text-left text-gray-400 leading-none tracking-wide mt-[0.2rem]">
               by
               <a href="https://pabue.co" target="_blank" class="transition hover:text-white"
                 >pabue.co</a
+              >
+              on
+              <a
+                href="https://github.com/pabueco/jsbenchmark"
+                target="_blank"
+                class="transition hover:text-white"
+                >github</a
               >
             </div>
           </div>
