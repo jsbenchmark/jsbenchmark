@@ -29,15 +29,14 @@ const config = ref({
 useHead({
   title: computed(() => config.value.name),
   titleTemplate: (sub) => {
-    return sub ? `${sub} - JS Benchmark` : 'JS Benchmark'
+    return sub && sub !== DEFAULT_TEST_NAME ? `${sub} - JS Benchmark` : 'JS Benchmark'
   },
   htmlAttrs: {
     class: 'bg-gray-900 text-white font-sans overflow-x-hidden',
   },
 })
 
-useSeoMeta({
-  title: 'JS Benchmark',
+useServerSeoMeta({
   ogTitle: 'JS Benchmark',
   description:
     'A straightforward JavaScript benchmarking tool with support for ES modules and libraries.',

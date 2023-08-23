@@ -1,5 +1,5 @@
 export const getUrl = () => {
-  if (!import.meta.client) return
+  if (!import.meta.client) return ''
   return window.location.href
 }
 
