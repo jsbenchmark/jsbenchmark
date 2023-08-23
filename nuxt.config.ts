@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@vueuse/nuxt', '@nuxtjs/tailwindcss'],
-  ssr: false,
+  ssr: true,
 
   app: {
     head: {

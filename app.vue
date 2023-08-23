@@ -46,7 +46,7 @@ useSeoMeta({
   keywords:
     'javascript, benchmark, js, performance, esm, module, library, measure, compare, testing, tool',
   author: 'pabue.co',
-  ogImage: window.location.origin + '/og.png',
+  ogImage: 'https://jsbenchmark.com/og.png',
   twitterCard: 'summary_large_image',
 })
 
