@@ -36,16 +36,18 @@ useHead({
   },
 })
 
-useServerSeoMeta({
+useSeoMeta({
   title: 'JS Benchmark',
   ogTitle: 'JS Benchmark',
   description:
-    'A straight forward JavaScript benchmarking tool with support for ES modules and libraries.',
+    'A straightforward JavaScript benchmarking tool with support for ES modules and libraries.',
   ogDescription:
-    'A straight forward JavaScript benchmarking tool with support for ES modules and libraries.',
+    'A straightforward JavaScript benchmarking tool with support for ES modules and libraries.',
   keywords:
     'javascript, benchmark, js, performance, esm, module, library, measure, compare, testing, tool',
   author: 'pabue.co',
+  ogImage: window.location.origin + '/og.png',
+  twitterCard: 'summary_large_image',
 })
 
 const clipboard = useClipboard()
