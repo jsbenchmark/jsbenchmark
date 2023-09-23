@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { useWebWorkerFn } from './utils/worker'
 import '@fontsource-variable/jetbrains-mono'
-import { TestCase, Dependency, TestState } from 'types'
+import { TestCase, Dependency, TestState } from './types'
 import { nanoid } from 'nanoid'
 import { clamp } from '@vueuse/core'
 import slugify from 'slugify'
 import * as htmlToImage from 'html-to-image'
-import { IconShare, IconCheck, IconLink, IconTrash, IconPlus } from '@tabler/icons-vue'
+import { IconCheck, IconLink, IconTrash, IconPlus } from '@tabler/icons-vue'
 import '@fontsource-variable/pathway-extreme'
 import {
   ADVANCED_EXAMPLE_URL,
@@ -337,8 +337,7 @@ watch(
             class="!px-0 aspect-square"
             outline
           >
-            <IconShare v-if="isShareSupported" />
-            <IconLink v-else-if="!clipboard.copied.value" />
+            <IconLink v-if="!clipboard.copied.value" />
             <IconCheck v-else />
           </BaseButton>
           <BaseButton
