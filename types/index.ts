@@ -21,3 +21,22 @@ export type TestState = {
     averageTimeFormatted: string
   }
 }
+
+export type TimeMarker = {
+  name: string
+  time: number
+}
+
+export type LogEntry = {
+  value: string
+  time: number
+}
+
+export type ReplState = {
+  status: 'idle' | 'running' | 'success' | 'error'
+  error?: Error | null
+  result?: {
+    markers: TimeMarker[]
+    logs: LogEntry[]
+  }
+}

@@ -3,7 +3,7 @@ import { tryOnScopeDispose } from '@vueuse/shared'
 import type { ConfigurableWindow } from '@vueuse/core'
 import { defaultWindow } from '@vueuse/core'
 import createWorkerBlobUrl from './lib/createWorkerBlobUrl'
-import { Dependency } from 'types'
+import { Dependency } from '../../types'
 
 export type WebWorkerStatus = 'PENDING' | 'SUCCESS' | 'RUNNING' | 'ERROR' | 'TIMEOUT_EXPIRED'
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useWebWorkerFn } from './utils/worker'
+import { useWebWorkerFn } from '~/utils/worker'
 import '@fontsource-variable/jetbrains-mono'
-import { TestCase, Dependency, TestState } from './types'
+import { TestCase, Dependency, TestState } from '~/types'
 import { nanoid } from 'nanoid'
 import { clamp } from '@vueuse/core'
 import slugify from 'slugify'
@@ -14,8 +14,12 @@ import {
   TEST_TIME,
   TEST_TIMEOUT,
   WARMUP_TIME,
-} from './utils/constants'
-import { getUrl, serialize, deserialize } from './utils'
+} from '~/utils/constants'
+import { getUrl, serialize, deserialize } from '~/utils'
+
+definePageMeta({
+  layout: false,
+})
 
 const config = ref({
   name: DEFAULT_TEST_NAME,
@@ -274,53 +278,8 @@ watch(
 </script>
 
 <template>
-  <div class="w-full max-w-screen-2xl mx-auto flex-col lg:flex-row flex items-stretch min-h-screen">
-    <div class="flex flex-col gap-8 flex-1 pt-14 pb-20 lg:pb-32 px-6 lg:px-12">
-      <div class="flex-col lg:flex-row flex justify-between lg:items-center">
-        <div class="flex items-center">
-          <button @click="clear">
-            <img src="/logo.svg" alt="JS Benchmark logo" class="h-8 mr-3" />
-          </button>
-          <div>
-            <a
-              href="/"
-              class="text-base font-semibold text-[#ff8362] uppercase tracking-wider leading-none block"
-            >
-              jsbenchmark
-            </a>
-            <div class="text-xs text-left text-gray-400 leading-none tracking-wide mt-[0.2rem]">
-              by
-              <a href="https://pabue.co" target="_blank" class="transition hover:text-white"
-                >pabue.co</a
-              >
-              on
-              <a
-                href="https://github.com/pabueco/jsbenchmark"
-                target="_blank"
-                class="transition hover:text-white"
-                >github</a
-              >
-            </div>
-          </div>
-        </div>
-
-        <div class="flex space-x-5 mt-6 lg:mt-0">
-          <button
-            class="font-medium text-gray-400 transition hover:text-white text-sm"
-            @click="clear"
-          >
-            Clear
-          </button>
-          <a
-            class="font-medium text-gray-400 transition hover:text-white text-sm"
-            target="_blank"
-            :href="ADVANCED_EXAMPLE_URL"
-          >
-            View advanced example
-          </a>
-        </div>
-      </div>
-
+  <NuxtLayout name="default">
+    <template #default>
       <div class="flex-col lg:flex-row flex justify-between lg:items-start">
         <BaseInput
           v-model="config.name"
@@ -432,66 +391,57 @@ watch(
           <span>Add case</span>
         </BaseButton>
       </div>
-    </div>
 
-    <div
-      class="lg:w-[400px] xl:w-[500px] lg:min-w-[400px] pb-10 lg:py-14 px-6 lg:px-12 relative shrink-0"
-    >
-      <div class="sticky top-14 z-10">
-        <div class="flex justify-between items-center mb-12">
-          <h2 class="text-3xl font-bold">Results</h2>
-          <div>
-            <BaseButton
-              @click="exportResults"
-              :loading="isExporting"
-              :disabled="!allTestsHaveResults"
-              outline
-              class="!h-8 !px-3 text-sm"
-              >Share</BaseButton
-            >
+      <div
+        v-if="isExporting"
+        class="fixed -left-[1000000px] pointer-events-none flex items-center justify-center"
+      >
+        <div
+          ref="exportViewRef"
+          class="w-[1600px] h-[900px] rounded-xl bg-gray-900 p-20 flex flex-col justify-center"
+          :style="{
+            fontSize: `${clamp(40 * (2 / Math.max(cases.length, 2)) * 0.95, 10, 35)}px`,
+          }"
+        >
+          <h1 class="font-extrabold text-[2.6em] mb-[1em] leading-none">
+            {{ config.name }}
+          </h1>
+          <Results :cases="cases" :state-by-test="stateByTest" />
+          <div
+            class="absolute top-0 right-0 bg-gray-800 rounded-bl-md rounded-tr-xl text-xs px-3.5 py-1.5 text-gray-400 tracking-wide font-medium"
+          >
+            <span>Powered by</span>
+            <span class="text-gray-300 inline-block ml-1">jsbenchmark.com</span>
           </div>
         </div>
-
-        <Results :cases="cases" :state-by-test="stateByTest" />
-
-        <div class="mt-24 text-gray-400 text-sm">
-          <p>
-            <span class="font-bold">Note:</span> No statistical analysis is used to validate the
-            results. The tests are run in parallel for 3 seconds (with a 500ms warmup) and then
-            operations per second are calculated.
-          </p>
+      </div>
+    </template>
+    <template #sidebar>
+      <div class="flex justify-between items-center mb-12">
+        <h2 class="text-3xl font-bold">Results</h2>
+        <div>
+          <BaseButton
+            @click="exportResults"
+            :loading="isExporting"
+            :disabled="!allTestsHaveResults"
+            outline
+            class="!h-8 !px-3 text-sm"
+            >Share</BaseButton
+          >
         </div>
       </div>
 
-      <div
-        class="hidden lg:block absolute z-0 pointer-events-none inset-0 -right-[100vw] bg-gray-950/50"
-      ></div>
-    </div>
+      <Results :cases="cases" :state-by-test="stateByTest" />
 
-    <div
-      v-if="isExporting"
-      class="fixed -left-[1000000px] pointer-events-none flex items-center justify-center"
-    >
-      <div
-        ref="exportViewRef"
-        class="w-[1600px] h-[900px] rounded-xl bg-gray-900 p-20 flex flex-col justify-center"
-        :style="{
-          fontSize: `${clamp(40 * (2 / Math.max(cases.length, 2)) * 0.95, 10, 35)}px`,
-        }"
-      >
-        <h1 class="font-extrabold text-[2.6em] mb-[1em] leading-none">
-          {{ config.name }}
-        </h1>
-        <Results :cases="cases" :state-by-test="stateByTest" />
-        <div
-          class="absolute top-0 right-0 bg-gray-800 rounded-bl-md rounded-tr-xl text-xs px-3.5 py-1.5 text-gray-400 tracking-wide font-medium"
-        >
-          <span>Powered by</span>
-          <span class="text-gray-300 inline-block ml-1">jsbenchmark.com</span>
-        </div>
+      <div class="mt-24 text-gray-400 text-sm">
+        <p>
+          <span class="font-bold">Note:</span> No statistical analysis is used to validate the
+          results. The tests are run in parallel for 3 seconds (with a 500ms warmup) and then
+          operations per second are calculated.
+        </p>
       </div>
-    </div>
-  </div>
+    </template>
+  </NuxtLayout>
 </template>
 
 <style>
