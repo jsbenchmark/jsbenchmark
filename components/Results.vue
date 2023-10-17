@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { TestCase, TestState } from '~/types'
 import chroma from 'chroma-js'
-
-const COLORS = {
-  ERROR: '#ff8362',
-  GRADIENT: ['#4e2e94', '#ff8362'],
-}
+import { COLORS } from '~/utils/constants'
 
 const props = defineProps({
   cases: {

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { Dependency, LogEntry, ReplState, TestCase, TestState, TimeMarker } from '~/types'
+import { Dependency, LogEntry, ReplState, TestCase, TimeMarker } from '~/types'
+import { COLORS } from '~/utils/constants'
 import { useWebWorkerFn } from '~/utils/worker'
+import chroma from 'chroma-js'
 
 definePageMeta({
   layout: false,
@@ -12,9 +14,14 @@ const config = ref({
   test: {
     dependencies: [] as Dependency[],
     code: `LOG('Start', { foo: 'bar' })
-TIME('Start')
-await new Promise((r) => setTimeout(r, 1000))
-TIME('End')`,
+
+TIME('First')
+await new Promise((r) => setTimeout(r, 100))
+TIME('First')
+
+TIME('Second')
+await new Promise((r) => setTimeout(r, 250))
+TIME('Second')`,
   } as TestCase,
 })
 
@@ -77,10 +84,17 @@ const runCase = async (c: TestCase) => {
 
       const markers: TimeMarker[] = []
       ;(globalThis as any).TIME = (name: string) => {
-        markers.push({
-          name,
-          time: performance.now(),
-        })
+        const now = performance.now()
+
+        const startMarker = markers.findLast((m) => m.name === name)
+        if (startMarker && !startMarker.duration) {
+          startMarker.duration = now - startMarker.time
+        } else {
+          markers.push({
+            name,
+            time: now,
+          })
+        }
         // postMessage({
         //   type: 'marker',
         //   name,
@@ -88,23 +102,6 @@ const runCase = async (c: TestCase) => {
         // })
       }
 
-      // Warmup.
-      // let warmupTimes = 0
-      // const warmupStart = performance.now()
-
-      // while (performance.now() - warmupStart < warmupTime) {
-      //   await fn()
-      //   warmupTimes++
-      // }
-
-      // Actual test.
-      // let times = 0
-      // const start = performance.now()
-
-      // while (performance.now() - start < time) {
-      //   await fn()
-      //   times++
-      // }
       const fn = AsyncFunction(code)
 
       const start = performance.now()
@@ -112,12 +109,14 @@ const runCase = async (c: TestCase) => {
       const end = performance.now()
 
       return {
+        start,
+        end,
         markers,
         logs,
       }
     },
     {
-      timeout: TEST_TIMEOUT,
+      timeout: 30_000,
       dependencies: dependencies,
       esm: dependencies.some((d) => d.esm),
     }
@@ -131,11 +130,21 @@ const runCase = async (c: TestCase) => {
       warmupTime: WARMUP_TIME,
     })
 
+    const totalDuration = res.end - res.start
+
     state.value = {
       status: 'success',
       error: null,
       result: {
-        markers: res.markers,
+        duration: totalDuration,
+        markers: res.markers.map((m) => {
+          return {
+            name: m.name,
+            time: m.time,
+            duration: m.duration,
+            durationPercentage: m.duration ? m.duration / totalDuration : undefined,
+          }
+        }),
         logs: res.logs.map((l) => {
           let value = l.value
 
@@ -163,6 +172,12 @@ const runCase = async (c: TestCase) => {
     workerTerminate()
   }
 }
+
+const colorScale = chroma.scale(COLORS.GRADIENT).mode('lch').domain([0, 1])
+
+const maxTimerDuration = computed(() => {
+  return Math.max(...(state.value.result?.markers.map((m) => m.duration || 0) ?? [0]))
+})
 </script>
 
 <template>
@@ -210,7 +225,8 @@ const runCase = async (c: TestCase) => {
           <BaseCodeEditor v-model="config.test.code" />
         </div>
 
-        <div class="mt-5">
+        <div class="mt-8">
+          <h4 class="font-semibold text-2xl mb-5">Logs</h4>
           <div v-for="(log, i) in state.result?.logs ?? []" :key="i" class="font-mono mb-2">
             <div
               v-if="log.time !== state.result?.logs[i - 1]?.time"
@@ -232,7 +248,21 @@ const runCase = async (c: TestCase) => {
               +{{ (marker.time - (state.result?.markers[i - 1]?.time || 0)).toFixed(3) }} ms
             </div>
           </div>
-          <p>{{ marker.name }}</p>
+          <p>
+            <span>{{ marker.name }}</span>
+            <span v-if="marker.duration">: {{ marker.duration.toFixed(3) }} ms</span>
+          </p>
+
+          <div class="relative mt-2">
+            <div
+              v-if="marker.duration"
+              class="rounded-[0.375em] h-[2.75em] transition-all duration-500 striped"
+              :style="{
+                backgroundColor: colorScale(marker.duration / maxTimerDuration).hex(),
+                width: (marker.duration / maxTimerDuration) * 100 + '%',
+              }"
+            ></div>
+          </div>
         </div>
       </div>
     </template>

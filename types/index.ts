@@ -25,6 +25,8 @@ export type TestState = {
 export type TimeMarker = {
   name: string
   time: number
+  duration?: number
+  durationPercentage?: number
 }
 
 export type LogEntry = {
@@ -36,6 +38,7 @@ export type ReplState = {
   status: 'idle' | 'running' | 'success' | 'error'
   error?: Error | null
   result?: {
+    duration?: number
     markers: TimeMarker[]
     logs: LogEntry[]
   }
