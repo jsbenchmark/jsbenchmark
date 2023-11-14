@@ -279,6 +279,9 @@ const maxTimerDuration = computed(() => {
             <div
               v-if="log.time !== state.result?.logs[i - 1]?.time"
               class="text-sm text-gray-400 mb-1"
+              :class="{
+                'mt-6': i !== 0,
+              }"
             >
               {{ log.time.toFixed(3) }} ms
             </div>
