@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TestCase, TestState } from '~/types'
+import type { TestCase, TestState } from '~/types'
 import chroma from 'chroma-js'
 import { COLORS } from '~/utils/constants'
 

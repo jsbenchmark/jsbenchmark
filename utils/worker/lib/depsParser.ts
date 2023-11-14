@@ -1,4 +1,4 @@
-import { Dependency } from 'types'
+import type { Dependency } from '~/types'
 
 /**
  *

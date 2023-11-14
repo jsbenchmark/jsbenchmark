@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useWebWorkerFn } from '~/utils/worker'
 import '@fontsource-variable/jetbrains-mono'
-import { TestCase, Dependency, TestState } from '~/types'
+import type { TestCase, Dependency, TestState } from '~/types'
 import { nanoid } from 'nanoid'
 import { clamp } from '@vueuse/core'
 import slugify from 'slugify'

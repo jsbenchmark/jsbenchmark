@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { PropType } from 'vue'
+import type { PropType } from 'vue'
 import { IconPlus } from '@tabler/icons-vue'
-import { TestCase, Dependency } from '~/types'
+import type { TestCase, Dependency } from '~/types'
 import { IconTrash } from '@tabler/icons-vue'
 import { debounce, camelCase } from 'lodash-es'
 

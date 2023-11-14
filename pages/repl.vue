@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Dependency, LogEntry, ReplState, TestCase, TimeMarker } from '~/types'
-import { COLORS } from '~/utils/constants'
+import type { Dependency, LogEntry, ReplState, TestCase, TimeMarker } from '~/types'
+import { COLORS, DEFAULT_TEST_NAME } from '~/utils/constants'
 import { useWebWorkerFn } from '~/utils/worker'
 import chroma from 'chroma-js'
 
@@ -8,10 +8,8 @@ definePageMeta({
   layout: false,
 })
 
-const DEFAULT_REPL_NAME = 'Simple Example'
-
 const config = ref({
-  name: DEFAULT_REPL_NAME,
+  name: DEFAULT_TEST_NAME,
   parallel: true,
   test: {
     dependencies: [] as Dependency[],
@@ -32,7 +30,7 @@ TIME('Done!')`,
 useHead({
   title: computed(() => config.value.name),
   titleTemplate: (sub) => {
-    return sub && sub !== DEFAULT_REPL_NAME ? `${sub} - JS Benchmark Repl` : 'JS Benchmark Repl'
+    return sub && sub !== DEFAULT_TEST_NAME ? `${sub} - JS Benchmark Repl` : 'JS Benchmark Repl'
   },
 })
 
