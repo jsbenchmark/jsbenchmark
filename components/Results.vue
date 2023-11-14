@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import { TestCase, TestState } from 'types'
+import { TestCase, TestState } from '~/types'
 import chroma from 'chroma-js'
-
-const COLORS = {
-  ERROR: '#ff8362',
-  GRADIENT: ['#4e2e94', '#ff8362'],
-}
+import { COLORS } from '~/utils/constants'
 
 const props = defineProps({
   cases: {
@@ -79,3 +75,33 @@ const colors = computed(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.striped {
+  background-size: 2em 2em;
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0.05) 75%,
+    transparent 75%,
+    transparent
+  );
+}
+
+.striped-animated {
+  animation: 350ms linear 0s infinite normal none running stripes-animation;
+}
+
+@keyframes stripes-animation {
+  0% {
+    background-position: 0 0;
+  }
+
+  100% {
+    background-position: 2rem 0;
+  }
+}
+</style>
