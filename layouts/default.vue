@@ -50,26 +50,21 @@ useServerSeoMeta({
           </div>
         </div>
 
-        <div class="flex space-x-5 mt-6 lg:mt-0">
+        <div class="flex mt-6 lg:mt-0">
           <NuxtLink
-            class="font-medium text-gray-400 transition hover:text-white text-sm"
+            class="px-4 py-2 rounded-md hover:bg-gray-800 font-semibold text-gray-400 hover:text-white transition"
+            to="/"
+            active-class="text-white"
+          >
+            Benchmark
+          </NuxtLink>
+          <NuxtLink
+            class="px-4 py-2 rounded-md hover:bg-gray-800 font-semibold text-gray-400 hover:text-white transition"
             to="/repl"
+            active-class="text-white"
           >
             Repl
           </NuxtLink>
-          <!-- <button
-            class="font-medium text-gray-400 transition hover:text-white text-sm"
-            @click="clear"
-          >
-            Clear
-          </button> -->
-          <a
-            class="font-medium text-gray-400 transition hover:text-white text-sm"
-            target="_blank"
-            :href="ADVANCED_EXAMPLE_URL"
-          >
-            Advanced example
-          </a>
         </div>
       </div>
       <slot name="default" />

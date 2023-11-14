@@ -316,7 +316,14 @@ watch(
           be available via the
           <code class="text-white">DATA</code>
           variable inside the test cases. Running the setup function is not part of the benchmark
-          and it's run separately for each test case.
+          and it's run separately for each test case. To learn more, check out
+          <a
+            class="font-medium transition hover:text-white text-sm underline"
+            target="_blank"
+            :href="ADVANCED_EXAMPLE_URL"
+          >
+            this more advanced example </a
+          >.
         </p>
         <BaseCodeEditor v-model="config.dataCode" />
         <Dependencies v-model:test="config.globalTestConfig" global class="mt-2">
