@@ -9,11 +9,11 @@ definePageMeta({
 })
 
 const config = ref({
-  name: '',
+  name: 'Simple Example',
   parallel: true,
   test: {
     dependencies: [] as Dependency[],
-    code: `LOG('Start', { foo: 'bar' })
+    code: `LOG('Hello World!', { foo: 'bar' })
 
 TIME('First')
 await new Promise((r) => setTimeout(r, 100))
@@ -21,7 +21,9 @@ TIME('First')
 
 TIME('Second')
 await new Promise((r) => setTimeout(r, 250))
-TIME('Second')`,
+TIME('Second')
+
+TIME('Done!')`,
   } as TestCase,
 })
 
@@ -56,6 +58,8 @@ const runCase = async (c: TestCase) => {
     async ({ code, dataCode, time, warmupTime }, d?: any) => {
       const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
 
+      let start = 0
+
       // const dataFn = AsyncFunction(dataCode)
       // const data = await dataFn(d)
       // ;(globalThis as any).DATA = data
@@ -63,7 +67,7 @@ const runCase = async (c: TestCase) => {
       const logs: LogEntry[] = []
       ;(globalThis as any).LOG = (...values: any[]) => {
         console.log(...values)
-        const time = performance.now()
+        const time = performance.now() - start
 
         logs.push(
           ...values.map((v) => {
@@ -84,7 +88,7 @@ const runCase = async (c: TestCase) => {
 
       const markers: TimeMarker[] = []
       ;(globalThis as any).TIME = (name: string) => {
-        const now = performance.now()
+        const now = performance.now() - start
 
         const startMarker = markers.findLast((m) => m.name === name)
         if (startMarker && !startMarker.duration) {
@@ -104,7 +108,7 @@ const runCase = async (c: TestCase) => {
 
       const fn = AsyncFunction(code)
 
-      const start = performance.now()
+      start = performance.now()
       await fn()
       const end = performance.now()
 
@@ -173,6 +177,31 @@ const runCase = async (c: TestCase) => {
   }
 }
 
+const route = useRoute()
+
+// Read state from URL.
+onMounted(() => {
+  const urlState = deserialize(route.hash.slice(1))
+  if (urlState) {
+    config.value = urlState.config
+  }
+})
+
+// Write state to URL.
+watch(
+  [config],
+  () => {
+    const encoded = serialize({
+      config: config.value,
+    })
+
+    useRouter().replace({
+      hash: `#${encoded}`,
+    })
+  },
+  { deep: true }
+)
+
 const colorScale = chroma.scale(COLORS.GRADIENT).mode('lch').domain([0, 1])
 
 const maxTimerDuration = computed(() => {
@@ -213,26 +242,34 @@ const maxTimerDuration = computed(() => {
           </div>
         </div>
         <div class="flex flex-col gap-3 mt-8">
-          <!-- <h3 class="text-2xl font-bold">Setup</h3> -->
-          <!-- <p class="text-gray-400 text-sm">
-            This setup function should return the stuff you need in the tests. Anything returned
-            will be available via the
-            <code class="text-white">DATA</code>
-            variable inside the test cases. Running the setup function is not part of the benchmark
-            and it's run separately for each test case.
-          </p> -->
           <Dependencies v-model:test="config.test" class="mt-2 mb-4" />
           <BaseCodeEditor v-model="config.test.code" />
         </div>
 
         <div class="mt-8">
           <h4 class="font-semibold text-2xl mb-5">Logs</h4>
+
+          <div v-if="!state?.result?.logs?.length" class="text-gray-400 space-y-3">
+            <p>
+              Nothing logged yet. Add
+              <code class="px-1.5 py-0.5 bg-gray-700 text-sm text-white rounded"
+                >LOG('foo', { bar: 'baz' }, ...)</code
+              >
+              to your code to log something. The logs will also be available in the browser
+              devtools/console.
+            </p>
+            <p>
+              The logged values need to be JSON serializable, because your code runs in a web
+              worker. If something doesn't look right, try checking the console.
+            </p>
+          </div>
+
           <div v-for="(log, i) in state.result?.logs ?? []" :key="i" class="font-mono mb-2">
             <div
               v-if="log.time !== state.result?.logs[i - 1]?.time"
               class="text-sm text-gray-400 mb-1"
             >
-              {{ log.time.toFixed(3) }}
+              {{ log.time.toFixed(3) }} ms
             </div>
             <pre>{{ log.value }}</pre>
           </div>
@@ -241,15 +278,26 @@ const maxTimerDuration = computed(() => {
     </template>
     <template #sidebar>
       <div>
+        <h2 class="text-3xl font-bold mb-10">Time markers</h2>
+
+        <div v-if="!state?.result?.markers?.length" class="text-gray-400 space-y-3">
+          <p>
+            No markers yet. Add
+            <code class="px-1.5 py-0.5 bg-gray-700 text-sm text-white rounded">TIME('name')</code>
+            to your code to add markers.
+          </p>
+          <p>When two markers have the same name, the duration between them will be calculated.</p>
+        </div>
+
         <div v-for="(marker, i) in state.result?.markers ?? []" :key="i" class="font-mono mb-6">
           <div class="text-sm text-gray-400 flex items-center mb-1">
-            <div>{{ marker.time.toFixed(3) }}</div>
-            <div v-if="i !== 0" class="ml-4 text-gray-200">
-              +{{ (marker.time - (state.result?.markers[i - 1]?.time || 0)).toFixed(3) }} ms
+            <div>{{ marker.time.toFixed(3) }} ms</div>
+            <div v-if="i !== 0" class="ml-2" title="Time difference to previous marker">
+              (+{{ (marker.time - (state.result?.markers[i - 1]?.time || 0)).toFixed(3) }} ms)
             </div>
           </div>
           <p>
-            <span>{{ marker.name }}</span>
+            <span class="font-bold">{{ marker.name }}</span>
             <span v-if="marker.duration">: {{ marker.duration.toFixed(3) }} ms</span>
           </p>
 
