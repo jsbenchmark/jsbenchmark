@@ -61,17 +61,11 @@ const runCase = async (c: TestCase) => {
 
   const dependencies = config.value.test.dependencies?.filter((d) => d.url) ?? []
 
-  console.log('dependencies', dependencies)
-
   const { workerFn, workerTerminate } = useWebWorkerFn(
     async ({ code, dataCode, time, warmupTime }, d?: any) => {
       const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
 
       let start = 0
-
-      // const dataFn = AsyncFunction(dataCode)
-      // const data = await dataFn(d)
-      // ;(globalThis as any).DATA = data
 
       const logs: LogEntry[] = []
       ;(globalThis as any).LOG = (...values: any[]) => {
@@ -108,6 +102,7 @@ const runCase = async (c: TestCase) => {
             time: now,
           })
         }
+        // TODO: Realtime markers/logs?
         // postMessage({
         //   type: 'marker',
         //   name,
@@ -253,6 +248,13 @@ const maxTimerDuration = computed(() => {
         <div class="flex flex-col gap-3 mt-8">
           <Dependencies v-model:test="config.test" class="mt-2 mb-4" />
           <BaseCodeEditor v-model="config.test.code" />
+
+          <div
+            v-if="state.status === 'error'"
+            class="bg-red-600/10 text-red-500 rounded-md px-4 py-3 font-mono border border-red-600"
+          >
+            {{ state.error?.message }}
+          </div>
         </div>
 
         <div class="mt-8">
