@@ -8,8 +8,10 @@ definePageMeta({
   layout: false,
 })
 
+const DEFAULT_REPL_NAME = 'Simple Example'
+
 const config = ref({
-  name: 'Simple Example',
+  name: DEFAULT_REPL_NAME,
   parallel: true,
   test: {
     dependencies: [] as Dependency[],
@@ -25,6 +27,13 @@ TIME('Second')
 
 TIME('Done!')`,
   } as TestCase,
+})
+
+useHead({
+  title: computed(() => config.value.name),
+  titleTemplate: (sub) => {
+    return sub && sub !== DEFAULT_REPL_NAME ? `${sub} - JS Benchmark Repl` : 'JS Benchmark Repl'
+  },
 })
 
 const isRunning = ref(false)

@@ -35,9 +35,6 @@ useHead({
   titleTemplate: (sub) => {
     return sub && sub !== DEFAULT_TEST_NAME ? `${sub} - JS Benchmark` : 'JS Benchmark'
   },
-  htmlAttrs: {
-    class: 'bg-gray-900 text-white font-sans overflow-x-hidden',
-  },
 })
 
 useServerSeoMeta({
