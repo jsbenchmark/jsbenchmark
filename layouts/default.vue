@@ -59,11 +59,15 @@ useServerSeoMeta({
             Benchmark
           </NuxtLink>
           <NuxtLink
-            class="px-4 py-2 rounded-md hover:bg-gray-800 font-semibold text-gray-400 hover:text-white transition"
+            class="px-4 py-2 rounded-md hover:bg-gray-800 font-semibold text-gray-400 hover:text-white transition inline-flex items-center"
             to="/repl"
             active-class="text-white"
           >
             Repl
+            <span
+              class="bg-[#ff8362] rounded-full uppercase text-[0.7rem] px-1.5 py-0 font-semibold text-black ml-2 inline-block"
+              >New</span
+            >
           </NuxtLink>
         </div>
       </div>
