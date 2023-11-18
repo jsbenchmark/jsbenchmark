@@ -274,6 +274,9 @@ watch(
         />
 
         <div class="mt-8 lg:ml-10 lg:mt-1.5 h-[50px] flex gap-3">
+          <BaseButton @click="clear" outline class="!px-0 aspect-square">
+            <IconTrash :size="20" />
+          </BaseButton>
           <BaseButton
             @click="isShareSupported ? startShare() : clipboard.copy(getUrl())"
             :disabled="isAnyTestRunning"

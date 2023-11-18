@@ -2,6 +2,7 @@
 import type { Dependency, LogEntry, ReplState, TestCase, TimeMarker } from '~/types'
 import { COLORS, DEFAULT_TEST_NAME } from '~/utils/constants'
 import { useWebWorkerFn } from '~/utils/worker'
+import { IconLink, IconCheck, IconTrash } from '@tabler/icons-vue'
 import chroma from 'chroma-js'
 
 definePageMeta({
@@ -10,7 +11,6 @@ definePageMeta({
 
 const config = ref({
   name: DEFAULT_TEST_NAME,
-  parallel: true,
   test: {
     dependencies: [] as Dependency[],
     code: `LOG('Hello World!', { foo: 'bar' })
@@ -27,12 +27,33 @@ TIME('Done!')`,
   } as TestCase,
 })
 
+const clear = () => {
+  config.value = {
+    name: '',
+    test: {
+      dependencies: [] as Dependency[],
+      code: '',
+    } as TestCase,
+  }
+}
+
 useHead({
   title: computed(() => config.value.name),
   titleTemplate: (sub) => {
     return sub && sub !== DEFAULT_TEST_NAME ? `${sub} - JS Benchmark Repl` : 'JS Benchmark Repl'
   },
 })
+
+const clipboard = useClipboard()
+const { share, isSupported: isShareSupported } = useShare()
+
+function startShare() {
+  share({
+    title: 'jsbenchmark.com',
+    text: `Check out this REPL on jsbenchmark.com!`,
+    url: getUrl(),
+  })
+}
 
 const isRunning = ref(false)
 
@@ -225,15 +246,18 @@ const maxTimerDuration = computed(() => {
           />
 
           <div class="mt-8 lg:ml-10 lg:mt-1.5 h-[50px] flex gap-3">
-            <!-- <BaseButton
+            <BaseButton @click="clear" outline class="!px-0 aspect-square">
+              <IconTrash :size="20" />
+            </BaseButton>
+            <BaseButton
               @click="isShareSupported ? startShare() : clipboard.copy(getUrl())"
-              :disabled="isAnyTestRunning"
+              :disabled="isRunning"
               class="!px-0 aspect-square"
               outline
             >
               <IconLink v-if="!clipboard.copied.value" />
               <IconCheck v-else />
-            </BaseButton> -->
+            </BaseButton>
             <BaseButton
               @click="run"
               :loading="isRunning"
