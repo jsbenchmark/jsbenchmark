@@ -37,19 +37,6 @@ useHead({
   },
 })
 
-useServerSeoMeta({
-  ogTitle: 'JS Benchmark',
-  description:
-    'A straightforward JavaScript benchmarking tool with support for ES modules and libraries.',
-  ogDescription:
-    'A straightforward JavaScript benchmarking tool with support for ES modules and libraries.',
-  keywords:
-    'javascript, benchmark, js, performance, esm, module, library, measure, compare, testing, tool',
-  author: 'pabue.co',
-  ogImage: 'https://jsbenchmark.com/og.png',
-  twitterCard: 'summary_large_image',
-})
-
 const clipboard = useClipboard()
 const { share, isSupported: isShareSupported } = useShare()
 

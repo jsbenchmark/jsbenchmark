@@ -8,11 +8,11 @@ useHead({
 useServerSeoMeta({
   ogTitle: 'JS Benchmark',
   description:
-    'A straightforward JavaScript benchmarking tool with support for ES modules and libraries.',
+    'A straightforward online JavaScript benchmarking tool and REPL with support for ES modules and libraries.',
   ogDescription:
-    'A straightforward JavaScript benchmarking tool with support for ES modules and libraries.',
+    'A straightforward online JavaScript benchmarking tool and REPL with support for ES modules and libraries.',
   keywords:
-    'javascript, benchmark, js, performance, esm, module, library, measure, compare, testing, tool',
+    'javascript, benchmark, online, js, performance, esm, module, library, measure, compare, testing, tool, repl, share, open source',
   author: 'pabue.co',
   ogImage: 'https://jsbenchmark.com/og.png',
   twitterCard: 'summary_large_image',
