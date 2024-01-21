@@ -358,10 +358,7 @@ watch(
                 outline
                 >Run</BaseButton
               >
-              <BaseButton
-                @click="removeCase(c)"
-                class="!bg-transparent border border-gray-700 px-0 aspect-square text-gray-400"
-              >
+              <BaseButton @click="removeCase(c)" outline class="px-0 aspect-square text-gray-400">
                 <IconTrash :size="20" />
               </BaseButton>
             </div>
