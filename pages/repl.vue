@@ -270,7 +270,7 @@ const maxTimerDuration = computed(() => {
           </div>
           <div class="flex flex-col gap-3 mt-8">
             <Dependencies v-model:test="config.test" class="mt-2 mb-4" />
-            <BaseCodeEditor v-model="config.test.code" />
+            <BaseCodeEditor v-model="config.test.code" @run="run" />
 
             <div
               v-if="state.status === 'error'"

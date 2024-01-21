@@ -41,6 +41,7 @@ const props = defineProps({
 
 const emit = defineEmits<{
   (event: 'update:modelValue', value: string): void
+  (event: 'run'): void
 }>()
 
 const editor = shallowRef<EditorView>()
@@ -158,10 +159,18 @@ watch(
   },
   { immediate: true }
 )
+
+const run = () => {
+  emit('run')
+}
 </script>
 
 <template>
-  <div class="font-mono p-3 rounded-md bg-gray-950 border border-gray-700">
+  <div
+    @keydown.enter.meta.prevent.stop.capture="run"
+    @keydown.enter.ctrl.prevent.stop.capture="run"
+    class="font-mono p-3 rounded-md bg-gray-950 border border-gray-700"
+  >
     <div ref="editorRef"></div>
   </div>
 </template>

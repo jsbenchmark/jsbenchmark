@@ -363,7 +363,7 @@ watch(
               </BaseButton>
             </div>
           </div>
-          <BaseCodeEditor v-model="c.code" />
+          <BaseCodeEditor v-model="c.code" @run="runCase(c)" />
 
           <Dependencies
             v-model:test="cases[index]"
