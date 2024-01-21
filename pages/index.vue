@@ -262,180 +262,182 @@ watch(
 </script>
 
 <template>
-  <NuxtLayout name="default">
-    <template #default>
-      <div class="flex-col lg:flex-row flex justify-between lg:items-start">
-        <BaseInput
-          v-model="config.name"
-          placeholder="Name"
-          blendin
-          class="text-[2.3rem] font-bold flex-1 max-w-full"
-          type="textarea"
-        />
+  <div>
+    <NuxtLayout name="default">
+      <template #default>
+        <div class="flex-col lg:flex-row flex justify-between lg:items-start">
+          <BaseInput
+            v-model="config.name"
+            placeholder="Name"
+            blendin
+            class="text-[2.3rem] font-bold flex-1 max-w-full"
+            type="textarea"
+          />
 
-        <div class="mt-8 lg:ml-10 lg:mt-1.5 h-[50px] flex gap-3">
-          <BaseButton @click="clear" outline class="!px-0 aspect-square">
-            <IconTrash :size="20" />
-          </BaseButton>
-          <BaseButton
-            @click="isShareSupported ? startShare() : clipboard.copy(getUrl())"
-            :disabled="isAnyTestRunning"
-            class="!px-0 aspect-square"
-            outline
-          >
-            <IconLink v-if="!clipboard.copied.value" />
-            <IconCheck v-else />
-          </BaseButton>
-          <BaseButton
-            @click="run"
-            :loading="isRunningAllTests"
-            :disabled="isAnyTestRunning"
-            class="text-lg px-6 flex-1 lg:flex-auto"
-            >Run all</BaseButton
-          >
-        </div>
-      </div>
-
-      <div class="flex flex-col gap-3">
-        <h3 class="text-2xl font-bold">Setup</h3>
-        <p class="text-gray-400 text-sm">
-          This setup function should return the stuff you need in the tests. Anything returned will
-          be available via the
-          <code class="text-white">DATA</code>
-          variable inside the test cases. Running the setup function is not part of the benchmark
-          and it's run separately for each test case. To learn more, check out
-          <a
-            class="font-medium transition hover:text-white text-sm underline"
-            target="_blank"
-            :href="ADVANCED_EXAMPLE_URL"
-          >
-            this more advanced example </a
-          >.
-        </p>
-        <BaseCodeEditor v-model="config.dataCode" />
-        <Dependencies v-model:test="config.globalTestConfig" global class="mt-2">
-          <template #help>
-            <p>Global dependencies are available in the setup function and every test case.</p>
-          </template>
-        </Dependencies>
-      </div>
-
-      <div class="flex justify-between items-center">
-        <h3 class="text-2xl font-bold">Test cases</h3>
-        <div>
-          <BaseButton :icon="IconPlus" outline @click="addCase">
-            <span>Add case</span>
-          </BaseButton>
-        </div>
-      </div>
-
-      <div
-        v-for="(c, index) of cases"
-        :key="index"
-        class="border rounded-xl border-gray-800 p-6 flex flex-col gap-4"
-      >
-        <div class="flex-col lg:flex-row flex lg:items-center justify-between">
-          <BaseInput v-model="c.name" placeholder="Name" blendin class="text-xl font-semibold" />
-          <div class="flex lg:justify-end space-x-4 h-10">
-            <div
-              class="rounded-md h-full px-0 lg:mr-2 -border -bg-gray-800 flex items-center mr-auto"
-            >
-              <div class="flex items-center font-mono space-x-2 text-sm">
-                <div class="text-gray-400">Ops/s:</div>
-                <div>
-                  {{
-                    stateByTest[c.id]?.result
-                      ? Number(stateByTest[c.id]?.result?.opsPerSecond).toLocaleString()
-                      : '?'
-                  }}
-                </div>
-              </div>
-            </div>
-            <BaseButton
-              @click="runCase(c)"
-              :loading="stateByTest[c.id]?.status === 'running'"
-              outline
-              >Run</BaseButton
-            >
-            <BaseButton
-              @click="removeCase(c)"
-              class="!bg-transparent border border-gray-700 px-0 aspect-square text-gray-400"
-            >
+          <div class="mt-8 lg:ml-10 lg:mt-1.5 h-[50px] flex gap-3">
+            <BaseButton @click="clear" outline class="!px-0 aspect-square">
               <IconTrash :size="20" />
+            </BaseButton>
+            <BaseButton
+              @click="isShareSupported ? startShare() : clipboard.copy(getUrl())"
+              :disabled="isAnyTestRunning"
+              class="!px-0 aspect-square"
+              outline
+            >
+              <IconLink v-if="!clipboard.copied.value" />
+              <IconCheck v-else />
+            </BaseButton>
+            <BaseButton
+              @click="run"
+              :loading="isRunningAllTests"
+              :disabled="isAnyTestRunning"
+              class="text-lg px-6 flex-1 lg:flex-auto"
+              >Run all</BaseButton
+            >
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3">
+          <h3 class="text-2xl font-bold">Setup</h3>
+          <p class="text-gray-400 text-sm">
+            This setup function should return the stuff you need in the tests. Anything returned
+            will be available via the
+            <code class="text-white">DATA</code>
+            variable inside the test cases. Running the setup function is not part of the benchmark
+            and it's run separately for each test case. To learn more, check out
+            <a
+              class="font-medium transition hover:text-white text-sm underline"
+              target="_blank"
+              :href="ADVANCED_EXAMPLE_URL"
+            >
+              this more advanced example </a
+            >.
+          </p>
+          <BaseCodeEditor v-model="config.dataCode" />
+          <Dependencies v-model:test="config.globalTestConfig" global class="mt-2">
+            <template #help>
+              <p>Global dependencies are available in the setup function and every test case.</p>
+            </template>
+          </Dependencies>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <h3 class="text-2xl font-bold">Test cases</h3>
+          <div>
+            <BaseButton :icon="IconPlus" outline @click="addCase">
+              <span>Add case</span>
             </BaseButton>
           </div>
         </div>
-        <BaseCodeEditor v-model="c.code" />
-
-        <Dependencies
-          v-model:test="cases[index]"
-          :name-index-offset="config.globalTestConfig.dependencies?.length || 0"
-        />
 
         <div
-          v-if="stateByTest[c.id]?.status === 'error'"
-          class="bg-red-600/10 text-red-500 rounded-md px-4 py-3 font-mono border border-red-600"
+          v-for="(c, index) of cases"
+          :key="index"
+          class="border rounded-xl border-gray-800 p-6 flex flex-col gap-4"
         >
-          {{ stateByTest[c.id]?.error?.message }}
-        </div>
-      </div>
+          <div class="flex-col lg:flex-row flex lg:items-center justify-between">
+            <BaseInput v-model="c.name" placeholder="Name" blendin class="text-xl font-semibold" />
+            <div class="flex lg:justify-end space-x-4 h-10">
+              <div
+                class="rounded-md h-full px-0 lg:mr-2 -border -bg-gray-800 flex items-center mr-auto"
+              >
+                <div class="flex items-center font-mono space-x-2 text-sm">
+                  <div class="text-gray-400">Ops/s:</div>
+                  <div>
+                    {{
+                      stateByTest[c.id]?.result
+                        ? Number(stateByTest[c.id]?.result?.opsPerSecond).toLocaleString()
+                        : '?'
+                    }}
+                  </div>
+                </div>
+              </div>
+              <BaseButton
+                @click="runCase(c)"
+                :loading="stateByTest[c.id]?.status === 'running'"
+                outline
+                >Run</BaseButton
+              >
+              <BaseButton
+                @click="removeCase(c)"
+                class="!bg-transparent border border-gray-700 px-0 aspect-square text-gray-400"
+              >
+                <IconTrash :size="20" />
+              </BaseButton>
+            </div>
+          </div>
+          <BaseCodeEditor v-model="c.code" />
 
-      <div>
-        <BaseButton :icon="IconPlus" outline @click="addCase" class="w-full mt-6">
-          <span>Add case</span>
-        </BaseButton>
-      </div>
+          <Dependencies
+            v-model:test="cases[index]"
+            :name-index-offset="config.globalTestConfig.dependencies?.length || 0"
+          />
 
-      <div
-        v-if="isExporting"
-        class="fixed -left-[1000000px] pointer-events-none flex items-center justify-center"
-      >
-        <div
-          ref="exportViewRef"
-          class="w-[1600px] h-[900px] rounded-xl bg-gray-900 p-20 flex flex-col justify-center"
-          :style="{
-            fontSize: `${clamp(40 * (2 / Math.max(cases.length, 2)) * 0.95, 10, 35)}px`,
-          }"
-        >
-          <h1 class="font-extrabold text-[2.6em] mb-[1em] leading-none">
-            {{ config.name }}
-          </h1>
-          <Results :cases="cases" :state-by-test="stateByTest" />
           <div
-            class="absolute top-0 right-0 bg-gray-800 rounded-bl-md rounded-tr-xl text-xs px-3.5 py-1.5 text-gray-400 tracking-wide font-medium"
+            v-if="stateByTest[c.id]?.status === 'error'"
+            class="bg-red-600/10 text-red-500 rounded-md px-4 py-3 font-mono border border-red-600"
           >
-            <span>Powered by</span>
-            <span class="text-gray-300 inline-block ml-1">jsbenchmark.com</span>
+            {{ stateByTest[c.id]?.error?.message }}
           </div>
         </div>
-      </div>
-    </template>
-    <template #sidebar>
-      <div class="flex justify-between items-center mb-12">
-        <h2 class="text-3xl font-bold">Results</h2>
+
         <div>
-          <BaseButton
-            @click="exportResults"
-            :loading="isExporting"
-            :disabled="!allTestsHaveResults"
-            outline
-            class="!h-8 !px-3 text-sm"
-            >Share</BaseButton
-          >
+          <BaseButton :icon="IconPlus" outline @click="addCase" class="w-full mt-6">
+            <span>Add case</span>
+          </BaseButton>
         </div>
-      </div>
 
-      <Results :cases="cases" :state-by-test="stateByTest" />
+        <div
+          v-if="isExporting"
+          class="fixed -left-[1000000px] pointer-events-none flex items-center justify-center"
+        >
+          <div
+            ref="exportViewRef"
+            class="w-[1600px] h-[900px] rounded-xl bg-gray-900 p-20 flex flex-col justify-center"
+            :style="{
+              fontSize: `${clamp(40 * (2 / Math.max(cases.length, 2)) * 0.95, 10, 35)}px`,
+            }"
+          >
+            <h1 class="font-extrabold text-[2.6em] mb-[1em] leading-none">
+              {{ config.name }}
+            </h1>
+            <Results :cases="cases" :state-by-test="stateByTest" />
+            <div
+              class="absolute top-0 right-0 bg-gray-800 rounded-bl-md rounded-tr-xl text-xs px-3.5 py-1.5 text-gray-400 tracking-wide font-medium"
+            >
+              <span>Powered by</span>
+              <span class="text-gray-300 inline-block ml-1">jsbenchmark.com</span>
+            </div>
+          </div>
+        </div>
+      </template>
+      <template #sidebar>
+        <div class="flex justify-between items-center mb-12">
+          <h2 class="text-3xl font-bold">Results</h2>
+          <div>
+            <BaseButton
+              @click="exportResults"
+              :loading="isExporting"
+              :disabled="!allTestsHaveResults"
+              outline
+              class="!h-8 !px-3 text-sm"
+              >Share</BaseButton
+            >
+          </div>
+        </div>
 
-      <div class="mt-24 text-gray-400 text-sm">
-        <p>
-          <span class="font-bold">Note:</span> No statistical analysis is used to validate the
-          results. The tests are run in parallel for 3 seconds (with a 500ms warmup) and then
-          operations per second are calculated.
-        </p>
-      </div>
-    </template>
-  </NuxtLayout>
+        <Results :cases="cases" :state-by-test="stateByTest" />
+
+        <div class="mt-24 text-gray-400 text-sm">
+          <p>
+            <span class="font-bold">Note:</span> No statistical analysis is used to validate the
+            results. The tests are run in parallel for 3 seconds (with a 500ms warmup) and then
+            operations per second are calculated.
+          </p>
+        </div>
+      </template>
+    </NuxtLayout>
+  </div>
 </template>
 
 <style>
@@ -478,9 +480,14 @@ input {
 .text-shadow {
   --width: 2px;
   --width-negative: calc(var(--width) * -1);
-  text-shadow: var(--width-negative) var(--width-negative) 0 #000, 0 var(--width-negative) 0 #000,
-    var(--width) var(--width-negative) 0 #000, var(--width) 0 0 #000,
-    var(--width) var(--width) 0 #000, 0 var(--width) 0 #000,
-    var(--width-negative) var(--width) 0 #000, var(--width-negative) 0 0 #000;
+  text-shadow:
+    var(--width-negative) var(--width-negative) 0 #000,
+    0 var(--width-negative) 0 #000,
+    var(--width) var(--width-negative) 0 #000,
+    var(--width) 0 0 #000,
+    var(--width) var(--width) 0 #000,
+    0 var(--width) 0 #000,
+    var(--width-negative) var(--width) 0 #000,
+    var(--width-negative) 0 0 #000;
 }
 </style>

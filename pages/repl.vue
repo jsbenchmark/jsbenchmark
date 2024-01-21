@@ -233,122 +233,126 @@ const maxTimerDuration = computed(() => {
 </script>
 
 <template>
-  <NuxtLayout name="default">
-    <template #default>
-      <div>
-        <div class="flex-col lg:flex-row flex justify-between lg:items-start">
-          <BaseInput
-            v-model="config.name"
-            placeholder="Name"
-            blendin
-            class="text-[2.3rem] font-bold flex-1 max-w-full"
-            type="textarea"
-          />
+  <div>
+    <NuxtLayout name="default">
+      <template #default>
+        <div>
+          <div class="flex-col lg:flex-row flex justify-between lg:items-start">
+            <BaseInput
+              v-model="config.name"
+              placeholder="Name"
+              blendin
+              class="text-[2.3rem] font-bold flex-1 max-w-full"
+              type="textarea"
+            />
 
-          <div class="mt-8 lg:ml-10 lg:mt-1.5 h-[50px] flex gap-3">
-            <BaseButton @click="clear" outline class="!px-0 aspect-square">
-              <IconTrash :size="20" />
-            </BaseButton>
-            <BaseButton
-              @click="isShareSupported ? startShare() : clipboard.copy(getUrl())"
-              :disabled="isRunning"
-              class="!px-0 aspect-square"
-              outline
-            >
-              <IconLink v-if="!clipboard.copied.value" />
-              <IconCheck v-else />
-            </BaseButton>
-            <BaseButton
-              @click="run"
-              :loading="isRunning"
-              :disabled="isRunning"
-              class="text-lg px-6 flex-1 lg:flex-auto"
-              >Run</BaseButton
-            >
-          </div>
-        </div>
-        <div class="flex flex-col gap-3 mt-8">
-          <Dependencies v-model:test="config.test" class="mt-2 mb-4" />
-          <BaseCodeEditor v-model="config.test.code" />
-
-          <div
-            v-if="state.status === 'error'"
-            class="bg-red-600/10 text-red-500 rounded-md px-4 py-3 font-mono border border-red-600"
-          >
-            {{ state.error?.message }}
-          </div>
-        </div>
-
-        <div class="mt-8">
-          <h4 class="font-semibold text-2xl mb-5">Logs</h4>
-
-          <div v-if="!state?.result?.logs?.length" class="text-gray-400 space-y-3">
-            <p>
-              Nothing logged yet. Add
-              <code class="px-1.5 py-0.5 bg-gray-700 text-sm text-white rounded"
-                >LOG('foo', { bar: 'baz' }, ...)</code
+            <div class="mt-8 lg:ml-10 lg:mt-1.5 h-[50px] flex gap-3">
+              <BaseButton @click="clear" outline class="!px-0 aspect-square">
+                <IconTrash :size="20" />
+              </BaseButton>
+              <BaseButton
+                @click="isShareSupported ? startShare() : clipboard.copy(getUrl())"
+                :disabled="isRunning"
+                class="!px-0 aspect-square"
+                outline
               >
-              to your code to log something. The logs will also be available in the browser
-              devtools/console.
+                <IconLink v-if="!clipboard.copied.value" />
+                <IconCheck v-else />
+              </BaseButton>
+              <BaseButton
+                @click="run"
+                :loading="isRunning"
+                :disabled="isRunning"
+                class="text-lg px-6 flex-1 lg:flex-auto"
+                >Run</BaseButton
+              >
+            </div>
+          </div>
+          <div class="flex flex-col gap-3 mt-8">
+            <Dependencies v-model:test="config.test" class="mt-2 mb-4" />
+            <BaseCodeEditor v-model="config.test.code" />
+
+            <div
+              v-if="state.status === 'error'"
+              class="bg-red-600/10 text-red-500 rounded-md px-4 py-3 font-mono border border-red-600"
+            >
+              {{ state.error?.message }}
+            </div>
+          </div>
+
+          <div class="mt-8">
+            <h4 class="font-semibold text-2xl mb-5">Logs</h4>
+
+            <div v-if="!state?.result?.logs?.length" class="text-gray-400 space-y-3">
+              <p>
+                Nothing logged yet. Add
+                <code class="px-1.5 py-0.5 bg-gray-700 text-sm text-white rounded"
+                  >LOG('foo', { bar: 'baz' }, ...)</code
+                >
+                to your code to log something. The logs will also be available in the browser
+                devtools/console.
+              </p>
+              <p>
+                The logged values need to be JSON serializable, because your code runs in a web
+                worker. If something doesn't look right, try checking the console.
+              </p>
+            </div>
+
+            <div v-for="(log, i) in state.result?.logs ?? []" :key="i" class="font-mono mb-2">
+              <div
+                v-if="log.time !== state.result?.logs[i - 1]?.time"
+                class="text-sm text-gray-400 mb-1"
+                :class="{
+                  'mt-6': i !== 0,
+                }"
+              >
+                {{ log.time.toFixed(3) }} ms
+              </div>
+              <pre>{{ log.value }}</pre>
+            </div>
+          </div>
+        </div>
+      </template>
+      <template #sidebar>
+        <div>
+          <h2 class="text-3xl font-bold mb-10">Time markers</h2>
+
+          <div v-if="!state?.result?.markers?.length" class="text-gray-400 space-y-3">
+            <p>
+              No markers yet. Add
+              <code class="px-1.5 py-0.5 bg-gray-700 text-sm text-white rounded">TIME('name')</code>
+              to your code to add markers.
             </p>
             <p>
-              The logged values need to be JSON serializable, because your code runs in a web
-              worker. If something doesn't look right, try checking the console.
+              When two markers have the same name, the duration between them will be calculated.
             </p>
           </div>
 
-          <div v-for="(log, i) in state.result?.logs ?? []" :key="i" class="font-mono mb-2">
-            <div
-              v-if="log.time !== state.result?.logs[i - 1]?.time"
-              class="text-sm text-gray-400 mb-1"
-              :class="{
-                'mt-6': i !== 0,
-              }"
-            >
-              {{ log.time.toFixed(3) }} ms
+          <div v-for="(marker, i) in state.result?.markers ?? []" :key="i" class="font-mono mb-6">
+            <div class="text-sm text-gray-400 flex items-center mb-1">
+              <div>{{ marker.time.toFixed(3) }} ms</div>
+              <div v-if="i !== 0" class="ml-2" title="Time difference to previous marker">
+                (+{{ (marker.time - (state.result?.markers[i - 1]?.time || 0)).toFixed(3) }} ms)
+              </div>
             </div>
-            <pre>{{ log.value }}</pre>
-          </div>
-        </div>
-      </div>
-    </template>
-    <template #sidebar>
-      <div>
-        <h2 class="text-3xl font-bold mb-10">Time markers</h2>
+            <p>
+              <span class="font-bold">{{ marker.name }}</span>
+              <span v-if="marker.duration">: {{ marker.duration.toFixed(3) }} ms</span>
+            </p>
 
-        <div v-if="!state?.result?.markers?.length" class="text-gray-400 space-y-3">
-          <p>
-            No markers yet. Add
-            <code class="px-1.5 py-0.5 bg-gray-700 text-sm text-white rounded">TIME('name')</code>
-            to your code to add markers.
-          </p>
-          <p>When two markers have the same name, the duration between them will be calculated.</p>
-        </div>
-
-        <div v-for="(marker, i) in state.result?.markers ?? []" :key="i" class="font-mono mb-6">
-          <div class="text-sm text-gray-400 flex items-center mb-1">
-            <div>{{ marker.time.toFixed(3) }} ms</div>
-            <div v-if="i !== 0" class="ml-2" title="Time difference to previous marker">
-              (+{{ (marker.time - (state.result?.markers[i - 1]?.time || 0)).toFixed(3) }} ms)
+            <div class="relative mt-2">
+              <div
+                v-if="marker.duration"
+                class="rounded-[0.375em] h-[2.75em] transition-all duration-500 striped"
+                :style="{
+                  backgroundColor: colorScale(marker.duration / maxTimerDuration).hex(),
+                  width: (marker.duration / maxTimerDuration) * 100 + '%',
+                }"
+              ></div>
             </div>
           </div>
-          <p>
-            <span class="font-bold">{{ marker.name }}</span>
-            <span v-if="marker.duration">: {{ marker.duration.toFixed(3) }} ms</span>
-          </p>
-
-          <div class="relative mt-2">
-            <div
-              v-if="marker.duration"
-              class="rounded-[0.375em] h-[2.75em] transition-all duration-500 striped"
-              :style="{
-                backgroundColor: colorScale(marker.duration / maxTimerDuration).hex(),
-                width: (marker.duration / maxTimerDuration) * 100 + '%',
-              }"
-            ></div>
-          </div>
         </div>
-      </div>
-    </template>
-  </NuxtLayout>
+      </template>
+    </NuxtLayout>
+  </div>
 </template>
