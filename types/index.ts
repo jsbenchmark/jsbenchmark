@@ -9,7 +9,7 @@ export type TestCase = {
   name?: string
   code: string
   esm?: boolean
-  dependencies?: Dependency[]
+  dependencies: Dependency[]
 }
 
 export type TestState = {
