@@ -44,7 +44,7 @@ useServerSeoMeta({
               >
               on
               <a
-                href="https://github.com/pabueco/jsbenchmark"
+                href="https://github.com/jsbenchmark"
                 target="_blank"
                 class="transition hover:text-white"
                 >github</a
