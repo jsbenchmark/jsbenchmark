@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",
+    "@nuxtjs/plausible": "^0.2.4",
     "@types/codemirror": "^5.60.15",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^18.19.8",

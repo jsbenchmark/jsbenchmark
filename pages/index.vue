@@ -6,7 +6,6 @@ import { nanoid } from 'nanoid'
 import { clamp } from '@vueuse/core'
 import slugify from 'slugify'
 import * as htmlToImage from 'html-to-image'
-import { IconCheck, IconLink, IconTrash, IconPlus } from '@tabler/icons-vue'
 import '@fontsource-variable/pathway-extreme'
 import {
   ADVANCED_EXAMPLE_URL,
@@ -15,7 +14,7 @@ import {
   TEST_TIMEOUT,
   WARMUP_TIME,
 } from '~/utils/constants'
-import { getUrl, serialize, deserialize } from '~/utils'
+import { serialize, deserialize } from '~/utils'
 
 definePageMeta({
   layout: false,
@@ -274,7 +273,7 @@ watch(
 
           <div class="mt-8 lg:ml-10 lg:mt-0 flex gap-3 items-center">
             <UButton @click="clear" color="white" icon="i-tabler-trash" size="lg" />
-            <ShareButton :payload="{ config, cases }" />
+            <ShareButton :payload="{ config, cases }" type="benchmark" />
             <UButton
               @click="run"
               :loading="isRunningAllTests"

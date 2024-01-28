@@ -14,6 +14,7 @@ const addDep = () => {
   ;(model.value.dependencies ||= []).push({
     url: '',
     name: '',
+    esm: false,
   })
 }
 </script>
@@ -24,7 +25,15 @@ const addDep = () => {
       <div class="flex items-center gap-3">
         <h5 class="font-semibold text-base">{{ global ? 'Global ' : '' }}Dependencies</h5>
 
-        <UButton @click="addDep" icon="i-tabler-plus" size="2xs" color="white"> Add </UButton>
+        <UButton
+          @click="addDep"
+          icon="i-tabler-plus"
+          size="2xs"
+          color="white"
+          class="relative top-px"
+        >
+          Add
+        </UButton>
       </div>
 
       <div v-if="showHint" class="mt-2 lg:mt-0">

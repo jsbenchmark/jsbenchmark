@@ -2,7 +2,6 @@
 import type { Dependency, LogEntry, ReplState, TestCase, TimeMarker } from '~/types'
 import { COLORS, DEFAULT_TEST_NAME } from '~/utils/constants'
 import { useWebWorkerFn } from '~/utils/worker'
-import { IconLink, IconCheck, IconTrash } from '@tabler/icons-vue'
 import chroma from 'chroma-js'
 
 definePageMeta({
@@ -251,7 +250,7 @@ const maxTimerDuration = computed(() => {
             <div class="mt-8 lg:ml-10 lg:mt-0 flex gap-3">
               <div class="mt-8 lg:ml-10 lg:mt-0 flex gap-3 items-center">
                 <UButton @click="clear" color="white" icon="i-tabler-trash" size="lg" />
-                <ShareButton :payload="{ config }" />
+                <ShareButton :payload="{ config }" type="repl" />
                 <UButton
                   @click="run"
                   :loading="isRunning"

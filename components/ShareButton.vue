@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 const $props = defineProps<{
   payload: any
+  type: 'benchmark' | 'repl'
 }>()
 
 const runtimeConfig = useRuntimeConfig()
@@ -28,14 +29,15 @@ const generateShortcode = async () => {
     const { code } = await $fetch('/api/publish', {
       method: 'POST',
       body: $props.payload,
+      onResponseError: ({ response, error: e }) => {
+        error.value = response?._data?.data?.message || (e as Error).message
+      },
     })
 
     shortcode.value = code
     nextTick(() => {
-      shortlinkClipboard.copy(shortlink.value)
+      copyToClipoard('short')
     })
-  } catch (e) {
-    error.value = (e as Error).message
   } finally {
     generatingShortcode.value = false
   }
@@ -57,6 +59,23 @@ watchDebounced(
 const payloadHasShortcode = computed(() => {
   return shortcode.value && shortcodeGeneratedForPayloadString.value === payloadString.value
 })
+
+const copyToClipoard = (type: 'default' | 'short') => {
+  useTrackEvent('copy-share-link', {
+    props: {
+      type,
+    },
+  })
+
+  switch (type) {
+    case 'default':
+      urlClipboard.copy(currentUrl.value)
+      break
+    case 'short':
+      shortlinkClipboard.copy(shortlink.value)
+      break
+  }
+}
 </script>
 
 <template>
@@ -81,7 +100,7 @@ const payloadHasShortcode = computed(() => {
               </UFormGroup>
               <UButton
                 color="white"
-                @click="urlClipboard.copy(currentUrl)"
+                @click="copyToClipoard('default')"
                 :icon="urlClipboard.copied ? 'i-tabler-check' : 'i-tabler-copy'"
                 size="md"
               />
@@ -113,7 +132,7 @@ const payloadHasShortcode = computed(() => {
               <UButton
                 v-if="payloadHasShortcode"
                 color="white"
-                @click="shortlinkClipboard.copy(shortlink)"
+                @click="copyToClipoard('short')"
                 :icon="shortlinkClipboard.copied ? 'i-tabler-check' : 'i-tabler-copy'"
                 size="md"
               />
