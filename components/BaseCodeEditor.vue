@@ -1,7 +1,7 @@
 <script setup lang="ts">
-// import { basicSetup } from "codemirror";
 import { javascript } from '@codemirror/lang-javascript'
-import { oneDark } from '@codemirror/theme-one-dark'
+import { duotoneDarkInit } from '@uiw/codemirror-theme-duotone'
+import { tags as t } from '@lezer/highlight'
 import { debounce } from 'lodash-es'
 import {
   lineNumbers,
@@ -80,14 +80,14 @@ const theme = EditorView.theme({
     borderRadius: '0 3px 3px 0',
   },
   '&.cm-focused .cm-activeLine': {
-    backgroundColor: 'rgba(255,255,255,0.05) !important',
+    backgroundColor: 'rgba(var(--color-gray-800) / 0.75) !important',
     borderRadius: '0 3px 3px 0',
   },
   '.cm-activeLineGutter': {
     backgroundColor: 'transparent !important',
   },
   '&.cm-focused .cm-activeLineGutter': {
-    backgroundColor: 'rgba(255,255,255,0.05) !important',
+    backgroundColor: 'rgba(var(--color-gray-800) / 0.75) !important',
   },
   '.cm-lineNumbers .cm-activeLineGutter': {
     borderRadius: '3px 0 0 3px',
@@ -126,12 +126,44 @@ const setup = () => [
 onMounted(() => {
   editor.value = new EditorView({
     extensions: [
-      // basicSetup,
       setup(),
 
       javascript(),
       updateListener,
-      oneDark,
+      duotoneDarkInit({
+        settings: {
+          foreground: 'rgb(var(--color-gray-100))',
+          caret: 'rgb(var(--color-primary-500))',
+          gutterForeground: 'rgb(var(--color-gray-600))',
+          selection: 'rgb(var(--color-gray-600))',
+          selectionMatch: 'rgb(var(--color-gray-700))',
+        },
+        styles: [
+          { tag: [t.comment, t.bracket], color: 'rgb(var(--color-gray-400))' },
+          {
+            tag: [t.number],
+            color: 'rgb(var(--color-primary-400))',
+          },
+          {
+            tag: [t.atom, t.keyword, t.link, t.attributeName],
+            color: 'rgb(var(--color-primary-300))',
+          },
+          {
+            tag: [t.emphasis, t.heading, t.tagName, t.className, t.variableName],
+            color: 'rgb(var(--color-gray-100))',
+          },
+          {
+            tag: [t.propertyName],
+            color: 'rgb(var(--color-gray-300))',
+          },
+          { tag: [t.typeName, t.url], color: '#a78bfa' },
+          { tag: [t.function(t.variableName)], color: '#a78bfa' },
+          { tag: [t.function(t.propertyName)], color: '#a78bfa' },
+          { tag: t.operator, color: 'rgb(var(--color-primary-300))' },
+          { tag: t.string, color: 'rgb(var(--color-primary-400))' },
+          { tag: [t.unit, t.punctuation], color: 'rgb(var(--color-gray-400))' },
+        ],
+      }),
       theme,
       placeholder('Your code goes here...'),
     ],

@@ -20,7 +20,10 @@ useServerSeoMeta({
 </script>
 
 <template>
-  <div class="w-full max-w-screen-2xl mx-auto flex-col lg:flex-row flex items-stretch min-h-screen">
+  <div
+    id="app"
+    class="w-full max-w-screen-2xl mx-auto flex-col lg:flex-row flex items-stretch min-h-screen"
+  >
     <div class="flex flex-col gap-8 flex-1 pt-14 pb-20 lg:pb-32 px-6 lg:px-12">
       <div class="flex-col lg:flex-row flex justify-between lg:items-center">
         <div class="flex items-center">
@@ -41,7 +44,7 @@ useServerSeoMeta({
               >
               on
               <a
-                href="https://github.com/pabueco/jsbenchmark"
+                href="https://github.com/jsbenchmark"
                 target="_blank"
                 class="transition hover:text-white"
                 >github</a
@@ -97,12 +100,21 @@ input {
   max-width: none;
 }
 
-.text-shadow {
-  --width: 2px;
-  --width-negative: calc(var(--width) * -1);
-  text-shadow: var(--width-negative) var(--width-negative) 0 #000, 0 var(--width-negative) 0 #000,
-    var(--width) var(--width-negative) 0 #000, var(--width) 0 0 #000,
-    var(--width) var(--width) 0 #000, 0 var(--width) 0 #000,
-    var(--width-negative) var(--width) 0 #000, var(--width-negative) 0 0 #000;
+.list-move,
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.list-leave-active {
+  position: absolute;
+  width: 100%;
+  z-index: -1;
 }
 </style>

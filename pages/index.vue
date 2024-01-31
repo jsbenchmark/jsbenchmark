@@ -6,7 +6,6 @@ import { nanoid } from 'nanoid'
 import { clamp } from '@vueuse/core'
 import slugify from 'slugify'
 import * as htmlToImage from 'html-to-image'
-import { IconCheck, IconLink, IconTrash, IconPlus } from '@tabler/icons-vue'
 import '@fontsource-variable/pathway-extreme'
 import {
   ADVANCED_EXAMPLE_URL,
@@ -15,7 +14,7 @@ import {
   TEST_TIMEOUT,
   WARMUP_TIME,
 } from '~/utils/constants'
-import { getUrl, serialize, deserialize } from '~/utils'
+import { serialize, deserialize } from '~/utils'
 
 definePageMeta({
   layout: false,
@@ -37,32 +36,24 @@ useHead({
   },
 })
 
-const clipboard = useClipboard()
-const { share, isSupported: isShareSupported } = useShare()
-
-function startShare() {
-  share({
-    title: 'jsbenchmark.com',
-    text: `Check out this benchmark on jsbenchmark.com!`,
-    url: getUrl(),
-  })
-}
-
 const cases = ref<TestCase[]>([
   {
     id: nanoid(),
     code: 'DATA.find(i => i === 99)',
     name: 'Find 99',
+    dependencies: [],
   },
   {
     id: nanoid(),
     code: 'DATA.find(i => i === 499)',
     name: 'Find 499',
+    dependencies: [],
   },
   {
     id: nanoid(),
     code: 'DATA.find(i => i === 999)',
     name: 'Find 999',
+    dependencies: [],
   },
 ])
 
@@ -173,12 +164,13 @@ const run = async () => {
   isRunningAllTests.value = false
 }
 
-const addCase = () => {
-  cases.value.push({
+const addCase = (insertAtStart = false) => {
+  const test = {
     id: nanoid(),
     code: '',
     dependencies: [],
-  })
+  }
+  insertAtStart ? cases.value.unshift(test) : cases.value.push(test)
 }
 const removeCase = (c: TestCase) => {
   if (!confirm('Are you sure?')) return
@@ -224,6 +216,7 @@ const exportResults = async () => {
 }
 
 const clear = () => {
+  if (!confirm('Clear everything. Are you sure?')) return
   cases.value = []
   config.value = {
     name: '',
@@ -238,6 +231,7 @@ const clear = () => {
 // Read state from URL.
 onMounted(() => {
   const urlState = deserialize(route.hash.slice(1))
+
   if (urlState) {
     cases.value = urlState.cases
     config.value = urlState.config
@@ -266,33 +260,28 @@ watch(
     <NuxtLayout name="default">
       <template #default>
         <div class="flex-col lg:flex-row flex justify-between lg:items-start">
-          <BaseInput
+          <UTextarea
             v-model="config.name"
             placeholder="Name"
-            blendin
-            class="text-[2.3rem] font-bold flex-1 max-w-full"
-            type="textarea"
+            class="!text-4xl font-bold flex-1 max-w-full"
+            autoresize
+            :padded="false"
+            variant="none"
+            size="4xl"
+            :rows="1"
           />
 
-          <div class="mt-8 lg:ml-10 lg:mt-1.5 h-[50px] flex gap-3">
-            <BaseButton @click="clear" outline class="!px-0 aspect-square">
-              <IconTrash :size="20" />
-            </BaseButton>
-            <BaseButton
-              @click="isShareSupported ? startShare() : clipboard.copy(getUrl())"
-              :disabled="isAnyTestRunning"
-              class="!px-0 aspect-square"
-              outline
-            >
-              <IconLink v-if="!clipboard.copied.value" />
-              <IconCheck v-else />
-            </BaseButton>
-            <BaseButton
+          <div class="mt-8 lg:ml-10 lg:mt-0 flex gap-3 items-center">
+            <UButton @click="clear" color="white" icon="i-tabler-trash" size="lg" />
+            <ShareButton :payload="{ config, cases }" type="benchmark" />
+            <UButton
               @click="run"
               :loading="isRunningAllTests"
               :disabled="isAnyTestRunning"
-              class="text-lg px-6 flex-1 lg:flex-auto"
-              >Run all</BaseButton
+              size="lg"
+              class="font-semibold"
+              icon="i-tabler-play"
+              >Run all</UButton
             >
           </div>
         </div>
@@ -314,74 +303,101 @@ watch(
             >.
           </p>
           <BaseCodeEditor v-model="config.dataCode" />
-          <Dependencies v-model:test="config.globalTestConfig" global class="mt-2">
+          <DependencyList v-model:test="config.globalTestConfig" show-hint global class="mt-2">
             <template #help>
               <p>Global dependencies are available in the setup function and every test case.</p>
             </template>
-          </Dependencies>
+          </DependencyList>
         </div>
 
-        <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center !mt-10">
           <h3 class="text-2xl font-bold">Test cases</h3>
           <div>
-            <BaseButton :icon="IconPlus" outline @click="addCase">
-              <span>Add case</span>
-            </BaseButton>
+            <UButton icon="i-tabler-plus" outline @click="addCase(true)" color="white" size="lg">
+              Add case
+            </UButton>
           </div>
         </div>
 
-        <div
-          v-for="(c, index) of cases"
-          :key="index"
-          class="border rounded-xl border-gray-800 p-6 flex flex-col gap-4"
-        >
-          <div class="flex-col lg:flex-row flex lg:items-center justify-between">
-            <BaseInput v-model="c.name" placeholder="Name" blendin class="text-xl font-semibold" />
-            <div class="flex lg:justify-end space-x-4 h-10">
-              <div
-                class="rounded-md h-full px-0 lg:mr-2 -border -bg-gray-800 flex items-center mr-auto"
-              >
-                <div class="flex items-center font-mono space-x-2 text-sm">
-                  <div class="text-gray-400">Ops/s:</div>
-                  <div>
-                    {{
-                      stateByTest[c.id]?.result
-                        ? Number(stateByTest[c.id]?.result?.opsPerSecond).toLocaleString()
-                        : '?'
-                    }}
+        <TransitionGroup name="list" class="relative flex flex-col gap-8" tag="div">
+          <div
+            v-for="(c, index) of cases"
+            :key="c.id"
+            class="border rounded-xl border-gray-800 p-6 flex flex-col gap-4 bg-gray-900"
+          >
+            <div class="flex-col lg:flex-row flex lg:items-center justify-between">
+              <UInput
+                :padded="false"
+                variant="none"
+                v-model="c.name"
+                placeholder="Name"
+                class="font-semibold"
+                size="xl"
+              />
+              <div class="flex lg:justify-end items-center space-x-4 h-10">
+                <div
+                  class="rounded-md h-full px-0 lg:mr-2 -border -bg-gray-800 flex items-center mr-auto"
+                >
+                  <div class="flex items-center font-mono space-x-2 text-sm">
+                    <div class="text-gray-400">Ops/s:</div>
+                    <div>
+                      {{
+                        stateByTest[c.id]?.result
+                          ? Number(stateByTest[c.id]?.result?.opsPerSecond).toLocaleString()
+                          : '?'
+                      }}
+                    </div>
                   </div>
                 </div>
+
+                <div class="flex items-center gap-3">
+                  <UButton
+                    @click="runCase(c)"
+                    :loading="stateByTest[c.id]?.status === 'running'"
+                    outline
+                    color="white"
+                    size="md"
+                    >Run</UButton
+                  >
+                  <UButton
+                    @click="removeCase(c)"
+                    outline
+                    color="white"
+                    icon="i-tabler-trash"
+                    size="md"
+                  />
+                </div>
               </div>
-              <BaseButton
-                @click="runCase(c)"
-                :loading="stateByTest[c.id]?.status === 'running'"
-                outline
-                >Run</BaseButton
-              >
-              <BaseButton @click="removeCase(c)" outline class="px-0 aspect-square text-gray-400">
-                <IconTrash :size="20" />
-              </BaseButton>
             </div>
+            <BaseCodeEditor v-model="c.code" @run="runCase(c)" />
+
+            <DependencyList
+              v-model:test="cases[index]"
+              :name-index-offset="config.globalTestConfig.dependencies?.length || 0"
+            />
+
+            <UAlert
+              v-if="stateByTest[c.id]?.status === 'error'"
+              icon="i-tabler-alert-circle"
+              color="red"
+              variant="subtle"
+              title="Error"
+              :description="stateByTest[c.id]?.error?.message"
+            />
           </div>
-          <BaseCodeEditor v-model="c.code" @run="runCase(c)" />
+        </TransitionGroup>
 
-          <Dependencies
-            v-model:test="cases[index]"
-            :name-index-offset="config.globalTestConfig.dependencies?.length || 0"
-          />
-
-          <div
-            v-if="stateByTest[c.id]?.status === 'error'"
-            class="bg-red-600/10 text-red-500 rounded-md px-4 py-3 font-mono border border-red-600"
+        <div class="mt-6">
+          <UButton
+            icon="i-tabler-plus"
+            outline
+            @click="addCase(false)"
+            color="white"
+            block
+            size="md"
           >
-            {{ stateByTest[c.id]?.error?.message }}
-          </div>
-        </div>
-
-        <div>
-          <BaseButton :icon="IconPlus" outline @click="addCase" class="w-full mt-6">
-            <span>Add case</span>
-          </BaseButton>
+            Add case
+          </UButton>
         </div>
 
         <div
@@ -412,14 +428,21 @@ watch(
         <div class="flex justify-between items-center mb-12">
           <h2 class="text-3xl font-bold">Results</h2>
           <div>
-            <BaseButton
-              @click="exportResults"
-              :loading="isExporting"
-              :disabled="!allTestsHaveResults"
-              outline
-              class="!h-8 !px-3 text-sm"
-              >Share</BaseButton
+            <UTooltip
+              :text="
+                !cases.length || !allTestsHaveResults
+                  ? 'Run all tests to enable the image export'
+                  : 'Export tests results as a nice image'
+              "
             >
+              <UButton
+                @click="exportResults"
+                :loading="isExporting"
+                :disabled="!cases.length || !allTestsHaveResults"
+                color="white"
+                >Export image</UButton
+              >
+            </UTooltip>
           </div>
         </div>
 
@@ -472,19 +495,5 @@ input {
   100% {
     background-position: 2rem 0;
   }
-}
-
-.text-shadow {
-  --width: 2px;
-  --width-negative: calc(var(--width) * -1);
-  text-shadow:
-    var(--width-negative) var(--width-negative) 0 #000,
-    0 var(--width-negative) 0 #000,
-    var(--width) var(--width-negative) 0 #000,
-    var(--width) 0 0 #000,
-    var(--width) var(--width) 0 #000,
-    0 var(--width) 0 #000,
-    var(--width-negative) var(--width) 0 #000,
-    var(--width-negative) 0 0 #000;
 }
 </style>
