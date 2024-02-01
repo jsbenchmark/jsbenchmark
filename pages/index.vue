@@ -263,7 +263,7 @@ watch(
           <UTextarea
             v-model="config.name"
             placeholder="Name"
-            class="!text-4xl font-bold flex-1 max-w-full"
+            class="font-bold flex-1 max-w-full"
             autoresize
             :padded="false"
             variant="none"
@@ -271,7 +271,7 @@ watch(
             :rows="1"
           />
 
-          <div class="mt-8 lg:ml-10 lg:mt-0 flex gap-3 items-center">
+          <div class="mt-8 lg:ml-10 lg:mt-1.5 flex gap-3 items-center">
             <UButton @click="clear" color="white" icon="i-tabler-trash" size="lg" />
             <ShareButton :payload="{ config, cases }" type="benchmark" />
             <UButton

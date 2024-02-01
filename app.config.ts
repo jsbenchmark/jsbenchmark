@@ -15,7 +15,7 @@ export default defineAppConfig({
       size: { xl: 'text-xl' },
     },
     textarea: {
-      size: { '4xl': 'text-4xl' },
+      size: { '4xl': 'text-4xl leading-[1.4]' },
     },
   },
 })

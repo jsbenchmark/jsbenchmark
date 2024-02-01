@@ -239,7 +239,7 @@ const maxTimerDuration = computed(() => {
             <UTextarea
               v-model="config.name"
               placeholder="Name"
-              class="!text-4xl font-bold flex-1 max-w-full"
+              class="font-bold flex-1 max-w-full"
               autoresize
               :padded="false"
               variant="none"
@@ -247,20 +247,18 @@ const maxTimerDuration = computed(() => {
               :rows="1"
             />
 
-            <div class="mt-8 lg:ml-10 lg:mt-0 flex gap-3">
-              <div class="mt-8 lg:ml-10 lg:mt-0 flex gap-3 items-center">
-                <UButton @click="clear" color="white" icon="i-tabler-trash" size="lg" />
-                <ShareButton :payload="{ config }" type="repl" />
-                <UButton
-                  @click="run"
-                  :loading="isRunning"
-                  :disabled="isRunning"
-                  size="lg"
-                  class="font-semibold"
-                  icon="i-tabler-play"
-                  >Run</UButton
-                >
-              </div>
+            <div class="mt-8 lg:ml-10 lg:mt-1.5 flex gap-3 items-center">
+              <UButton @click="clear" color="white" icon="i-tabler-trash" size="lg" />
+              <ShareButton :payload="{ config }" type="repl" />
+              <UButton
+                @click="run"
+                :loading="isRunning"
+                :disabled="isRunning"
+                size="lg"
+                class="font-semibold"
+                icon="i-tabler-play"
+                >Run</UButton
+              >
             </div>
           </div>
           <div class="flex flex-col gap-3 mt-8">
