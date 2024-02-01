@@ -24,7 +24,7 @@ useServerSeoMeta({
     id="app"
     class="w-full max-w-screen-2xl mx-auto flex-col lg:flex-row flex items-stretch min-h-screen"
   >
-    <div class="flex flex-col gap-8 flex-1 pt-14 pb-20 lg:pb-32 px-6 lg:px-12">
+    <div class="flex flex-col gap-8 flex-1 pt-14 pb-20 lg:pb-32 px-6 lg:px-12 min-w-0">
       <div class="flex-col lg:flex-row flex justify-between lg:items-center">
         <div class="flex items-center">
           <button>
