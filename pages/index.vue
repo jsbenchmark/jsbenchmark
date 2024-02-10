@@ -331,7 +331,7 @@ watch(
                 variant="none"
                 v-model="c.name"
                 placeholder="Name"
-                class="font-semibold"
+                class="font-semibold flex-1 mr-8"
                 size="xl"
               />
               <div class="flex lg:justify-end items-center space-x-4 h-10">
