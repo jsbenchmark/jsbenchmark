@@ -15,6 +15,15 @@ const emit = defineEmits<{
   (event: 'remove'): void
 }>()
 
+const urlInputRef = ref<ComponentPublicInstance>()
+
+defineExpose({
+  focus: () => {
+    // TODO: Clean this up once Nuxt UI provides a better way to focus inputs.
+    urlInputRef.value?.$el?.parentNode?.querySelector('input')?.focus()
+  },
+})
+
 watch(
   () => dep.value.url,
   (value) => {
@@ -72,6 +81,7 @@ const search = async (value: string, dep: Dependency) => {
         option-attribute="name"
         value-attribute="url"
         trailing
+        ref="urlInputRef"
       >
         <template #option="{ option }">
           <div class="flex items-center flex-nowrap w-full justify-between">

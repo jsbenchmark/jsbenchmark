@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TestCase } from '~/types'
+import type { Dependency as DependencyComponent } from '#components'
 
 const props = defineProps<{
   test: TestCase
@@ -10,11 +11,17 @@ const props = defineProps<{
 
 const model = defineModel<TestCase>('test', { required: true })
 
+const dependencyRefs = ref<InstanceType<typeof DependencyComponent>[]>([])
+
 const addDep = () => {
   ;(model.value.dependencies ||= []).push({
     url: '',
     name: '',
     esm: false,
+  })
+
+  nextTick(() => {
+    dependencyRefs.value[dependencyRefs.value.length - 1]?.focus()
   })
 }
 </script>
@@ -68,6 +75,7 @@ const addDep = () => {
       :index="i"
       :name-index-offset="nameIndexOffset || 0"
       @remove="model.dependencies?.splice(i, 1)"
+      ref="dependencyRefs"
     />
   </div>
 </template>
