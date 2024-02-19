@@ -43,22 +43,11 @@ useHead({
   },
 })
 
-const clipboard = useClipboard()
-const { share, isSupported: isShareSupported } = useShare()
-
-function startShare() {
-  share({
-    title: 'jsbenchmark.com',
-    text: `Check out this REPL on jsbenchmark.com!`,
-    url: getUrl(),
-  })
-}
-
 const isRunning = ref(false)
 
 const run = async () => {
   isRunning.value = true
-  await Promise.allSettled([runCase(config.value.test), new Promise((r) => setTimeout(r, 1000))])
+  await runCase(config.value.test)
   isRunning.value = false
 }
 
@@ -199,6 +188,7 @@ const runCase = async (c: TestCase) => {
 }
 
 const route = useRoute()
+const router = useRouter()
 
 // Read state from URL.
 onMounted(() => {
@@ -210,13 +200,13 @@ onMounted(() => {
 
 // Write state to URL.
 watch(
-  [config],
-  () => {
+  config,
+  (v) => {
     const encoded = serialize({
-      config: config.value,
+      config: v,
     })
 
-    useRouter().replace({
+    router.replace({
       hash: `#${encoded}`,
     })
   },
@@ -276,12 +266,15 @@ const maxTimerDuration = computed(() => {
           <div class="mt-8">
             <h4 class="font-semibold text-2xl mb-5">Logs</h4>
 
-            <div v-if="isRunning" class="space-y-3">
+            <div v-show="isRunning" class="space-y-3">
               <USkeleton class="h-6 w-32" />
               <USkeleton class="h-6 w-80" />
               <USkeleton class="h-6 w-64" />
             </div>
-            <div v-else-if="!state?.result?.logs?.length" class="text-gray-400 space-y-3">
+            <div
+              v-show="!isRunning && !state?.result?.logs?.length"
+              class="text-gray-400 space-y-3"
+            >
               <p>
                 Nothing logged yet. Add
                 <code class="px-1.5 py-0.5 bg-gray-700 text-sm text-white rounded"
@@ -296,7 +289,7 @@ const maxTimerDuration = computed(() => {
               </p>
             </div>
 
-            <div v-else>
+            <div v-show="!isRunning && state?.result?.logs?.length">
               <div v-for="(log, i) in state.result?.logs ?? []" :key="i" class="font-mono mb-2">
                 <div
                   v-if="log.time !== state.result?.logs[i - 1]?.time"
