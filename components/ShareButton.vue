@@ -81,7 +81,9 @@ const copyToClipoard = (type: 'default' | 'short') => {
 <template>
   <div>
     <UPopover :ui="{ shadow: 'shadow-xl shadow-black/25' }" :popper="{ placement: 'bottom-end' }">
-      <UButton color="white" size="lg" icon="i-tabler-share">Share</UButton>
+      <UTooltip text="Share">
+        <UButton color="white" size="lg" icon="i-tabler-share" />
+      </UTooltip>
 
       <template #panel>
         <div class="p-4 space-y-4 w-[350px]">
