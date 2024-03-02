@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useWebWorkerFn } from '~/utils/worker'
 import '@fontsource-variable/jetbrains-mono'
-import type { TestCase, Dependency, TestState } from '~/types'
+import type { TestCase, Dependency, TestState, Config } from '~/types'
 import { nanoid } from 'nanoid'
 import { clamp } from '@vueuse/core'
 import slugify from 'slugify'
@@ -20,7 +20,7 @@ definePageMeta({
   layout: false,
 })
 
-const config = ref({
+const config = ref<Config>({
   name: DEFAULT_TEST_NAME,
   parallel: true,
   globalTestConfig: {
@@ -272,7 +272,9 @@ watch(
           />
 
           <div class="mt-8 lg:ml-10 lg:mt-1.5 flex gap-3 items-center">
-            <UButton @click="clear" color="white" icon="i-tabler-trash" size="lg" />
+            <UTooltip text="Clear">
+              <UButton @click="clear" color="white" icon="i-tabler-trash" size="lg" />
+            </UTooltip>
             <ShareButton :payload="{ config, cases }" type="benchmark" />
             <UButton
               @click="run"
@@ -319,73 +321,13 @@ watch(
           </div>
         </div>
 
-        <TransitionGroup name="list" class="relative flex flex-col gap-8" tag="div">
-          <div
-            v-for="(c, index) of cases"
-            :key="c.id"
-            class="border rounded-xl border-gray-800 p-6 flex flex-col gap-4 bg-gray-900"
-          >
-            <div class="flex-col lg:flex-row flex lg:items-center justify-between">
-              <UInput
-                :padded="false"
-                variant="none"
-                v-model="c.name"
-                placeholder="Name"
-                class="font-semibold flex-1 mr-8"
-                size="xl"
-              />
-              <div class="flex lg:justify-end items-center space-x-4 h-10">
-                <div
-                  class="rounded-md h-full px-0 lg:mr-2 -border -bg-gray-800 flex items-center mr-auto"
-                >
-                  <div class="flex items-center font-mono space-x-2 text-sm">
-                    <div class="text-gray-400">Ops/s:</div>
-                    <div>
-                      {{
-                        stateByTest[c.id]?.result
-                          ? Number(stateByTest[c.id]?.result?.opsPerSecond).toLocaleString()
-                          : '?'
-                      }}
-                    </div>
-                  </div>
-                </div>
-
-                <div class="flex items-center gap-3">
-                  <UButton
-                    @click="runCase(c)"
-                    :loading="stateByTest[c.id]?.status === 'running'"
-                    outline
-                    color="white"
-                    size="md"
-                    >Run</UButton
-                  >
-                  <UButton
-                    @click="removeCase(c)"
-                    outline
-                    color="white"
-                    icon="i-tabler-trash"
-                    size="md"
-                  />
-                </div>
-              </div>
-            </div>
-            <BaseCodeEditor v-model="c.code" @run="runCase(c)" />
-
-            <DependencyList
-              v-model:test="cases[index]"
-              :name-index-offset="config.globalTestConfig.dependencies?.length || 0"
-            />
-
-            <UAlert
-              v-if="stateByTest[c.id]?.status === 'error'"
-              icon="i-tabler-alert-circle"
-              color="red"
-              variant="subtle"
-              title="Error"
-              :description="stateByTest[c.id]?.error?.message"
-            />
-          </div>
-        </TransitionGroup>
+        <TestCases
+          v-model="cases"
+          :state-by-test="stateByTest"
+          :config="config"
+          @run="runCase"
+          @remove="removeCase"
+        />
 
         <div class="mt-6">
           <UButton
@@ -432,7 +374,7 @@ watch(
               :text="
                 !cases.length || !allTestsHaveResults
                   ? 'Run all tests to enable the image export'
-                  : 'Export tests results as a nice image'
+                  : 'Export tests results as image'
               "
             >
               <UButton
@@ -440,7 +382,7 @@ watch(
                 :loading="isExporting"
                 :disabled="!cases.length || !allTestsHaveResults"
                 color="white"
-                >Export image</UButton
+                >Export</UButton
               >
             </UTooltip>
           </div>

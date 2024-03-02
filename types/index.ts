@@ -1,3 +1,10 @@
+export type Config = {
+  name: string
+  parallel: boolean
+  globalTestConfig: TestCase
+  dataCode: string
+}
+
 export type Dependency = {
   url: string
   name?: string
