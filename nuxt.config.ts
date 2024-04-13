@@ -29,4 +29,8 @@ export default defineNuxtConfig({
   plausible: {
     domain: 'jsbenchmark.com',
   },
+
+  colorMode: {
+    preference: 'dark',
+  },
 })
