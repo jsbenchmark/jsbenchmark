@@ -4,10 +4,6 @@ import { COLORS, DEFAULT_TEST_NAME } from '~/utils/constants'
 import { useWebWorkerFn } from '~/utils/worker'
 import chroma from 'chroma-js'
 
-definePageMeta({
-  layout: false,
-})
-
 const config = ref({
   name: DEFAULT_TEST_NAME,
   test: {
@@ -222,7 +218,7 @@ const maxTimerDuration = computed(() => {
 
 <template>
   <div>
-    <NuxtLayout name="default">
+    <SplitLayout>
       <template #default>
         <div>
           <div class="flex-col lg:flex-row flex justify-between lg:items-start">
@@ -353,6 +349,6 @@ const maxTimerDuration = computed(() => {
           </div>
         </div>
       </template>
-    </NuxtLayout>
+    </SplitLayout>
   </div>
 </template>

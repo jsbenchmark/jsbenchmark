@@ -16,10 +16,6 @@ import {
 } from '~/utils/constants'
 import { serialize, deserialize } from '~/utils'
 
-definePageMeta({
-  layout: false,
-})
-
 const config = ref<Config>({
   name: DEFAULT_TEST_NAME,
   parallel: true,
@@ -257,7 +253,7 @@ watch(
 
 <template>
   <div>
-    <NuxtLayout name="default">
+    <SplitLayout>
       <template #default>
         <div class="flex-col lg:flex-row flex justify-between lg:items-start">
           <UTextarea
@@ -398,7 +394,7 @@ watch(
           </p>
         </div>
       </template>
-    </NuxtLayout>
+    </SplitLayout>
   </div>
 </template>
 
