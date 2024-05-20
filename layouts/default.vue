@@ -17,6 +17,13 @@ useServerSeoMeta({
   ogImage: 'https://jsbenchmark.com/og.png',
   twitterCard: 'summary_large_image',
 })
+
+onMounted(() => {
+  const colorMode = useColorMode()
+  if (colorMode.value !== 'dark') {
+    colorMode.preference = 'dark'
+  }
+})
 </script>
 
 <template>
