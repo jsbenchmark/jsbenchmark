@@ -338,11 +338,11 @@ watch(
                       <label class="font-medium text-nowrap pr-2">Run tests in parallel</label>
                     </div>
                     <small
-                      class="text-left max-w-56 w-full block leading-normal text-gray-400 mt-2 text-xs"
+                      class="text-left max-w-72 w-full block leading-normal text-gray-400 mt-2 text-xs"
                     >
-                      When enabled all tests will run at the same time instead of one by one. This
-                      reduces the time you need to wait for the results. However it will affect the
-                      performance of the tests.
+                      When enabled, all tests will run at the same time instead of one by one. This
+                      reduces the time you need to wait for the results. However it will slightly
+                      affect the performance of the tests.
                     </small>
                   </div>
                 </template>
