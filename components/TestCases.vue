@@ -30,7 +30,7 @@ watchDebounced(
   (cases) => {
     for (const test of cases) {
       if (ASYNC_KEYWORDS.some((keyword) => test.code.includes(keyword))) {
-        test.async = true
+        testCases.value.find((t) => t.id === test.id)!.async = true
       }
     }
   },
