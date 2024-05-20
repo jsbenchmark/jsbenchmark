@@ -21,6 +21,21 @@ useSortable(listRef, testCases, {
   handle: '[data-handle]',
   animation: 200,
 })
+
+const ASYNC_KEYWORDS = ['async', 'await', 'Promise', '.then', '.catch', 'reject', 'resolve']
+
+// Detect async keywords in code and mark test case as async.
+watchDebounced(
+  () => testCases.value,
+  (cases) => {
+    for (const test of cases) {
+      if (ASYNC_KEYWORDS.some((keyword) => test.code.includes(keyword))) {
+        test.async = true
+      }
+    }
+  },
+  { debounce: 500, deep: true }
+)
 </script>
 
 <template>
@@ -65,6 +80,13 @@ useSortable(listRef, testCases, {
             </div>
 
             <div class="flex items-center gap-3">
+              <UTooltip
+                text="Function is async and should be awaited"
+                :popper="{ placement: 'top' }"
+              >
+                <BaseCheckboxButton v-model="c.async" label="Async" class="h-9" />
+              </UTooltip>
+
               <UButton
                 @click="emit('run', c)"
                 :loading="stateByTest[c.id]?.status === 'running'"

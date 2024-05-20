@@ -67,21 +67,26 @@ const runCase = async (c: TestCase) => {
   ].filter((d) => d.url)
 
   const { workerFn, workerTerminate } = useWebWorkerFn(
-    async ({ code, dataCode, time, warmupTime }, d?: any) => {
+    async ({ code, dataCode, time, warmupTime, async }, d?: any) => {
       const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
 
       const dataFn = AsyncFunction(dataCode)
       const data = await dataFn(d)
       ;(globalThis as any).DATA = data
 
-      const fn = AsyncFunction(code)
+      const fn = async ? AsyncFunction(code) : Function(code)
 
       // Warmup.
       let warmupTimes = 0
       const warmupStart = performance.now()
 
       while (performance.now() - warmupStart < warmupTime) {
-        await fn()
+        const res = fn()
+
+        if (async) {
+          await res
+        }
+
         warmupTimes++
       }
 
@@ -90,7 +95,12 @@ const runCase = async (c: TestCase) => {
       const start = performance.now()
 
       while (performance.now() - start < time) {
-        await fn()
+        const res = fn()
+
+        if (async) {
+          await res
+        }
+
         times++
       }
 
@@ -112,6 +122,7 @@ const runCase = async (c: TestCase) => {
       dataCode: config.value.dataCode,
       time: TEST_TIME,
       warmupTime: WARMUP_TIME,
+      async: c.async,
     })
 
     const opsPerSecond = Math.round(res.times / (TEST_TIME / 1000))

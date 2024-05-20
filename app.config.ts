@@ -17,5 +17,10 @@ export default defineAppConfig({
     textarea: {
       size: { '4xl': 'text-4xl leading-[1.4]' },
     },
+
+    tooltip: {
+      background: 'dark:bg-gray-800',
+      ring: 'dark:ring-gray-700',
+    },
   },
 })

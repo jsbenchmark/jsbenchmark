@@ -75,7 +75,7 @@ const search = async (value: string, dep: Dependency) => {
       <UInputMenu
         v-model="dep.url"
         v-model:query="dep.url"
-        :search="(q) => search(q, dep)"
+        :search="(q: string) => search(q, dep)"
         :loading="isSearching"
         placeholder="Type to search or paste direct URL"
         option-attribute="name"
@@ -105,12 +105,7 @@ const search = async (value: string, dep: Dependency) => {
       <UInput v-model="dep.name" :placeholder="`Import as: DEP_${nameIndexOffset + index}`" />
     </div>
 
-    <div
-      class="bg-gray-700/25 flex items-center px-2 rounded-md border border-gray-700"
-      @click.self="dep.esm = !dep.esm"
-    >
-      <UCheckbox v-model="dep.esm" label="ESM" />
-    </div>
+    <BaseCheckboxButton v-model="dep.esm" label="ESM" />
 
     <UButton @click="emit('remove')" icon="i-tabler-trash" color="white" />
   </div>
