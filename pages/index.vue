@@ -94,6 +94,8 @@ const runCase = async (c: TestCase) => {
 
       // Only check occasionally check the remaining time, so we don't affect the benchmark.
       // We check 100 times to make sure we don't go over the time too much. A bit is fine.
+      // We also add a 50% buffer to the check time to make sure we don't go over the time too much,
+      // in case the warm up is much slower.
       const checkAfterTimes = Math.ceil(time / averageExecutionTime / 100)
 
       // Actual test.
@@ -103,19 +105,33 @@ const runCase = async (c: TestCase) => {
       let stop = false
       let timesUntilCheck = checkAfterTimes
 
-      while (!stop) {
-        const res = fn()
+      // We need to do the if check outside the loop to not affect the performance.
+      // Doing the check inside the loop would reduce the overall number of ops/s by a factor of ~4.
+      if (async) {
+        while (!stop) {
+          await fn()
 
-        if (async) {
-          await res
+          times++
+
+          // Check if we should stop. Same as below.
+          timesUntilCheck--
+          if (!timesUntilCheck) {
+            timesUntilCheck = checkAfterTimes
+            stop = Date.now() - start > time
+          }
         }
+      } else {
+        while (!stop) {
+          fn()
 
-        times++
+          times++
 
-        timesUntilCheck--
-        if (timesUntilCheck === 0) {
-          timesUntilCheck = checkAfterTimes
-          stop = Date.now() - start > time
+          // Check if we should stop. Same as above.
+          timesUntilCheck--
+          if (!timesUntilCheck) {
+            timesUntilCheck = checkAfterTimes
+            stop = Date.now() - start > time
+          }
         }
       }
 
