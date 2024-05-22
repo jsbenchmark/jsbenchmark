@@ -41,14 +41,14 @@ const cases = ref<TestCase[]>([
   },
   {
     id: nanoid(),
-    code: 'DATA.find(i => i === 499)',
-    name: 'Find 499',
+    code: 'DATA.find(i => i === 199)',
+    name: 'Find 199',
     dependencies: [],
   },
   {
     id: nanoid(),
-    code: 'DATA.find(i => i === 999)',
-    name: 'Find 999',
+    code: 'DATA.find(i => i === 499)',
+    name: 'Find 499',
     dependencies: [],
   },
 ])
@@ -67,32 +67,75 @@ const runCase = async (c: TestCase) => {
   ].filter((d) => d.url)
 
   const { workerFn, workerTerminate } = useWebWorkerFn(
-    async ({ code, dataCode, time, warmupTime }, d?: any) => {
+    async ({ code, dataCode, time, warmupTime, async }, d?: any) => {
       const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
 
       const dataFn = AsyncFunction(dataCode)
       const data = await dataFn(d)
       ;(globalThis as any).DATA = data
 
-      const fn = AsyncFunction(code)
+      const fn = async ? AsyncFunction(code) : Function(code)
 
       // Warmup.
       let warmupTimes = 0
-      const warmupStart = performance.now()
+      const warmupStart = Date.now()
 
-      while (performance.now() - warmupStart < warmupTime) {
-        await fn()
+      while (Date.now() - warmupStart < warmupTime) {
+        const res = fn()
+
+        if (async) {
+          await res
+        }
+
         warmupTimes++
       }
 
+      const averageExecutionTime = (Date.now() - warmupStart) / warmupTimes
+
+      // Only check occasionally check the remaining time, so we don't affect the benchmark.
+      // We check 100 times to make sure we don't go over the time too much. A bit is fine.
+      // We also add a 50% buffer to the check time to make sure we don't go over the time too much,
+      // in case the warm up is much slower.
+      const checkAfterTimes = Math.ceil(time / averageExecutionTime / 100)
+
       // Actual test.
       let times = 0
-      const start = performance.now()
+      const start = Date.now()
 
-      while (performance.now() - start < time) {
-        await fn()
-        times++
+      let stop = false
+      let timesUntilCheck = checkAfterTimes
+
+      // We need to do the if check outside the loop to not affect the performance.
+      // Doing the check inside the loop would reduce the overall number of ops/s by a factor of ~4.
+      if (async) {
+        while (!stop) {
+          await fn()
+
+          times++
+
+          // Check if we should stop. Same as below.
+          timesUntilCheck--
+          if (!timesUntilCheck) {
+            timesUntilCheck = checkAfterTimes
+            stop = Date.now() - start > time
+          }
+        }
+      } else {
+        while (!stop) {
+          fn()
+
+          times++
+
+          // Check if we should stop. Same as above.
+          timesUntilCheck--
+          if (!timesUntilCheck) {
+            timesUntilCheck = checkAfterTimes
+            stop = Date.now() - start > time
+          }
+        }
       }
+
+      console.log('duration', Date.now() - start, 'times', times)
 
       return {
         times,
@@ -112,6 +155,7 @@ const runCase = async (c: TestCase) => {
       dataCode: config.value.dataCode,
       time: TEST_TIME,
       warmupTime: WARMUP_TIME,
+      async: c.async,
     })
 
     const opsPerSecond = Math.round(res.times / (TEST_TIME / 1000))
@@ -272,15 +316,56 @@ watch(
               <UButton @click="clear" color="white" icon="i-tabler-trash" size="lg" />
             </UTooltip>
             <ShareButton :payload="{ config, cases }" type="benchmark" />
-            <UButton
-              @click="run"
-              :loading="isRunningAllTests"
-              :disabled="isAnyTestRunning"
-              size="lg"
-              class="font-semibold"
-              icon="i-tabler-play"
-              >Run all</UButton
-            >
+
+            <UButtonGroup>
+              <UButton
+                @click="run"
+                :loading="isRunningAllTests"
+                :disabled="isAnyTestRunning"
+                size="lg"
+                class="font-semibold"
+                icon="i-tabler-play"
+                >Run all</UButton
+              >
+              <UDropdown
+                :items="[
+                  [
+                    {
+                      slot: 'parallel',
+                      click: (e: MouseEvent) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        config.parallel = !Boolean(config.parallel)
+                      },
+                      disabled: isRunningAllTests,
+                    },
+                  ],
+                ]"
+                :ui="{ width: '!w-auto' }"
+              >
+                <UButton
+                  size="lg"
+                  class="font-semibold w-8 !p-0 justify-center"
+                  icon="i-tabler-chevron-down"
+                />
+
+                <template #parallel>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <UToggle v-model="config.parallel" size="sm" />
+                      <label class="font-medium text-nowrap pr-2">Run tests in parallel</label>
+                    </div>
+                    <small
+                      class="text-left max-w-72 w-full block leading-normal text-gray-400 mt-2 text-xs"
+                    >
+                      When enabled, all tests will run at the same time instead of one by one. This
+                      reduces the time you need to wait for the results. However it will slightly
+                      affect the performance of the tests.
+                    </small>
+                  </div>
+                </template>
+              </UDropdown>
+            </UButtonGroup>
           </div>
         </div>
 
@@ -386,11 +471,16 @@ watch(
 
         <Results :cases="cases" :state-by-test="stateByTest" />
 
-        <div class="mt-24 text-gray-400 text-sm">
+        <div class="mt-20 text-gray-400 text-[0.8rem] space-y-2">
           <p>
             <span class="font-bold">Note:</span> No statistical analysis is used to validate the
-            results. The tests are run in parallel for 3 seconds (with a 500ms warmup) and then
-            operations per second are calculated.
+            results. The tests are run in parallel (unless disabled) for 3 seconds (with a 500ms
+            warmup) and then operations per second are calculated.
+          </p>
+          <p>
+            Each test runs in a separate web worker. This means that the actual ops/s might be
+            higher in a real-world scenario, but the relative difference between the tests should be
+            accurate.
           </p>
         </div>
       </template>

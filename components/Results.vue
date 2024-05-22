@@ -48,7 +48,7 @@ const colors = computed(() => {
           {{ stateByTest[test.id]?.result?.opsPerSecond?.toLocaleString() || '?' }}
         </div>
       </div>
-      <div class="relative">
+      <div class="relative rounded-[0.375em] bg-gray-800">
         <div
           class="rounded-[0.375em] h-[2.75em] transition-all duration-500 striped"
           :class="{

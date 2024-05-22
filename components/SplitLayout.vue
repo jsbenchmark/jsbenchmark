@@ -45,10 +45,10 @@
             active-class="text-white"
           >
             Repl
-            <span
+            <!-- <span
               class="bg-[#ff8362] rounded-full uppercase text-[0.7rem] px-1.5 py-0 font-semibold text-black ml-2 inline-block"
               >New</span
-            >
+            > -->
           </NuxtLink>
         </div>
       </div>

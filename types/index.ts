@@ -16,6 +16,7 @@ export type TestCase = {
   name?: string
   code: string
   esm?: boolean
+  async?: boolean
   dependencies: Dependency[]
 }
 

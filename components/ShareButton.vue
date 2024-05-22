@@ -34,6 +34,7 @@ const generateShortcode = async () => {
       },
     })
 
+    error.value = ''
     shortcode.value = code
     nextTick(() => {
       copyToClipoard('short')
