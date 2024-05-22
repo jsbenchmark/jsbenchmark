@@ -79,7 +79,7 @@ watchDebounced(
               </div>
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
               <UTooltip
                 text="Function is async and should be awaited"
                 :popper="{ placement: 'top' }"
