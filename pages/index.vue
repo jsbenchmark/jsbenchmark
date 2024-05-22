@@ -41,14 +41,14 @@ const cases = ref<TestCase[]>([
   },
   {
     id: nanoid(),
-    code: 'DATA.find(i => i === 499)',
-    name: 'Find 499',
+    code: 'DATA.find(i => i === 199)',
+    name: 'Find 199',
     dependencies: [],
   },
   {
     id: nanoid(),
-    code: 'DATA.find(i => i === 999)',
-    name: 'Find 999',
+    code: 'DATA.find(i => i === 499)',
+    name: 'Find 499',
     dependencies: [],
   },
 ])
@@ -134,6 +134,8 @@ const runCase = async (c: TestCase) => {
           }
         }
       }
+
+      console.log('duration', Date.now() - start, 'times', times)
 
       return {
         times,
