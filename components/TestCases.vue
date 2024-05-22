@@ -29,6 +29,9 @@ watchDebounced(
   () => testCases.value,
   (cases) => {
     for (const test of cases) {
+      // Only enable async flag if it wasn't set already or disabled manually.
+      if (test.async !== undefined) continue
+
       if (ASYNC_KEYWORDS.some((keyword) => test.code.includes(keyword))) {
         testCases.value.find((t) => t.id === test.id)!.async = true
       }
