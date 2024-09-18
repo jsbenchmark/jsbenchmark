@@ -317,12 +317,11 @@ watch(
             </UTooltip>
             <ShareButton :payload="{ config, cases }" type="benchmark" />
 
-            <UButtonGroup>
+            <UButtonGroup size="lg">
               <UButton
                 @click="run"
                 :loading="isRunningAllTests"
                 :disabled="isAnyTestRunning"
-                size="lg"
                 class="font-semibold"
                 icon="i-tabler-play"
                 >Run all</UButton
@@ -344,7 +343,6 @@ watch(
                 :ui="{ width: '!w-auto' }"
               >
                 <UButton
-                  size="lg"
                   class="font-semibold w-8 !p-0 justify-center"
                   icon="i-tabler-chevron-down"
                 />
