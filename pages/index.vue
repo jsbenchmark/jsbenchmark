@@ -183,7 +183,7 @@ const runCase = async (c: TestCase) => {
       e instanceof ErrorEvent
         ? new Error(
             e.type === 'TIMEOUT_EXPIRED'
-              ? `The est was canceled because the timeout expired. Check your code for infinite loops and make sure it doesn't take longer than ${TEST_TIMEOUT / 1000} seconds.`
+              ? `The test was canceled because the timeout expired. Check your code for infinite loops and make sure it doesn't take longer than ${TEST_TIMEOUT / 1000} seconds.`
               : e.type
           )
         : e instanceof Error
