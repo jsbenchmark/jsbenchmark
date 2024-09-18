@@ -47,6 +47,13 @@ export function useWebWorkerFn<T extends (...fnArgs: any[]) => any>(
     if (worker.value && worker.value._url && window) {
       worker.value.terminate()
       URL.revokeObjectURL(worker.value._url)
+
+      // Reject the promise if the worker is terminated by timeout.
+      if (status === 'TIMEOUT_EXPIRED') {
+        const { reject = () => {} } = promise.value
+        reject(new ErrorEvent('TIMEOUT_EXPIRED'))
+      }
+
       promise.value = {}
       worker.value = undefined
       window.clearTimeout(timeoutId.value)
