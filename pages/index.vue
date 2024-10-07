@@ -179,11 +179,20 @@ const runCase = async (c: TestCase) => {
       },
     }
   } catch (e) {
-    const error = ((e as Error).message ? e : new Error('Unknown error')) as Error
+    const error =
+      e instanceof ErrorEvent
+        ? new Error(
+            e.type === 'TIMEOUT_EXPIRED'
+              ? `The test was canceled because the timeout expired. Check your code for infinite loops and make sure it doesn't take longer than ${TEST_TIMEOUT / 1000} seconds.`
+              : e.type
+          )
+        : e instanceof Error
+          ? e
+          : new Error('Unknown error')
     console.error(`Worker failed with error: ${error.message}`)
     stateByTest.value[c.id] = {
       status: 'error',
-      error: error,
+      error,
       result: undefined,
     }
     workerTerminate()
@@ -317,12 +326,11 @@ watch(
             </UTooltip>
             <ShareButton :payload="{ config, cases }" type="benchmark" />
 
-            <UButtonGroup>
+            <UButtonGroup size="lg">
               <UButton
                 @click="run"
                 :loading="isRunningAllTests"
                 :disabled="isAnyTestRunning"
-                size="lg"
                 class="font-semibold"
                 icon="i-tabler-play"
                 >Run all</UButton
@@ -344,7 +352,6 @@ watch(
                 :ui="{ width: '!w-auto' }"
               >
                 <UButton
-                  size="lg"
                   class="font-semibold w-8 !p-0 justify-center"
                   icon="i-tabler-chevron-down"
                 />
