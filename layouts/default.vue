@@ -40,22 +40,4 @@ onMounted(() => {
 input {
   max-width: none;
 }
-
-.list-move,
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.3s ease;
-}
-
-.list-enter-from,
-.list-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
-
-.list-leave-active {
-  position: absolute;
-  width: 100%;
-  z-index: -1;
-}
 </style>

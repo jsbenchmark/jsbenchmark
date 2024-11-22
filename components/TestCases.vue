@@ -43,19 +43,19 @@ watchDebounced(
 
 <template>
   <div>
-    <TransitionGroup name="list" tag="div" ref="listRef" class="relative flex flex-col gap-8">
+    <TransitionGroup name="list" tag="div" ref="listRef" class="relative">
       <div
         v-for="(c, index) of testCases"
         :key="c.id"
-        class="border rounded-xl border-gray-800 p-6 flex flex-col gap-4 bg-gray-900"
+        class="border rounded-xl border-gray-800 p-6 flex flex-col gap-4 bg-gray-900 relative mb-8"
       >
         <div class="flex-col lg:flex-row flex lg:items-center justify-between">
           <div class="flex items-stretch gap-2 -ml-1">
             <div
               data-handle
-              class="flex items-center text-gray-600 hover:text-white transition text-xl select-none"
+              class="flex items-center text-gray-600 hover:text-white transition text-xl select-none cursor-grab"
             >
-              <UIcon name="i-tabler-grip-vertical" class="cursor-grab" />
+              <UIcon name="i-tabler-grip-vertical" />
             </div>
             <UInput
               :padded="false"
@@ -121,3 +121,23 @@ watchDebounced(
     </TransitionGroup>
   </div>
 </template>
+
+<style scoped>
+.list-move,
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.95);
+}
+
+.list-leave-active {
+  position: absolute;
+  width: 100%;
+  z-index: -1;
+}
+</style>
