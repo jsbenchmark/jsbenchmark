@@ -128,7 +128,9 @@ onMounted(() => {
     extensions: [
       setup(),
 
-      javascript(),
+      javascript({
+        typescript: true,
+      }),
       updateListener,
       duotoneDarkInit({
         settings: {

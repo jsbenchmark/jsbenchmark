@@ -134,8 +134,12 @@ const runCase = async (c: TestCase) => {
 
   let res
   try {
-    res = await workerFn({
+    const code = compile({
       code: c.code,
+    })
+
+    res = await workerFn({
+      code,
       time: TEST_TIME,
       warmupTime: WARMUP_TIME,
     })

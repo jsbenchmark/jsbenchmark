@@ -150,9 +150,16 @@ const runCase = async (c: TestCase) => {
 
   let res
   try {
-    res = await workerFn({
+    const code = compile({
       code: c.code,
-      dataCode: config.value.dataCode,
+    })
+    const dataCode = compile({
+      code: config.value.dataCode,
+    })
+
+    res = await workerFn({
+      code,
+      dataCode,
       time: TEST_TIME,
       warmupTime: WARMUP_TIME,
       async: c.async,
@@ -355,6 +362,7 @@ watch(
                 :items="[
                   [
                     {
+                      label: '',
                       slot: 'parallel',
                       click: (e: MouseEvent) => {
                         e.preventDefault()
