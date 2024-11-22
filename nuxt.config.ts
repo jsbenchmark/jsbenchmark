@@ -33,4 +33,6 @@ export default defineNuxtConfig({
   colorMode: {
     preference: 'dark',
   },
+
+  compatibilityDate: '2024-11-22',
 })
