@@ -11,6 +11,7 @@ const $props = defineProps<{
 const emit = defineEmits<{
   (event: 'run', payload: TestCase): void
   (event: 'remove', payload: TestCase): void
+  (event: 'duplicate', payload: TestCase): void
 }>()
 
 const testCases = defineModel<TestCase[]>({ required: true })
@@ -39,6 +40,33 @@ watchDebounced(
   },
   { debounce: 500, deep: true }
 )
+
+const optionsOpenOnTestCase = ref<TestCase | null>(null)
+
+const optionItems = [
+  [
+    {
+      label: 'Duplicate',
+      icon: 'i-heroicons-document-duplicate-20-solid',
+      click: () => {
+        emit('duplicate', optionsOpenOnTestCase.value!)
+      },
+    },
+    {
+      label: 'Delete',
+      icon: 'i-heroicons-trash-20-solid',
+      click: () => {
+        emit('remove', optionsOpenOnTestCase.value!)
+      },
+    },
+  ],
+]
+
+const onOptionsOpen = (open: boolean, c: TestCase) => {
+  if (open) {
+    optionsOpenOnTestCase.value = c
+  }
+}
 </script>
 
 <template>
@@ -98,7 +126,18 @@ watchDebounced(
                 size="md"
                 >Run</UButton
               >
-              <UButton @click="emit('remove', c)" color="white" icon="i-tabler-trash" size="md" />
+
+              <UDropdown
+                :items="optionItems"
+                :popper="{ placement: 'bottom-end' }"
+                @update:open="(v) => onOptionsOpen(v, c)"
+              >
+                <UButton
+                  color="white"
+                  trailing-icon="i-heroicons-chevron-down-20-solid"
+                  class="h-9"
+                />
+              </UDropdown>
             </div>
           </div>
         </div>

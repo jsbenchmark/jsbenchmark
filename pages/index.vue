@@ -226,6 +226,22 @@ const removeCase = (c: TestCase) => {
   cases.value = cases.value.filter((x) => x !== c)
 }
 
+const duplicateCase = (c: TestCase) => {
+  const index = cases.value.findIndex((t) => t.id === c.id)
+  const nameWithoutCopy = c.name?.replace(/ \(copy(?: \d+)?\)$/, '') || c.name || ''
+  const countWithSameName =
+    cases.value.filter((t) => t.name?.startsWith(nameWithoutCopy)).length - 1
+  const name = countWithSameName
+    ? `${nameWithoutCopy} (copy ${countWithSameName})`
+    : `${nameWithoutCopy} (copy)`
+
+  cases.value.splice(index + 1, 0, {
+    ...c,
+    id: nanoid(),
+    name,
+  })
+}
+
 const route = useRoute()
 
 const isAnyTestRunning = computed(() => {
@@ -401,7 +417,9 @@ watch(
         </div>
 
         <div class="flex justify-between items-center !mt-10">
-          <h3 class="text-2xl font-bold">Test cases</h3>
+          <h3 class="text-2xl font-bold">
+            Test cases <span class="font-normal text-gray-500 text-xl">({{ cases.length }})</span>
+          </h3>
           <div>
             <UButton icon="i-tabler-plus" outline @click="addCase(true)" color="white" size="lg">
               Add case
@@ -415,9 +433,10 @@ watch(
           :config="config"
           @run="runCase"
           @remove="removeCase"
+          @duplicate="duplicateCase"
         />
 
-        <div class="mt-6">
+        <div>
           <UButton
             icon="i-tabler-plus"
             outline
