@@ -22,10 +22,6 @@ export default defineNuxtConfig({
     },
   },
 
-  ui: {
-    icons: ['tabler'],
-  },
-
   plausible: {
     domain: 'jsbenchmark.com',
   },
