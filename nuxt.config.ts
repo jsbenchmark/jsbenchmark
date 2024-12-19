@@ -22,10 +22,6 @@ export default defineNuxtConfig({
     },
   },
 
-  ui: {
-    icons: ['tabler'],
-  },
-
   plausible: {
     domain: 'jsbenchmark.com',
   },
@@ -33,4 +29,6 @@ export default defineNuxtConfig({
   colorMode: {
     preference: 'dark',
   },
+
+  compatibilityDate: '2024-11-22',
 })

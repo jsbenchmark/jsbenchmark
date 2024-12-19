@@ -55,6 +55,8 @@ const cases = ref<TestCase[]>([
 
 const stateByTest = ref<Record<string, TestState>>({})
 
+const compile = useCompile()
+
 const runCase = async (c: TestCase) => {
   stateByTest.value[c.id] = {
     status: 'running',
@@ -135,8 +137,6 @@ const runCase = async (c: TestCase) => {
         }
       }
 
-      console.log('duration', Date.now() - start, 'times', times)
-
       return {
         times,
       }
@@ -150,9 +150,16 @@ const runCase = async (c: TestCase) => {
 
   let res
   try {
-    res = await workerFn({
+    const code = await compile.whenEnabled({
       code: c.code,
-      dataCode: config.value.dataCode,
+    })
+    const dataCode = await compile.whenEnabled({
+      code: config.value.dataCode,
+    })
+
+    res = await workerFn({
+      code,
+      dataCode,
       time: TEST_TIME,
       warmupTime: WARMUP_TIME,
       async: c.async,
@@ -196,6 +203,10 @@ const runCase = async (c: TestCase) => {
       result: undefined,
     }
     workerTerminate()
+
+    if (error.message.toLowerCase().startsWith('unexpected')) {
+      usePredefinedNotifications().typescriptHint()
+    }
   }
 }
 
@@ -224,6 +235,22 @@ const addCase = (insertAtStart = false) => {
 const removeCase = (c: TestCase) => {
   if (!confirm('Are you sure?')) return
   cases.value = cases.value.filter((x) => x !== c)
+}
+
+const duplicateCase = (c: TestCase) => {
+  const index = cases.value.findIndex((t) => t.id === c.id)
+  const nameWithoutCopy = c.name?.replace(/ \(copy(?: \d+)?\)$/, '') || c.name || ''
+  const countWithSameName =
+    cases.value.filter((t) => t.name?.startsWith(nameWithoutCopy)).length - 1
+  const name = countWithSameName
+    ? `${nameWithoutCopy} (copy ${countWithSameName})`
+    : `${nameWithoutCopy} (copy)`
+
+  cases.value.splice(index + 1, 0, {
+    ...c,
+    id: nanoid(),
+    name,
+  })
 }
 
 const route = useRoute()
@@ -339,6 +366,7 @@ watch(
                 :items="[
                   [
                     {
+                      label: '',
                       slot: 'parallel',
                       click: (e: MouseEvent) => {
                         e.preventDefault()
@@ -390,7 +418,8 @@ watch(
               :href="ADVANCED_EXAMPLE_URL"
             >
               this more advanced example </a
-            >.
+            >. Note that all snippets can be authored in TypeScript when experimental support is
+            enabled.
           </p>
           <BaseCodeEditor v-model="config.dataCode" />
           <DependencyList v-model:test="config.globalTestConfig" show-hint global class="mt-2">
@@ -401,7 +430,9 @@ watch(
         </div>
 
         <div class="flex justify-between items-center !mt-10">
-          <h3 class="text-2xl font-bold">Test cases</h3>
+          <h3 class="text-2xl font-bold">
+            Test cases <span class="font-normal text-gray-500 text-xl">({{ cases.length }})</span>
+          </h3>
           <div>
             <UButton icon="i-tabler-plus" outline @click="addCase(true)" color="white" size="lg">
               Add case
@@ -415,9 +446,10 @@ watch(
           :config="config"
           @run="runCase"
           @remove="removeCase"
+          @duplicate="duplicateCase"
         />
 
-        <div class="mt-6">
+        <div>
           <UButton
             icon="i-tabler-plus"
             outline

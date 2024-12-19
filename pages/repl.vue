@@ -56,6 +56,8 @@ const state = ref<ReplState>({
   },
 })
 
+const compile = useCompile()
+
 const runCase = async (c: TestCase) => {
   state.value = {
     status: 'running',
@@ -134,8 +136,12 @@ const runCase = async (c: TestCase) => {
 
   let res
   try {
-    res = await workerFn({
+    const code = await compile.whenEnabled({
       code: c.code,
+    })
+
+    res = await workerFn({
+      code,
       time: TEST_TIME,
       warmupTime: WARMUP_TIME,
     })
@@ -180,6 +186,10 @@ const runCase = async (c: TestCase) => {
       result: undefined,
     }
     workerTerminate()
+
+    if (error.message.toLowerCase().startsWith('unexpected')) {
+      usePredefinedNotifications().typescriptHint()
+    }
   }
 }
 
