@@ -187,7 +187,7 @@ const runCase = async (c: TestCase) => {
     }
     workerTerminate()
 
-    if (error.message.toLowerCase().includes('unexpected identifier')) {
+    if (error.message.toLowerCase().startsWith('unexpected')) {
       usePredefinedNotifications().typescriptHint()
     }
   }
