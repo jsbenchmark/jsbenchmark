@@ -203,6 +203,10 @@ const runCase = async (c: TestCase) => {
       result: undefined,
     }
     workerTerminate()
+
+    if (error.message.toLowerCase().includes('unexpected identifier')) {
+      usePredefinedNotifications().typescriptHint()
+    }
   }
 }
 
@@ -414,7 +418,8 @@ watch(
               :href="ADVANCED_EXAMPLE_URL"
             >
               this more advanced example </a
-            >. Note that all snippets can be authored in TypeScript.
+            >. Note that all snippets can be authored in TypeScript when experimental support is
+            enabled.
           </p>
           <BaseCodeEditor v-model="config.dataCode" />
           <DependencyList v-model:test="config.globalTestConfig" show-hint global class="mt-2">
