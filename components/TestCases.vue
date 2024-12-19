@@ -47,14 +47,14 @@ const optionItems = [
   [
     {
       label: 'Duplicate',
-      icon: 'i-heroicons-document-duplicate-20-solid',
+      icon: 'i-tabler-copy',
       click: () => {
         emit('duplicate', optionsOpenOnTestCase.value!)
       },
     },
     {
       label: 'Delete',
-      icon: 'i-heroicons-trash-20-solid',
+      icon: 'i-tabler-trash',
       click: () => {
         emit('remove', optionsOpenOnTestCase.value!)
       },
@@ -112,7 +112,7 @@ const onOptionsOpen = (open: boolean, c: TestCase) => {
 
             <div class="flex items-center gap-2">
               <UTooltip
-                text="Function is async and should be awaited"
+                text="Function is async and should be awaited."
                 :popper="{ placement: 'top' }"
               >
                 <BaseCheckboxButton v-model="c.async" label="Async" class="h-9" />
