@@ -55,6 +55,8 @@ const cases = ref<TestCase[]>([
 
 const stateByTest = ref<Record<string, TestState>>({})
 
+const compile = useCompile()
+
 const runCase = async (c: TestCase) => {
   stateByTest.value[c.id] = {
     status: 'running',
@@ -135,8 +137,6 @@ const runCase = async (c: TestCase) => {
         }
       }
 
-      console.log('duration', Date.now() - start, 'times', times)
-
       return {
         times,
       }
@@ -150,10 +150,10 @@ const runCase = async (c: TestCase) => {
 
   let res
   try {
-    const code = compile({
+    const code = await compile.whenEnabled({
       code: c.code,
     })
-    const dataCode = compile({
+    const dataCode = await compile.whenEnabled({
       code: config.value.dataCode,
     })
 
@@ -414,7 +414,7 @@ watch(
               :href="ADVANCED_EXAMPLE_URL"
             >
               this more advanced example </a
-            >.
+            >. Note that all snippets can be authored in TypeScript.
           </p>
           <BaseCodeEditor v-model="config.dataCode" />
           <DependencyList v-model:test="config.globalTestConfig" show-hint global class="mt-2">

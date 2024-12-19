@@ -1,5 +1,3 @@
-import { transpile } from 'typescript'
-
 type CompileProps = {
   code: string
 }
@@ -7,9 +5,20 @@ type CompileProps = {
 /**
  * Transpile TS code to JS.
  */
-export function compile(props: CompileProps): string {
-  return transpile(props.code, {
-    target: 'ES2022',
-    module: 'ESNext',
+export async function compile(props: CompileProps): Promise<string> {
+  const { transform } = await import('sucrase')
+
+  const result = transform(props.code, {
+    transforms: ['typescript'],
+    disableESTransforms: true,
   })
+
+  console.group('Code transformed')
+  console.log('from')
+  console.log(props.code)
+  console.log('to')
+  console.log(result.code)
+  console.groupEnd()
+
+  return result.code
 }

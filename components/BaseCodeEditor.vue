@@ -197,14 +197,36 @@ watch(
 const run = () => {
   emit('run')
 }
+
+const preferences = usePreferences()
 </script>
 
 <template>
   <div
     @keydown.enter.meta.prevent.stop.capture="run"
     @keydown.enter.ctrl.prevent.stop.capture="run"
-    class="font-mono p-3 rounded-md bg-gray-950 border border-gray-700"
+    class="font-mono p-3 rounded-md bg-gray-950 border border-gray-700 relative"
   >
     <div ref="editorRef"></div>
+
+    <div class="absolute bottom-[0.65rem] right-2.5 flex items-end">
+      <ClientOnly>
+        <UTooltip
+          :text="
+            (preferences.typescript ? 'Disable' : 'Enable') + ' experimental TypeScript support'
+          "
+          :popper="{ placement: 'left' }"
+        >
+          <UButton
+            icon="i-tabler-brand-typescript"
+            variant="ghost"
+            size="sm"
+            :color="preferences.typescript ? 'primary' : 'gray'"
+            @click="preferences.typescript = !preferences.typescript"
+            :class="{ 'opacity-50': !preferences.typescript }"
+          />
+        </UTooltip>
+      </ClientOnly>
+    </div>
   </div>
 </template>

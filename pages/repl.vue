@@ -56,6 +56,8 @@ const state = ref<ReplState>({
   },
 })
 
+const compile = useCompile()
+
 const runCase = async (c: TestCase) => {
   state.value = {
     status: 'running',
@@ -134,7 +136,7 @@ const runCase = async (c: TestCase) => {
 
   let res
   try {
-    const code = compile({
+    const code = await compile.whenEnabled({
       code: c.code,
     })
 
