@@ -24,6 +24,8 @@ export default defineNuxtConfig({
 
   plausible: {
     domain: 'jsbenchmark.com',
+    proxy: true,
+    apiHost: 'https://reasonable.pabue.workers.dev',
   },
 
   colorMode: {
