@@ -1,6 +1,7 @@
 export const WARMUP_TIME = 500
 export const TEST_TIME = 3000
 export const TEST_TIMEOUT = 5000
+export const TARGET_BATCH_TIME = 40
 
 export const DEFAULT_TEST_NAME = 'Basic example'
 

@@ -8,11 +8,14 @@ import * as htmlToImage from 'html-to-image'
 import {
   ADVANCED_EXAMPLE_URL,
   DEFAULT_TEST_NAME,
+  TARGET_BATCH_TIME,
   TEST_TIME,
   TEST_TIMEOUT,
   WARMUP_TIME,
 } from '~/utils/constants'
 import { serialize, deserialize } from '~/utils'
+import { runBenchmarkWorker } from '~/utils/benchmark/run'
+import { summarizeBenchmark } from '~/utils/benchmark/summary'
 
 const config = ref<Config>({
   name: DEFAULT_TEST_NAME,
@@ -66,85 +69,11 @@ const runCase = async (c: TestCase) => {
     ...(c.dependencies || []),
   ].filter((d) => d.url)
 
-  const { workerFn, workerTerminate } = useWebWorkerFn(
-    async ({ code, dataCode, time, warmupTime, async }, d?: any) => {
-      const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
-
-      const dataFn = AsyncFunction(dataCode)
-      const data = await dataFn(d)
-      ;(globalThis as any).DATA = data
-
-      const fn = async ? AsyncFunction(code) : Function(code)
-
-      // Warmup.
-      let warmupTimes = 0
-      const warmupStart = Date.now()
-
-      while (Date.now() - warmupStart < warmupTime) {
-        const res = fn()
-
-        if (async) {
-          await res
-        }
-
-        warmupTimes++
-      }
-
-      const averageExecutionTime = (Date.now() - warmupStart) / warmupTimes
-
-      // Only check occasionally check the remaining time, so we don't affect the benchmark.
-      // We check 100 times to make sure we don't go over the time too much. A bit is fine.
-      // We also add a 50% buffer to the check time to make sure we don't go over the time too much,
-      // in case the warm up is much slower.
-      const checkAfterTimes = Math.ceil(time / averageExecutionTime / 100)
-
-      // Actual test.
-      let times = 0
-      const start = Date.now()
-
-      let stop = false
-      let timesUntilCheck = checkAfterTimes
-
-      // We need to do the if check outside the loop to not affect the performance.
-      // Doing the check inside the loop would reduce the overall number of ops/s by a factor of ~4.
-      if (async) {
-        while (!stop) {
-          await fn()
-
-          times++
-
-          // Check if we should stop. Same as below.
-          timesUntilCheck--
-          if (!timesUntilCheck) {
-            timesUntilCheck = checkAfterTimes
-            stop = Date.now() - start > time
-          }
-        }
-      } else {
-        while (!stop) {
-          fn()
-
-          times++
-
-          // Check if we should stop. Same as above.
-          timesUntilCheck--
-          if (!timesUntilCheck) {
-            timesUntilCheck = checkAfterTimes
-            stop = Date.now() - start > time
-          }
-        }
-      }
-
-      return {
-        times,
-      }
-    },
-    {
-      timeout: TEST_TIMEOUT,
-      dependencies: unref(dependencies),
-      esm: dependencies.some((d) => d.esm),
-    }
-  )
+  const { workerFn, workerTerminate } = useWebWorkerFn(runBenchmarkWorker, {
+    timeout: TEST_TIMEOUT,
+    dependencies: unref(dependencies),
+    esm: dependencies.some((d) => d.esm),
+  })
 
   let res
   try {
@@ -158,30 +87,16 @@ const runCase = async (c: TestCase) => {
     res = await workerFn({
       code,
       dataCode,
+      targetBatchTime: TARGET_BATCH_TIME,
       time: TEST_TIME,
       warmupTime: WARMUP_TIME,
       async: c.async,
     })
 
-    const opsPerSecond = Math.round(res.times / (TEST_TIME / 1000))
-
-    const averageTime = 1000 / opsPerSecond
-    let averageTimeFormatted = averageTime.toFixed(2)
-
-    const isSubSecond = averageTime < 1
-    if (isSubSecond) {
-      const zeroCountAfterDot = averageTime.toString().match(/\.(0+)/)?.[1]?.length
-      averageTimeFormatted = averageTime.toFixed((zeroCountAfterDot || 0) + 2)
-    }
-
     stateByTest.value[c.id] = {
       status: 'success',
       error: null,
-      result: {
-        opsPerSecond,
-        averageTime,
-        averageTimeFormatted,
-      },
+      result: summarizeBenchmark(res),
     }
   } catch (e) {
     const error =

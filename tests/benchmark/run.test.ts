@@ -82,4 +82,20 @@ describe('runBenchmarkWorker', () => {
       })
     ).rejects.toThrow('boom')
   })
+
+  it('remains self-contained when serialized into a worker', async () => {
+    installClock()
+    const serializedRunner = Function(`return (${runBenchmarkWorker.toString()})`)() as typeof runBenchmarkWorker
+
+    const result = await serializedRunner({
+      async: false,
+      code: 'globalThis.advanceBenchmarkClock(1)',
+      dataCode: 'return null',
+      targetBatchTime: 10,
+      time: 20,
+      warmupTime: 10,
+    })
+
+    expect(result.elapsedMs).toBeGreaterThanOrEqual(20)
+  })
 })

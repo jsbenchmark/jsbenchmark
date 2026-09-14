@@ -1,3 +1,5 @@
+import type { BenchmarkSummary } from '~/utils/benchmark/summary'
+
 export type Config = {
   name: string
   parallel: boolean
@@ -23,11 +25,7 @@ export type TestCase = {
 export type TestState = {
   status: 'idle' | 'running' | 'success' | 'error'
   error?: Error | null
-  result?: {
-    opsPerSecond: number
-    averageTime: number
-    averageTimeFormatted: string
-  }
+  result?: BenchmarkSummary
 }
 
 export type TimeMarker = {

@@ -34,6 +34,9 @@ const colors = computed(() => {
     return colorScale(percentage).hex()
   })
 })
+
+const formatNumber = (value: number | undefined) =>
+  value?.toLocaleString(undefined, { maximumSignificantDigits: 4 }) || '?'
 </script>
 
 <template>
@@ -45,7 +48,7 @@ const colors = computed(() => {
         </div>
         <div class="font-mono">
           <span class="text-gray-400">Ops/s:</span>
-          {{ stateByTest[test.id]?.result?.opsPerSecond?.toLocaleString() || '?' }}
+          {{ formatNumber(stateByTest[test.id]?.result?.opsPerSecond) }}
         </div>
       </div>
       <div class="relative rounded-[0.375em] bg-gray-800">
@@ -68,7 +71,7 @@ const colors = computed(() => {
       </div>
       <div class="text-[0.8em] mt-2.5 font-mono">
         <span class="text-gray-400">Average run time:</span>
-        {{ stateByTest[test.id]?.result?.averageTimeFormatted || '?' }}
+        {{ formatNumber(stateByTest[test.id]?.result?.averageTime) }}
         <span v-if="stateByTest[test.id]?.result" class="text-gray-400">ms</span>
       </div>
       <hr v-if="i < cases.length - 1" class="mt-[1.25em] border-gray-800" />
