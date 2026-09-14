@@ -17,6 +17,7 @@ describe('resolveBenchmarkMode', () => {
 
   it('falls back to standard for values from an older or malformed shared URL', () => {
     expect(resolveBenchmarkMode('unknown')).toEqual(resolveBenchmarkMode('standard'))
+    expect(resolveBenchmarkMode('toString')).toEqual(resolveBenchmarkMode('standard'))
     expect(resolveBenchmarkMode(null)).toEqual(resolveBenchmarkMode('standard'))
   })
 

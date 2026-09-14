@@ -10,7 +10,7 @@ export const DEFAULT_BENCHMARK_MODE: BenchmarkMode = 'standard'
 
 export const resolveBenchmarkMode = (mode: unknown) => {
   const resolvedMode =
-    typeof mode === 'string' && mode in BENCHMARK_MODES
+    typeof mode === 'string' && Object.hasOwn(BENCHMARK_MODES, mode)
       ? (mode as BenchmarkMode)
       : DEFAULT_BENCHMARK_MODE
   const settings = BENCHMARK_MODES[resolvedMode]
