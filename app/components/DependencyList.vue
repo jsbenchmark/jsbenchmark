@@ -37,6 +37,7 @@ const addDep = () => {
           icon="i-tabler-plus"
           size="xs"
           color="neutral"
+          variant="outline"
           class="relative top-px"
         >
           Add

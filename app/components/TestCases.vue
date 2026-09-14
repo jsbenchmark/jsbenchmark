@@ -96,7 +96,7 @@ const onOptionsOpen = (open: boolean, c: TestCase) => {
           </div>
           <div class="flex lg:justify-end items-center space-x-4 h-10">
             <div
-              class="rounded-md h-full px-0 lg:mr-2 -border -bg-gray-800 flex items-center mr-auto"
+              class="rounded-md h-full px-0 lg:mr-6 -border -bg-gray-800 flex items-center mr-auto"
             >
               <div class="flex items-center font-mono space-x-2 text-sm">
                 <div class="text-gray-400">Ops/s:</div>
@@ -112,7 +112,7 @@ const onOptionsOpen = (open: boolean, c: TestCase) => {
 
             <div class="flex items-center gap-2">
               <UTooltip text="Function is async and should be awaited." :content="{ side: 'top' }">
-                <BaseCheckboxButton v-model="c.async" label="Async" class="h-9" />
+                <BaseCheckboxButton v-model="c.async" label="Async" class="h-8" />
               </UTooltip>
 
               <UButton
@@ -131,8 +131,8 @@ const onOptionsOpen = (open: boolean, c: TestCase) => {
               >
                 <UButton
                   color="neutral"
+                  variant="outline"
                   trailing-icon="i-heroicons-chevron-down-20-solid"
-                  class="h-9"
                 />
               </UDropdownMenu>
             </div>

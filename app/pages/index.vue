@@ -347,7 +347,13 @@ watch(
 
           <div class="mt-8 lg:ml-10 lg:mt-1.5 flex gap-3 items-center">
             <UTooltip text="Clear">
-              <UButton @click="clear" color="neutral" icon="i-tabler-trash" size="lg" />
+              <UButton
+                @click="clear"
+                color="neutral"
+                variant="outline"
+                icon="i-tabler-trash"
+                size="lg"
+              />
             </UTooltip>
             <ShareButton :payload="{ config, cases }" type="benchmark" />
 
@@ -506,6 +512,7 @@ watch(
                 :loading="isExporting"
                 :disabled="!cases.length || !allTestsHaveResults"
                 color="neutral"
+                variant="outline"
                 >Export</UButton
               >
             </UTooltip>

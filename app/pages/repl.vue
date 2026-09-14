@@ -244,7 +244,13 @@ const maxTimerDuration = computed(() => {
             />
 
             <div class="mt-8 lg:ml-10 lg:mt-1.5 flex gap-3 items-center">
-              <UButton @click="clear" color="neutral" icon="i-tabler-trash" size="lg" />
+              <UButton
+                @click="clear"
+                color="neutral"
+                variant="outline"
+                icon="i-tabler-trash"
+                size="lg"
+              />
               <ShareButton :payload="{ config }" type="repl" />
               <UButton
                 @click="run"

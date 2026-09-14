@@ -94,6 +94,7 @@ watchDebounced(
         ignore-filter
         trailing
         ref="urlInputRef"
+        class="w-full"
       >
         <template #item="{ item }">
           <div class="flex items-center flex-nowrap w-full justify-between">
@@ -113,12 +114,24 @@ watchDebounced(
       </UInputMenu>
     </UFormField>
 
-    <div v-if="dep.esm" class="sm:!w-52 shrink-0 grow md:grow-0 font-mono">
-      <UInput v-model="dep.name" :placeholder="`Import as: DEP_${nameIndexOffset + index}`" />
-    </div>
+    <UFieldGroup v-if="dep.esm" size="md" class="sm:!w-80 shrink-0 grow md:grow-0 font-mono">
+      <UButton
+        as="span"
+        color="neutral"
+        variant="outline"
+        class="font-sans cursor-default select-none"
+      >
+        Variable
+      </UButton>
+      <UInput
+        v-model="dep.name"
+        :placeholder="`Import as: DEP_${nameIndexOffset + index}`"
+        class="min-w-0 flex-1"
+      />
+    </UFieldGroup>
 
     <BaseCheckboxButton v-model="dep.esm" label="ESM" />
 
-    <UButton @click="emit('remove')" icon="i-tabler-trash" color="neutral" />
+    <UButton @click="emit('remove')" icon="i-tabler-trash" color="neutral" variant="outline" />
   </div>
 </template>

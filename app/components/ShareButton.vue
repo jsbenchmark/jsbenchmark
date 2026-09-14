@@ -86,7 +86,7 @@ const copyToClipoard = (type: 'default' | 'short') => {
       :content="{ side: 'bottom', align: 'end' }"
     >
       <UTooltip text="Share">
-        <UButton color="neutral" size="lg" icon="i-tabler-share" />
+        <UButton color="neutral" variant="outline" size="lg" icon="i-tabler-share" />
       </UTooltip>
 
       <template #content>
@@ -102,10 +102,12 @@ const copyToClipoard = (type: 'default' | 'short') => {
                   readonly
                   icon="i-tabler-link"
                   size="md"
+                  class="w-full"
                 />
               </UFormField>
               <UButton
                 color="neutral"
+                variant="outline"
                 @click="copyToClipoard('default')"
                 :icon="urlClipboard.copied ? 'i-tabler-check' : 'i-tabler-copy'"
                 size="md"
@@ -123,6 +125,7 @@ const copyToClipoard = (type: 'default' | 'short') => {
                   readonly
                   icon="i-tabler-link"
                   size="md"
+                  class="w-full"
                 />
                 <UButton
                   v-else
@@ -138,6 +141,7 @@ const copyToClipoard = (type: 'default' | 'short') => {
               <UButton
                 v-if="payloadHasShortcode"
                 color="neutral"
+                variant="outline"
                 @click="copyToClipoard('short')"
                 :icon="shortlinkClipboard.copied ? 'i-tabler-check' : 'i-tabler-copy'"
                 size="md"
