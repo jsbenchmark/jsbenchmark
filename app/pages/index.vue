@@ -9,15 +9,18 @@ import {
   ADVANCED_EXAMPLE_URL,
   DEFAULT_TEST_NAME,
   TARGET_BATCH_TIME,
-  TEST_TIME,
-  TEST_TIMEOUT,
-  WARMUP_TIME,
 } from '~/utils/constants'
 import { serialize, deserialize } from '~/utils'
 import { runBenchmarkWorker } from '~/utils/benchmark/run'
 import { summarizeBenchmark } from '~/utils/benchmark/summary'
+import {
+  BENCHMARK_MODES,
+  DEFAULT_BENCHMARK_MODE,
+  resolveBenchmarkMode,
+} from '~/utils/benchmark/modes'
 
 const config = ref<Config>({
+  benchmarkMode: DEFAULT_BENCHMARK_MODE,
   name: DEFAULT_TEST_NAME,
   parallel: true,
   globalTestConfig: {
@@ -57,6 +60,10 @@ const cases = ref<TestCase[]>([
 const stateByTest = ref<Record<string, TestState>>({})
 
 const compile = useCompile()
+const benchmarkModeOptions = Object.entries(BENCHMARK_MODES).map(([value, settings]) => ({
+  label: `${settings.label} · ${settings.time / 1000}s`,
+  value,
+}))
 
 const runCase = async (c: TestCase) => {
   stateByTest.value[c.id] = {
@@ -68,9 +75,10 @@ const runCase = async (c: TestCase) => {
     ...(config.value.globalTestConfig.dependencies || []),
     ...(c.dependencies || []),
   ].filter((d) => d.url)
+  const benchmarkSettings = resolveBenchmarkMode(config.value.benchmarkMode)
 
   const { workerFn, workerTerminate } = useWebWorkerFn(runBenchmarkWorker, {
-    timeout: TEST_TIMEOUT,
+    timeout: benchmarkSettings.timeout,
     dependencies: unref(dependencies),
     esm: dependencies.some((d) => d.esm),
   })
@@ -88,8 +96,8 @@ const runCase = async (c: TestCase) => {
       code,
       dataCode,
       targetBatchTime: TARGET_BATCH_TIME,
-      time: TEST_TIME,
-      warmupTime: WARMUP_TIME,
+      time: benchmarkSettings.time,
+      warmupTime: benchmarkSettings.warmupTime,
       async: c.async,
     })
 
@@ -103,7 +111,7 @@ const runCase = async (c: TestCase) => {
       e instanceof ErrorEvent
         ? new Error(
             e.type === 'TIMEOUT_EXPIRED'
-              ? `The test was canceled because the timeout expired. Check your code for infinite loops and make sure it doesn't take longer than ${TEST_TIMEOUT / 1000} seconds.`
+              ? `The test was canceled because the timeout expired. Check your code for infinite loops and make sure it doesn't take longer than ${benchmarkSettings.timeout / 1000} seconds.`
               : e.type
           )
         : e instanceof Error
@@ -211,6 +219,7 @@ const clear = () => {
   if (!confirm('Clear everything. Are you sure?')) return
   cases.value = []
   config.value = {
+    benchmarkMode: DEFAULT_BENCHMARK_MODE,
     name: '',
     parallel: true,
     dataCode: '',
@@ -226,7 +235,10 @@ onMounted(() => {
 
   if (urlState) {
     cases.value = urlState.cases
-    config.value = urlState.config
+    config.value = {
+      ...urlState.config,
+      benchmarkMode: resolveBenchmarkMode(urlState.config.benchmarkMode).mode,
+    }
   }
 })
 
@@ -284,44 +296,52 @@ watch(
                 icon="i-tabler-play"
                 >Run all</UButton
               >
-              <UDropdownMenu
-                :items="[
-                  [
-                    {
-                      label: '',
-                      slot: 'parallel',
-                      onSelect: (e: Event) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        config.parallel = !Boolean(config.parallel)
-                      },
-                      disabled: isRunningAllTests,
-                    },
-                  ],
-                ]"
-                :ui="{ content: '!w-auto' }"
-              >
-                <UButton
-                  class="font-semibold w-8 !p-0 justify-center"
-                  icon="i-tabler-chevron-down"
-                />
+              <UPopover :content="{ side: 'bottom', align: 'end' }">
+                <UTooltip text="Benchmark settings">
+                  <UButton
+                    aria-label="Benchmark settings"
+                    class="font-semibold w-8 !p-0 justify-center"
+                    icon="i-tabler-chevron-down"
+                  />
+                </UTooltip>
 
-                <template #parallel>
-                  <div>
-                    <div class="flex items-center gap-2">
-                      <USwitch v-model="config.parallel" size="sm" />
-                      <label class="font-medium text-nowrap pr-2">Run tests in parallel</label>
+                <template #content>
+                  <div class="w-72 p-4 space-y-4">
+                    <div>
+                      <label for="benchmark-mode" class="font-medium block mb-2">Run length</label>
+                      <USelect
+                        id="benchmark-mode"
+                        v-model="config.benchmarkMode"
+                        :items="benchmarkModeOptions"
+                        value-key="value"
+                        class="w-full"
+                        :disabled="isRunningAllTests"
+                      />
+                      <small class="block leading-normal text-gray-400 mt-2 text-xs">
+                        Longer runs collect more samples and take longer to complete.
+                      </small>
                     </div>
-                    <small
-                      class="text-left max-w-72 w-full block leading-normal text-gray-400 mt-2 text-xs"
-                    >
-                      When enabled, all tests will run at the same time instead of one by one. This
-                      reduces the time you need to wait for the results. However it will slightly
-                      affect the performance of the tests.
-                    </small>
+
+                    <div class="border-t border-gray-800 pt-4">
+                      <div class="flex items-center gap-2">
+                        <USwitch
+                          id="parallel-tests"
+                          v-model="config.parallel"
+                          size="sm"
+                          :disabled="isRunningAllTests"
+                        />
+                        <label for="parallel-tests" class="font-medium text-nowrap">
+                          Run tests in parallel
+                        </label>
+                      </div>
+                      <small class="block leading-normal text-gray-400 mt-2 text-xs">
+                        Faster overall, but workers share CPU, cache, and memory bandwidth. Disable
+                        this when results are close or inconsistent.
+                      </small>
+                    </div>
                   </div>
                 </template>
-              </UDropdownMenu>
+              </UPopover>
             </UFieldGroup>
           </div>
         </div>
@@ -441,14 +461,14 @@ watch(
 
         <div class="mt-20 text-gray-400 text-[0.8rem] space-y-2">
           <p>
-            <span class="font-bold">Note:</span> No statistical analysis is used to validate the
-            results. The tests are run in parallel (unless disabled) for 3 seconds (with a 500ms
-            warmup) and then operations per second are calculated.
+            <span class="font-bold">Note:</span> Each test is warmed up, measured in timed batches,
+            and summarized using the actual elapsed time. Tests run in parallel unless disabled.
           </p>
           <p>
             Each test runs in a separate web worker. This means that the actual ops/s might be
-            higher in a real-world scenario, but the relative difference between the tests should be
-            accurate.
+            higher in a real-world scenario. Results are most useful for comparing cases within this
+            run and can vary with CPU load, JIT compilation, garbage collection, and concurrent
+            workers.
           </p>
         </div>
       </template>

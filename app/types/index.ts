@@ -1,6 +1,8 @@
 import type { BenchmarkSummary } from '~/utils/benchmark/summary'
+import type { BenchmarkMode } from '~/utils/benchmark/modes'
 
 export type Config = {
+  benchmarkMode: BenchmarkMode
   name: string
   parallel: boolean
   globalTestConfig: TestCase
