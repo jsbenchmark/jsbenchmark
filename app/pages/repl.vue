@@ -237,14 +237,14 @@ const maxTimerDuration = computed(() => {
               placeholder="Name"
               class="font-bold flex-1 max-w-full"
               autoresize
-              :padded="false"
+              :ui="{ base: 'p-0' }"
               variant="none"
               size="4xl"
               :rows="1"
             />
 
             <div class="mt-8 lg:ml-10 lg:mt-1.5 flex gap-3 items-center">
-              <UButton @click="clear" color="white" icon="i-tabler-trash" size="lg" />
+              <UButton @click="clear" color="neutral" icon="i-tabler-trash" size="lg" />
               <ShareButton :payload="{ config }" type="repl" />
               <UButton
                 @click="run"

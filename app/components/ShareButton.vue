@@ -81,18 +81,21 @@ const copyToClipoard = (type: 'default' | 'short') => {
 
 <template>
   <div>
-    <UPopover :ui="{ shadow: 'shadow-xl shadow-black/25' }" :popper="{ placement: 'bottom-end' }">
+    <UPopover
+      :ui="{ content: 'shadow-xl shadow-black/25' }"
+      :content="{ side: 'bottom', align: 'end' }"
+    >
       <UTooltip text="Share">
-        <UButton color="white" size="lg" icon="i-tabler-share" />
+        <UButton color="neutral" size="lg" icon="i-tabler-share" />
       </UTooltip>
 
-      <template #panel>
+      <template #content>
         <div class="p-4 space-y-4 w-[350px]">
           <div>
             <h5 class="font-semibold text-base mb-2">Link to share</h5>
 
             <div class="flex items-end gap-2">
-              <UFormGroup class="w-full">
+              <UFormField class="w-full">
                 <UInput
                   :model-value="currentUrl"
                   placeholder="https://jsbenchmark.com/?test=..."
@@ -100,9 +103,9 @@ const copyToClipoard = (type: 'default' | 'short') => {
                   icon="i-tabler-link"
                   size="md"
                 />
-              </UFormGroup>
+              </UFormField>
               <UButton
-                color="white"
+                color="neutral"
                 @click="copyToClipoard('default')"
                 :icon="urlClipboard.copied ? 'i-tabler-check' : 'i-tabler-copy'"
                 size="md"
@@ -112,7 +115,7 @@ const copyToClipoard = (type: 'default' | 'short') => {
           <div>
             <h5 class="font-semibold text-base mb-2">Need a shorter link?</h5>
             <div class="flex items-end gap-2">
-              <UFormGroup class="w-full">
+              <UFormField class="w-full">
                 <UInput
                   v-if="payloadHasShortcode"
                   :model-value="shortlink"
@@ -131,10 +134,10 @@ const copyToClipoard = (type: 'default' | 'short') => {
                   variant="outline"
                   >Generate and copy</UButton
                 >
-              </UFormGroup>
+              </UFormField>
               <UButton
                 v-if="payloadHasShortcode"
-                color="white"
+                color="neutral"
                 @click="copyToClipoard('short')"
                 :icon="shortlinkClipboard.copied ? 'i-tabler-check' : 'i-tabler-copy'"
                 size="md"
@@ -143,7 +146,7 @@ const copyToClipoard = (type: 'default' | 'short') => {
           </div>
           <UAlert
             v-if="error"
-            color="red"
+            color="error"
             title="Something went wrong"
             :description="error"
             variant="subtle"
@@ -151,7 +154,7 @@ const copyToClipoard = (type: 'default' | 'short') => {
           <UAlert
             v-else
             icon="i-tabler-info-square-rounded-filled"
-            color="gray"
+            color="neutral"
             title="Privacy Information"
             description="When you generate a shortlink your code will be accessible to anyone that has the link."
             variant="subtle"

@@ -1,0 +1,38 @@
+@import 'tailwindcss';
+@import '@nuxt/ui';
+@import '@fontsource-variable/jetbrains-mono';
+@import '@fontsource-variable/pathway-extreme';
+
+@theme static {
+  --font-mono:
+    'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+  --font-sans:
+    'Pathway Extreme Variable', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+  --color-salmon-50: #fff4f1;
+  --color-salmon-100: #ffe7e1;
+  --color-salmon-200: #ffd3c7;
+  --color-salmon-300: #ffb4a0;
+  --color-salmon-400: #ff8362;
+  --color-salmon-500: #f8633b;
+  --color-salmon-600: #e5471d;
+  --color-salmon-700: #c13814;
+  --color-salmon-800: #a03114;
+  --color-salmon-900: #842f18;
+  --color-salmon-950: #481507;
+
+  /* Preserve the previous Tailwind theme, where gray utilities used the zinc palette. */
+  --color-gray-50: var(--color-zinc-50);
+  --color-gray-100: var(--color-zinc-100);
+  --color-gray-200: var(--color-zinc-200);
+  --color-gray-300: var(--color-zinc-300);
+  --color-gray-400: var(--color-zinc-400);
+  --color-gray-500: var(--color-zinc-500);
+  --color-gray-600: var(--color-zinc-600);
+  --color-gray-700: var(--color-zinc-700);
+  --color-gray-800: var(--color-zinc-800);
+  --color-gray-900: var(--color-zinc-900);
+  --color-gray-950: var(--color-zinc-950);
+}

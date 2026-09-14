@@ -48,14 +48,14 @@ const optionItems = [
     {
       label: 'Duplicate',
       icon: 'i-tabler-copy',
-      click: () => {
+      onSelect: () => {
         emit('duplicate', optionsOpenOnTestCase.value!)
       },
     },
     {
       label: 'Delete',
       icon: 'i-tabler-trash',
-      click: () => {
+      onSelect: () => {
         emit('remove', optionsOpenOnTestCase.value!)
       },
     },
@@ -86,7 +86,7 @@ const onOptionsOpen = (open: boolean, c: TestCase) => {
               <UIcon name="i-tabler-grip-vertical" />
             </div>
             <UInput
-              :padded="false"
+              :ui="{ base: 'p-0' }"
               variant="none"
               v-model="c.name"
               placeholder="Name"
@@ -111,10 +111,7 @@ const onOptionsOpen = (open: boolean, c: TestCase) => {
             </div>
 
             <div class="flex items-center gap-2">
-              <UTooltip
-                text="Function is async and should be awaited."
-                :popper="{ placement: 'top' }"
-              >
+              <UTooltip text="Function is async and should be awaited." :content="{ side: 'top' }">
                 <BaseCheckboxButton v-model="c.async" label="Async" class="h-9" />
               </UTooltip>
 
@@ -127,31 +124,32 @@ const onOptionsOpen = (open: boolean, c: TestCase) => {
                 >Run</UButton
               >
 
-              <UDropdown
+              <UDropdownMenu
                 :items="optionItems"
-                :popper="{ placement: 'bottom-end' }"
+                :content="{ side: 'bottom', align: 'end' }"
                 @update:open="(v) => onOptionsOpen(v, c)"
               >
                 <UButton
-                  color="white"
+                  color="neutral"
                   trailing-icon="i-heroicons-chevron-down-20-solid"
                   class="h-9"
                 />
-              </UDropdown>
+              </UDropdownMenu>
             </div>
           </div>
         </div>
         <BaseCodeEditor v-model="c.code" @run="emit('run', c)" />
 
         <DependencyList
-          v-model:test="testCases[index]"
+          :test="testCases[index]!"
           :name-index-offset="config.globalTestConfig.dependencies?.length || 0"
+          @update:test="testCases[index] = $event"
         />
 
         <UAlert
           v-if="stateByTest[c.id]?.status === 'error'"
           icon="i-tabler-alert-circle"
-          color="red"
+          color="error"
           variant="subtle"
           title="Error"
           :description="stateByTest[c.id]?.error?.message"

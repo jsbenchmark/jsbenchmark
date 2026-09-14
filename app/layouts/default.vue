@@ -1,8 +1,15 @@
 <script setup lang="ts">
 useHead({
   htmlAttrs: {
-    class: 'bg-gray-900 text-white font-sans overflow-x-hidden',
+    class: 'bg-zinc-900 text-white font-sans overflow-x-hidden',
   },
+  meta: [
+    {
+      name: 'keywords',
+      content:
+        'javascript, benchmark, online, js, performance, esm, module, library, measure, compare, testing, tool, repl, share, open source',
+    },
+  ],
 })
 
 useServerSeoMeta({
@@ -11,8 +18,6 @@ useServerSeoMeta({
     'A straightforward online JavaScript benchmarking tool and REPL with support for ES modules and libraries.',
   ogDescription:
     'A straightforward online JavaScript benchmarking tool and REPL with support for ES modules and libraries.',
-  keywords:
-    'javascript, benchmark, online, js, performance, esm, module, library, measure, compare, testing, tool, repl, share, open source',
   author: 'pabue.co',
   ogImage: 'https://jsbenchmark.com/og.png',
   twitterCard: 'summary_large_image',
@@ -28,8 +33,7 @@ onMounted(() => {
 
 <template>
   <div id="app">
-    <NuxtPage />
-    <UNotifications />
+    <slot />
   </div>
 </template>
 

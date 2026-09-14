@@ -1,5 +1,10 @@
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true
+  vue-demi: true
 minimumReleaseAge: 4320
+peerDependencyRules:
+  allowedVersions:
+    # @nuxt/cli supplies cac 7 to its optional shell-completion adapter.
+    '@bomb.sh/tab@0.0.19>cac': '7'
 shamefullyHoist: true

@@ -1,5 +1,5 @@
-import { ref } from 'vue-demi'
-import { tryOnScopeDispose } from '@vueuse/shared'
+import { ref } from 'vue'
+import { tryOnScopeDispose } from '@vueuse/core'
 import type { ConfigurableWindow } from '@vueuse/core'
 import { defaultWindow } from '@vueuse/core'
 import createWorkerBlobUrl from './lib/createWorkerBlobUrl'

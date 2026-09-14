@@ -15,12 +15,11 @@ const emit = defineEmits<{
   (event: 'remove'): void
 }>()
 
-const urlInputRef = ref<ComponentPublicInstance>()
+const urlInputRef = ref<{ inputRef: HTMLInputElement | null }>()
 
 defineExpose({
   focus: () => {
-    // TODO: Clean this up once Nuxt UI provides a better way to focus inputs.
-    urlInputRef.value?.$el?.parentNode?.querySelector('input')?.focus()
+    urlInputRef.value?.inputRef?.focus()
   },
 })
 
@@ -49,57 +48,70 @@ const isSearching = ref(false)
 type DependencySearchEntry = {
   name: string
   version: string
+  url: string
 }
 
-const search = async (value: string, dep: Dependency) => {
-  value = value.trim()
+const searchTerm = ref('')
+const searchResults = ref<DependencySearchEntry[]>([])
 
-  if (!value) {
-    return []
-  }
+watchDebounced(
+  searchTerm,
+  async (value) => {
+    value = value.trim()
 
-  isSearching.value = true
-  const res = await $fetch<{ results: DependencySearchEntry[] }>('/api/search-package', {
-    query: {
-      q: value,
-    },
-  })
-  isSearching.value = false
+    if (!value || value.startsWith('http')) {
+      searchResults.value = []
+      return
+    }
 
-  return res.results.slice(0, 10)
-}
+    isSearching.value = true
+    try {
+      const res = await $fetch<{ results: DependencySearchEntry[] }>('/api/search-package', {
+        query: {
+          q: value,
+        },
+      })
+      searchResults.value = res.results.slice(0, 10)
+    } finally {
+      isSearching.value = false
+    }
+  },
+  { debounce: 250 }
+)
 </script>
 <template>
   <div class="flex-row flex-wrap flex items-stretch gap-3 mt-3">
-    <UFormGroup class="flex-1 min-w-[200px]">
+    <UFormField class="flex-1 min-w-[200px]">
       <UInputMenu
         v-model="dep.url"
-        v-model:query="dep.url"
-        :search="(q: string) => search(q, dep)"
+        v-model:search-term="searchTerm"
+        :items="searchResults"
         :loading="isSearching"
         placeholder="Type to search or paste direct URL"
-        option-attribute="name"
-        value-attribute="url"
+        mode="autocomplete"
+        label-key="name"
+        value-key="url"
+        ignore-filter
         trailing
         ref="urlInputRef"
       >
-        <template #option="{ option }">
+        <template #item="{ item }">
           <div class="flex items-center flex-nowrap w-full justify-between">
             <span class="truncate flex-1 mr-2 font-medium">
-              {{ option.name }}
+              {{ item.name }}
             </span>
             <span class="text-gray-500 font-mono text-sm ml-auto">
-              {{ option.version }}
+              {{ item.version }}
             </span>
           </div>
         </template>
 
-        <template #option-empty>
+        <template #empty>
           <div v-if="isSearching">Searching...</div>
           <div v-else>No packages found.</div>
         </template>
       </UInputMenu>
-    </UFormGroup>
+    </UFormField>
 
     <div v-if="dep.esm" class="sm:!w-52 shrink-0 grow md:grow-0 font-mono">
       <UInput v-model="dep.name" :placeholder="`Import as: DEP_${nameIndexOffset + index}`" />
@@ -107,6 +119,6 @@ const search = async (value: string, dep: Dependency) => {
 
     <BaseCheckboxButton v-model="dep.esm" label="ESM" />
 
-    <UButton @click="emit('remove')" icon="i-tabler-trash" color="white" />
+    <UButton @click="emit('remove')" icon="i-tabler-trash" color="neutral" />
   </div>
 </template>

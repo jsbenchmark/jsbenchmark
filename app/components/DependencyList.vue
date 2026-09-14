@@ -4,9 +4,9 @@ import type { Dependency as DependencyComponent } from '#components'
 
 const props = defineProps<{
   test: TestCase
-  global?: Boolean
+  global?: boolean
   nameIndexOffset?: number
-  showHint?: Boolean
+  showHint?: boolean
 }>()
 
 const model = defineModel<TestCase>('test', { required: true })
@@ -35,8 +35,8 @@ const addDep = () => {
         <UButton
           @click="addDep"
           icon="i-tabler-plus"
-          size="2xs"
-          color="white"
+          size="xs"
+          color="neutral"
           class="relative top-px"
         >
           Add
@@ -71,9 +71,10 @@ const addDep = () => {
     <Dependency
       v-for="(_, i) in model.dependencies"
       :key="i"
-      v-model="model.dependencies[i]"
+      :model-value="model.dependencies[i]!"
       :index="i"
       :name-index-offset="nameIndexOffset || 0"
+      @update:model-value="model.dependencies![i] = $event"
       @remove="model.dependencies?.splice(i, 1)"
       ref="dependencyRefs"
     />

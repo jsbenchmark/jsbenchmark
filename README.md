@@ -1,6 +1,7 @@
 # JS Benchmark
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Look at the [Nuxt 4 documentation](https://nuxt.com/docs/4.x/getting-started/introduction) to
+learn more.
 
 ## Setup
 

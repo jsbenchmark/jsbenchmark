@@ -80,14 +80,14 @@ const theme = EditorView.theme({
     borderRadius: '0 3px 3px 0',
   },
   '&.cm-focused .cm-activeLine': {
-    backgroundColor: 'rgba(var(--color-gray-800) / 0.75) !important',
+    backgroundColor: 'color-mix(in oklab, var(--color-gray-800) 75%, transparent) !important',
     borderRadius: '0 3px 3px 0',
   },
   '.cm-activeLineGutter': {
     backgroundColor: 'transparent !important',
   },
   '&.cm-focused .cm-activeLineGutter': {
-    backgroundColor: 'rgba(var(--color-gray-800) / 0.75) !important',
+    backgroundColor: 'color-mix(in oklab, var(--color-gray-800) 75%, transparent) !important',
   },
   '.cm-lineNumbers .cm-activeLineGutter': {
     borderRadius: '3px 0 0 3px',
@@ -134,36 +134,36 @@ onMounted(() => {
       updateListener,
       duotoneDarkInit({
         settings: {
-          foreground: 'rgb(var(--color-gray-100))',
-          caret: 'rgb(var(--color-primary-500))',
-          gutterForeground: 'rgb(var(--color-gray-600))',
-          selection: 'rgb(var(--color-gray-600))',
-          selectionMatch: 'rgb(var(--color-gray-700))',
+          foreground: 'var(--color-gray-100)',
+          caret: 'var(--ui-color-primary-500)',
+          gutterForeground: 'var(--color-gray-600)',
+          selection: 'var(--color-gray-600)',
+          selectionMatch: 'var(--color-gray-700)',
         },
         styles: [
-          { tag: [t.comment, t.bracket], color: 'rgb(var(--color-gray-400))' },
+          { tag: [t.comment, t.bracket], color: 'var(--color-gray-400)' },
           {
             tag: [t.number],
-            color: 'rgb(var(--color-primary-400))',
+            color: 'var(--ui-color-primary-400)',
           },
           {
             tag: [t.atom, t.keyword, t.link, t.attributeName],
-            color: 'rgb(var(--color-primary-300))',
+            color: 'var(--ui-color-primary-300)',
           },
           {
             tag: [t.emphasis, t.heading, t.tagName, t.className, t.variableName],
-            color: 'rgb(var(--color-gray-100))',
+            color: 'var(--color-gray-100)',
           },
           {
             tag: [t.propertyName],
-            color: 'rgb(var(--color-gray-300))',
+            color: 'var(--color-gray-300)',
           },
           { tag: [t.typeName, t.url], color: '#a78bfa' },
           { tag: [t.function(t.variableName)], color: '#a78bfa' },
           { tag: [t.function(t.propertyName)], color: '#a78bfa' },
-          { tag: t.operator, color: 'rgb(var(--color-primary-300))' },
-          { tag: t.string, color: 'rgb(var(--color-primary-400))' },
-          { tag: [t.unit, t.punctuation], color: 'rgb(var(--color-gray-400))' },
+          { tag: t.operator, color: 'var(--ui-color-primary-300)' },
+          { tag: t.string, color: 'var(--ui-color-primary-400)' },
+          { tag: [t.unit, t.punctuation], color: 'var(--color-gray-400)' },
         ],
       }),
       theme,
@@ -215,13 +215,13 @@ const preferences = usePreferences()
           :text="
             (preferences.typescript ? 'Disable' : 'Enable') + ' experimental TypeScript support'
           "
-          :popper="{ placement: 'left' }"
+          :content="{ side: 'left' }"
         >
           <UButton
             icon="i-tabler-brand-typescript"
             variant="ghost"
             size="sm"
-            :color="preferences.typescript ? 'primary' : 'gray'"
+            :color="preferences.typescript ? 'primary' : 'neutral'"
             @click="preferences.typescript = !preferences.typescript"
             :class="{ 'opacity-50': !preferences.typescript }"
           />

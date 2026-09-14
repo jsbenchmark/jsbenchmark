@@ -2,7 +2,12 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@vueuse/nuxt', '@nuxt/ui', '@nuxtjs/plausible'],
+  css: ['~/assets/css/main.css'],
   ssr: true,
+
+  ui: {
+    fonts: false,
+  },
 
   app: {
     head: {

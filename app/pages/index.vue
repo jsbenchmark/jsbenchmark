@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { useWebWorkerFn } from '~/utils/worker'
-import '@fontsource-variable/jetbrains-mono'
 import type { TestCase, Dependency, TestState, Config } from '~/types'
 import { nanoid } from 'nanoid'
 import { clamp } from '@vueuse/core'
 import slugify from 'slugify'
 import * as htmlToImage from 'html-to-image'
-import '@fontsource-variable/pathway-extreme'
 import {
   ADVANCED_EXAMPLE_URL,
   DEFAULT_TEST_NAME,
@@ -172,7 +170,7 @@ const runCase = async (c: TestCase) => {
 
     const isSubSecond = averageTime < 1
     if (isSubSecond) {
-      const zeroCountAfterDot = averageTime.toString().match(/\.(0+)/)?.[1].length
+      const zeroCountAfterDot = averageTime.toString().match(/\.(0+)/)?.[1]?.length
       averageTimeFormatted = averageTime.toFixed((zeroCountAfterDot || 0) + 2)
     }
 
@@ -341,7 +339,7 @@ watch(
             placeholder="Name"
             class="font-bold flex-1 max-w-full"
             autoresize
-            :padded="false"
+            :ui="{ base: 'p-0' }"
             variant="none"
             size="4xl"
             :rows="1"
@@ -349,11 +347,11 @@ watch(
 
           <div class="mt-8 lg:ml-10 lg:mt-1.5 flex gap-3 items-center">
             <UTooltip text="Clear">
-              <UButton @click="clear" color="white" icon="i-tabler-trash" size="lg" />
+              <UButton @click="clear" color="neutral" icon="i-tabler-trash" size="lg" />
             </UTooltip>
             <ShareButton :payload="{ config, cases }" type="benchmark" />
 
-            <UButtonGroup size="lg">
+            <UFieldGroup size="lg">
               <UButton
                 @click="run"
                 :loading="isRunningAllTests"
@@ -362,13 +360,13 @@ watch(
                 icon="i-tabler-play"
                 >Run all</UButton
               >
-              <UDropdown
+              <UDropdownMenu
                 :items="[
                   [
                     {
                       label: '',
                       slot: 'parallel',
-                      click: (e: MouseEvent) => {
+                      onSelect: (e: Event) => {
                         e.preventDefault()
                         e.stopPropagation()
                         config.parallel = !Boolean(config.parallel)
@@ -377,7 +375,7 @@ watch(
                     },
                   ],
                 ]"
-                :ui="{ width: '!w-auto' }"
+                :ui="{ content: '!w-auto' }"
               >
                 <UButton
                   class="font-semibold w-8 !p-0 justify-center"
@@ -387,7 +385,7 @@ watch(
                 <template #parallel>
                   <div>
                     <div class="flex items-center gap-2">
-                      <UToggle v-model="config.parallel" size="sm" />
+                      <USwitch v-model="config.parallel" size="sm" />
                       <label class="font-medium text-nowrap pr-2">Run tests in parallel</label>
                     </div>
                     <small
@@ -399,8 +397,8 @@ watch(
                     </small>
                   </div>
                 </template>
-              </UDropdown>
-            </UButtonGroup>
+              </UDropdownMenu>
+            </UFieldGroup>
           </div>
         </div>
 
@@ -434,7 +432,13 @@ watch(
             Test cases <span class="font-normal text-gray-500 text-xl">({{ cases.length }})</span>
           </h3>
           <div>
-            <UButton icon="i-tabler-plus" outline @click="addCase(true)" color="white" size="lg">
+            <UButton
+              icon="i-tabler-plus"
+              variant="outline"
+              @click="addCase(true)"
+              color="neutral"
+              size="lg"
+            >
               Add case
             </UButton>
           </div>
@@ -452,9 +456,9 @@ watch(
         <div>
           <UButton
             icon="i-tabler-plus"
-            outline
+            variant="outline"
             @click="addCase(false)"
-            color="white"
+            color="neutral"
             block
             size="md"
           >
@@ -501,7 +505,7 @@ watch(
                 @click="exportResults"
                 :loading="isExporting"
                 :disabled="!cases.length || !allTestsHaveResults"
-                color="white"
+                color="neutral"
                 >Export</UButton
               >
             </UTooltip>
