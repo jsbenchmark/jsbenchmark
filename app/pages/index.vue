@@ -187,6 +187,13 @@ const allTestsHaveResults = computed(() => {
   })
 })
 
+const someTestsHaveResults = computed(() => {
+  return cases.value.some((c) => {
+    const state = stateByTest.value[c.id]
+    return state?.status === 'success' || state?.status === 'error'
+  })
+})
+
 const exportViewRef = ref<HTMLElement | null>(null)
 const isExporting = ref(false)
 
@@ -436,6 +443,7 @@ watch(
           <h2 class="text-3xl font-bold shrink-0">Results</h2>
           <div class="flex items-center gap-2">
             <UButton
+              :disabled="!someTestsHaveResults"
               :aria-pressed="showStatistics"
               :color="showStatistics ? 'primary' : 'neutral'"
               :variant="showStatistics ? 'soft' : 'outline'"
