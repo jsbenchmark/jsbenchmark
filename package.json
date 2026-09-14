@@ -7,6 +7,8 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "upgrade": "nuxi upgrade --force",
     "format": "prettier '**/*.{ts,vue}' --write",
     "typecheck": "nuxt typecheck"
@@ -23,6 +25,7 @@
     "nuxt": "^4.5.2",
     "prettier": "^3.9.6",
     "typescript": "^6.0.3",
+    "vitest": "^5.0.0",
     "vue-tsc": "^3.3.11"
   },
   "dependencies": {
