@@ -275,9 +275,12 @@ const exportResults = async () => {
   await nextTick()
 
   // Fix fonts: https://github.com/bubkoo/html-to-image/issues/49#issuecomment-762222100
+  await document.fonts.ready
+  const fontEmbedCSS = await htmlToImage.getFontEmbedCSS(exportViewRef.value!)
   const dataUrl = await htmlToImage.toPng(exportViewRef.value!, {
     canvasWidth: 1600 * 2,
     canvasHeight: 900 * 2,
+    fontEmbedCSS,
   })
   const link = document.createElement('a')
   link.download = `${slugify(config.value.name).toLowerCase()}.png`
@@ -478,7 +481,7 @@ watch(
         >
           <div
             ref="exportViewRef"
-            class="w-[1600px] h-[900px] rounded-xl bg-gray-900 p-20 flex flex-col justify-center"
+            class="w-[1600px] h-[900px] rounded-xl bg-gray-900 p-20 flex flex-col justify-center font-sans"
             :style="{
               fontSize: `${clamp(40 * (2 / Math.max(cases.length, 2)) * 0.95, 10, 35)}px`,
             }"
