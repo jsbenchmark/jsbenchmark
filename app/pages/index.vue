@@ -432,10 +432,17 @@ watch(
         </div>
       </template>
       <template #sidebar>
-        <div class="flex justify-between items-center mb-12">
-          <h2 class="text-3xl font-bold">Results</h2>
+        <div class="flex flex-wrap justify-between items-center gap-3 mb-12">
+          <h2 class="text-3xl font-bold shrink-0">Results</h2>
           <div class="flex items-center gap-2">
-            <BaseCheckboxButton v-model="showStatistics" label="Statistics" />
+            <UButton
+              :aria-pressed="showStatistics"
+              :color="showStatistics ? 'primary' : 'neutral'"
+              :variant="showStatistics ? 'soft' : 'outline'"
+              @click="showStatistics = !showStatistics"
+            >
+              Statistics
+            </UButton>
             <UTooltip
               :text="
                 !cases.length || !allTestsHaveResults

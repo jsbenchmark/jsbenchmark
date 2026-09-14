@@ -2,6 +2,7 @@
 import type { TestCase, TestState } from '~/types'
 import chroma from 'chroma-js'
 import { COLORS } from '~/utils/constants'
+import { formatDuration } from '~/utils/benchmark/format'
 
 const props = defineProps({
   cases: {
@@ -37,6 +38,10 @@ const colors = computed(() => {
     const percentage = (state.result?.opsPerSecond || 0) / maxOpsPerSecond.value
     return colorScale(percentage).hex()
   })
+})
+
+const hasVisibleStatistics = computed(() => {
+  return props.showStatistics && props.cases.some((test) => props.stateByTest[test.id]?.result)
 })
 
 const formatNumber = (value: number | undefined) =>
@@ -85,8 +90,7 @@ const formatRelativeToFastest = (opsPerSecond: number) => {
       </div>
       <div class="text-[0.8em] mt-2.5 font-mono">
         <span class="text-gray-400">Average run time:</span>
-        {{ formatNumber(stateByTest[test.id]?.result?.averageTime) }}
-        <span v-if="stateByTest[test.id]?.result" class="text-gray-400">ms</span>
+        {{ formatDuration(stateByTest[test.id]?.result?.averageTime) }}
       </div>
       <template v-if="showStatistics && stateByTest[test.id]?.result">
         <dl
@@ -94,16 +98,16 @@ const formatRelativeToFastest = (opsPerSecond: number) => {
         >
           <div>
             <dt class="text-gray-400">Median</dt>
-            <dd>{{ formatNumber(stateByTest[test.id]!.result!.statistics.median) }} ms</dd>
+            <dd>{{ formatDuration(stateByTest[test.id]!.result!.statistics.median) }}</dd>
           </div>
           <div>
             <dt class="text-gray-400">p95</dt>
-            <dd>{{ formatNumber(stateByTest[test.id]!.result!.statistics.p95) }} ms</dd>
+            <dd>{{ formatDuration(stateByTest[test.id]!.result!.statistics.p95) }}</dd>
           </div>
           <div>
             <dt class="text-gray-400">Std deviation</dt>
             <dd>
-              {{ formatNumber(stateByTest[test.id]!.result!.statistics.standardDeviation) }} ms
+              {{ formatDuration(stateByTest[test.id]!.result!.statistics.standardDeviation) }}
             </dd>
           </div>
           <div>
@@ -124,7 +128,7 @@ const formatRelativeToFastest = (opsPerSecond: number) => {
           </div>
           <div>
             <dt class="text-gray-400">Measured</dt>
-            <dd>{{ formatNumber(stateByTest[test.id]!.result!.elapsedMs / 1000) }} s</dd>
+            <dd>{{ formatDuration(stateByTest[test.id]!.result!.elapsedMs) }}</dd>
           </div>
           <div>
             <dt class="text-gray-400">Relative</dt>
@@ -140,12 +144,13 @@ const formatRelativeToFastest = (opsPerSecond: number) => {
         >
           Limited statistics: fewer than 10 timed batches were collected.
         </p>
-        <p class="mt-2 text-xs leading-normal text-gray-500">
-          Latency statistics are per-operation averages from timed batches.
-        </p>
       </template>
       <hr v-if="i < cases.length - 1" class="mt-[1.25em] border-gray-800" />
     </div>
+    <p v-if="hasVisibleStatistics" class="text-xs leading-normal text-gray-500">
+      Latency statistics are per-operation averages from timed batches, not individual-call
+      percentiles.
+    </p>
   </div>
 </template>
 
