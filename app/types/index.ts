@@ -27,6 +27,7 @@ export type TestCase = {
 export type TestState = {
   status: 'idle' | 'running' | 'success' | 'error'
   error?: Error | null
+  estimatedDurationMs?: number
   result?: BenchmarkSummary
 }
 

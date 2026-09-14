@@ -66,8 +66,13 @@ const formatRelativeToFastest = (opsPerSecond: number) => {
           {{ test.name || `Test #${i + 1}` }}
         </div>
         <div class="font-mono">
-          <span class="text-gray-400">Ops/s:</span>
-          {{ formatNumber(stateByTest[test.id]?.result?.opsPerSecond) }}
+          <span v-if="stateByTest[test.id]?.status === 'running'" class="text-gray-400">
+            Running…
+          </span>
+          <template v-else>
+            <span class="text-gray-400">Ops/s:</span>
+            {{ formatNumber(stateByTest[test.id]?.result?.opsPerSecond) }}
+          </template>
         </div>
       </div>
       <div class="relative rounded-[0.375em] bg-gray-800">
@@ -77,10 +82,12 @@ const formatRelativeToFastest = (opsPerSecond: number) => {
             '!bg-gray-700': stateByTest[test.id]?.status === 'running',
             '!bg-gray-800':
               stateByTest[test.id]?.status !== 'running' && !stateByTest[test.id]?.result,
+            'benchmark-progress': stateByTest[test.id]?.status === 'running',
             'striped-animated': stateByTest[test.id]?.status === 'running',
             '!bg-red-600': stateByTest[test.id]?.status === 'error',
           }"
           :style="{
+            '--benchmark-duration': `${stateByTest[test.id]?.estimatedDurationMs || 0}ms`,
             backgroundColor: colors[i],
             width: !stateByTest[test.id]?.result
               ? '100%'
@@ -171,6 +178,29 @@ const formatRelativeToFastest = (opsPerSecond: number) => {
 
 .striped-animated {
   animation: 350ms linear 0s infinite normal none running stripes-animation;
+}
+
+.striped-animated.benchmark-progress {
+  animation:
+    350ms linear infinite stripes-animation,
+    var(--benchmark-duration) linear forwards benchmark-progress-animation;
+}
+
+@keyframes benchmark-progress-animation {
+  from {
+    clip-path: inset(0 100% 0 0 round 0.375em);
+  }
+
+  to {
+    clip-path: inset(0 0 0 0 round 0.375em);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .striped-animated.benchmark-progress {
+    animation: none;
+    clip-path: inset(0 0 0 0 round 0.375em);
+  }
 }
 
 @keyframes stripes-animation {

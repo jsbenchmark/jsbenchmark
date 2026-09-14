@@ -62,17 +62,17 @@ const benchmarkModeOptions = Object.entries(BENCHMARK_MODES).map(([value, settin
 }))
 
 const runCase = async (c: TestCase) => {
+  const benchmarkSettings = resolveBenchmarkMode(config.value.benchmarkMode)
   stateByTest.value[c.id] = {
     status: 'running',
     error: null,
+    estimatedDurationMs: benchmarkSettings.time + benchmarkSettings.warmupTime,
   }
 
   const dependencies = [
     ...(config.value.globalTestConfig.dependencies || []),
     ...(c.dependencies || []),
   ].filter((d) => d.url)
-  const benchmarkSettings = resolveBenchmarkMode(config.value.benchmarkMode)
-
   const { workerFn, workerTerminate } = useWebWorkerFn(runBenchmarkWorker, {
     timeout: benchmarkSettings.timeout,
     dependencies: unref(dependencies),
@@ -129,17 +129,37 @@ const runCase = async (c: TestCase) => {
 
 const isRunningAllTests = ref(false)
 const showStatistics = ref(false)
+const benchmarkRunStatus = useBenchmarkRunStatus()
 
 const run = async () => {
+  const tests = [...cases.value]
+  if (!tests.length) return
+
   isRunningAllTests.value = true
-  if (config.value.parallel) {
-    await Promise.all(cases.value.map(runCase))
-  } else {
-    for (const c of cases.value) {
-      await runCase(c)
+  const benchmarkSettings = resolveBenchmarkMode(config.value.benchmarkMode)
+  benchmarkRunStatus.start({
+    estimatedTestDurationMs: benchmarkSettings.time + benchmarkSettings.warmupTime,
+    label: benchmarkSettings.label,
+    parallel: config.value.parallel,
+    totalTests: tests.length,
+  })
+
+  try {
+    if (config.value.parallel) {
+      await Promise.all(tests.map(runCase))
+    } else {
+      for (const [index, test] of tests.entries()) {
+        benchmarkRunStatus.startTest(index + 1)
+        await runCase(test)
+      }
     }
+  } finally {
+    const failedTests = tests.filter(
+      (test) => stateByTest.value[test.id]?.status === 'error'
+    ).length
+    benchmarkRunStatus.finish(failedTests)
+    isRunningAllTests.value = false
   }
-  isRunningAllTests.value = false
 }
 
 const addCase = (insertAtStart = false) => {
