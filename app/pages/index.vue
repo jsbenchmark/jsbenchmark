@@ -5,11 +5,7 @@ import { nanoid } from 'nanoid'
 import { clamp } from '@vueuse/core'
 import slugify from 'slugify'
 import * as htmlToImage from 'html-to-image'
-import {
-  ADVANCED_EXAMPLE_URL,
-  DEFAULT_TEST_NAME,
-  TARGET_BATCH_TIME,
-} from '~/utils/constants'
+import { ADVANCED_EXAMPLE_URL, DEFAULT_TEST_NAME, TARGET_BATCH_TIME } from '~/utils/constants'
 import { serialize, deserialize } from '~/utils'
 import { runBenchmarkWorker } from '~/utils/benchmark/run'
 import { summarizeBenchmark } from '~/utils/benchmark/summary'
@@ -132,6 +128,7 @@ const runCase = async (c: TestCase) => {
 }
 
 const isRunningAllTests = ref(false)
+const showStatistics = ref(false)
 
 const run = async () => {
   isRunningAllTests.value = true
@@ -437,7 +434,8 @@ watch(
       <template #sidebar>
         <div class="flex justify-between items-center mb-12">
           <h2 class="text-3xl font-bold">Results</h2>
-          <div>
+          <div class="flex items-center gap-2">
+            <BaseCheckboxButton v-model="showStatistics" label="Statistics" />
             <UTooltip
               :text="
                 !cases.length || !allTestsHaveResults
@@ -457,7 +455,7 @@ watch(
           </div>
         </div>
 
-        <Results :cases="cases" :state-by-test="stateByTest" />
+        <Results :cases="cases" :state-by-test="stateByTest" :show-statistics="showStatistics" />
 
         <div class="mt-20 text-gray-400 text-[0.8rem] space-y-2">
           <p>

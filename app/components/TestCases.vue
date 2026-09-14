@@ -67,6 +67,9 @@ const onOptionsOpen = (open: boolean, c: TestCase) => {
     optionsOpenOnTestCase.value = c
   }
 }
+
+const formatOpsPerSecond = (value: number | undefined) =>
+  value?.toLocaleString(undefined, { maximumSignificantDigits: 4 }) || '?'
 </script>
 
 <template>
@@ -101,11 +104,7 @@ const onOptionsOpen = (open: boolean, c: TestCase) => {
               <div class="flex items-center font-mono space-x-2 text-sm">
                 <div class="text-gray-400">Ops/s:</div>
                 <div>
-                  {{
-                    stateByTest[c.id]?.result
-                      ? Number(stateByTest[c.id]?.result?.opsPerSecond).toLocaleString()
-                      : '?'
-                  }}
+                  {{ formatOpsPerSecond(stateByTest[c.id]?.result?.opsPerSecond) }}
                 </div>
               </div>
             </div>
