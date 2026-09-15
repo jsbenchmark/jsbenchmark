@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TestCase, Dependency, TestState, Config } from '~/types'
 import { nanoid } from 'nanoid'
-import { clamp } from '@vueuse/core'
+import { clamp, useElementBounding } from '@vueuse/core'
 import slugify from 'slugify'
 import * as htmlToImage from 'html-to-image'
 import type { DropdownMenuItem } from '@nuxt/ui'
@@ -55,6 +55,12 @@ const { isAnyTestRunning, isRunningAllTests, run, runCase } = useBenchmarkExecut
   config,
   stateByTest,
 })
+
+const runControlsAnchor = useTemplateRef<HTMLElement>('runControlsAnchor')
+const { bottom, left, width } = useElementBounding(runControlsAnchor)
+
+// Keep the original controls in flow and align the floating copy to their viewport bounds.
+const showFloatingControls = computed(() => width.value > 0 && bottom.value <= 0)
 
 const showStatistics = ref(false)
 
@@ -293,6 +299,33 @@ watch(
 
 <template>
   <div>
+    <Transition
+      enter-active-class="transition duration-200 ease-out motion-reduce:transition-none"
+      leave-active-class="transition duration-150 ease-in motion-reduce:transition-none"
+      enter-from-class="-translate-y-2 opacity-0"
+      leave-to-class="-translate-y-2 opacity-0"
+    >
+      <div
+        v-if="showFloatingControls"
+        role="region"
+        aria-label="Floating benchmark controls"
+        class="fixed top-0 z-30 py-3 shadow-xl dark:shadow-black/15"
+        :style="{ left: `${left}px`, width: `${width}px` }"
+      >
+        <div
+          aria-hidden="true"
+          class="absolute inset-y-0 -inset-x-3 rounded-b-lg bg-default/95 shadow-sm ring ring-default backdrop-blur-md"
+        />
+        <BenchmarkRunControls
+          v-model="config"
+          class="relative"
+          :is-any-test-running="isAnyTestRunning"
+          :is-running-all-tests="isRunningAllTests"
+          @run="run"
+        />
+      </div>
+    </Transition>
+
     <SplitLayout>
       <template #default>
         <div class="flex-col lg:flex-row flex justify-between lg:items-start">
@@ -322,7 +355,7 @@ watch(
               </UTooltip>
               <ShareButton :payload="{ config, cases }" type="benchmark" />
 
-              <div class="min-w-0 max-w-full">
+              <div ref="runControlsAnchor" class="min-w-0 max-w-full">
                 <BenchmarkRunControls
                   v-model="config"
                   :is-any-test-running="isAnyTestRunning"
