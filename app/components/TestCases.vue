@@ -78,13 +78,13 @@ const formatOpsPerSecond = (value: number | undefined) =>
       <div
         v-for="(c, index) of testCases"
         :key="c.id"
-        class="border rounded-xl border-gray-800 p-6 flex flex-col gap-4 bg-gray-900 relative mb-8"
+        class="border rounded-xl border-default p-6 flex flex-col gap-4 bg-default relative mb-8"
       >
         <div class="flex-col lg:flex-row flex lg:items-center justify-between">
           <div class="flex items-stretch gap-2 -ml-1">
             <div
               data-handle
-              class="flex items-center text-gray-600 hover:text-white transition text-xl select-none cursor-grab"
+              class="flex items-center text-muted hover:text-highlighted transition text-xl select-none cursor-grab"
             >
               <UIcon name="i-tabler-grip-vertical" />
             </div>
@@ -102,7 +102,7 @@ const formatOpsPerSecond = (value: number | undefined) =>
               class="rounded-md h-full px-0 lg:mr-6 -border -bg-gray-800 flex items-center mr-auto"
             >
               <div class="flex items-center font-mono space-x-2 text-sm">
-                <div class="text-gray-400">Ops/s:</div>
+                <div class="text-muted">Ops/s:</div>
                 <div>
                   {{ formatOpsPerSecond(stateByTest[c.id]?.result?.opsPerSecond) }}
                 </div>

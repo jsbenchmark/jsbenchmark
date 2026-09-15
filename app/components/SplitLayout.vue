@@ -11,45 +11,60 @@
           <div>
             <a
               href="/"
-              class="text-base font-semibold text-[#ff8362] uppercase tracking-wider leading-none block"
+              class="text-base font-semibold text-salmon-700 dark:text-salmon-400 uppercase tracking-wider leading-none block"
             >
               jsbenchmark
             </a>
-            <div class="text-xs text-left text-gray-400 leading-none tracking-wide mt-[0.2rem]">
+            <div class="text-xs text-left text-muted leading-none tracking-wide mt-[0.2rem]">
               by
-              <a href="https://pabue.co" target="_blank" class="transition hover:text-white"
+              <a href="https://pabue.co" target="_blank" class="transition hover:text-highlighted"
                 >pabue.co</a
               >
               on
               <a
                 href="https://github.com/jsbenchmark"
                 target="_blank"
-                class="transition hover:text-white"
+                class="transition hover:text-highlighted"
                 >github</a
               >
             </div>
           </div>
+
+          <UColorModeSelect
+            aria-label="Color theme"
+            size="xs"
+            class="relative ml-3 size-8 justify-center gap-0 rounded-full p-0 after:absolute after:-inset-1.5 after:content-['']"
+            :content="{ side: 'bottom', align: 'start' }"
+            :ui="{
+              leading: 'static inset-auto p-0',
+              value: 'sr-only',
+              trailing: 'hidden',
+              content: 'w-32',
+            }"
+          />
         </div>
 
         <div class="flex mt-6 lg:mt-0">
-          <NuxtLink
-            class="px-4 py-2 rounded-md hover:bg-gray-800 font-semibold text-gray-400 hover:text-white transition"
-            to="/"
-            active-class="text-white"
-          >
-            Benchmark
-          </NuxtLink>
-          <NuxtLink
-            class="px-4 py-2 rounded-md hover:bg-gray-800 font-semibold text-gray-400 hover:text-white transition inline-flex items-center"
-            to="/repl"
-            active-class="text-white"
-          >
-            Repl
-            <!-- <span
-              class="bg-[#ff8362] rounded-full uppercase text-[0.7rem] px-1.5 py-0 font-semibold text-black ml-2 inline-block"
-              >New</span
-            > -->
-          </NuxtLink>
+          <nav aria-label="Primary" class="flex">
+            <NuxtLink
+              class="px-4 py-2 rounded-md hover:bg-elevated font-semibold text-muted hover:text-highlighted transition"
+              to="/"
+              active-class="!text-highlighted"
+            >
+              Benchmark
+            </NuxtLink>
+            <NuxtLink
+              class="px-4 py-2 rounded-md hover:bg-elevated font-semibold text-muted hover:text-highlighted transition inline-flex items-center"
+              to="/repl"
+              active-class="!text-highlighted"
+            >
+              Repl
+              <!-- <span
+                class="bg-salmon-400 rounded-full uppercase text-[0.7rem] px-1.5 py-0 font-semibold text-black ml-2 inline-block"
+                >New</span
+              > -->
+            </NuxtLink>
+          </nav>
         </div>
       </div>
       <slot name="default" />
@@ -63,7 +78,7 @@
       </div>
 
       <div
-        class="hidden lg:block absolute z-0 pointer-events-none inset-0 -right-[100vw] bg-gray-950/50"
+        class="hidden lg:block absolute z-0 pointer-events-none inset-0 -right-[100vw] bg-muted dark:bg-gray-950/50"
       ></div>
     </div>
   </div>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 useHead({
   htmlAttrs: {
-    class: 'bg-zinc-900 text-white font-sans overflow-x-hidden',
+    class: 'bg-default text-default font-sans overflow-x-hidden',
   },
   meta: [
     {
@@ -22,13 +22,6 @@ useServerSeoMeta({
   ogImage: 'https://jsbenchmark.com/og.png',
   twitterCard: 'summary_large_image',
 })
-
-onMounted(() => {
-  const colorMode = useColorMode()
-  if (colorMode.value !== 'dark') {
-    colorMode.preference = 'dark'
-  }
-})
 </script>
 
 <template>
@@ -38,10 +31,6 @@ onMounted(() => {
 </template>
 
 <style>
-:root {
-  color-scheme: dark;
-}
-
 input {
   max-width: none;
 }

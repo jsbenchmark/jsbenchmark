@@ -36,3 +36,14 @@
   --color-gray-900: var(--color-zinc-900);
   --color-gray-950: var(--color-zinc-950);
 }
+
+:root,
+.light {
+  --benchmark-editor-active-line: var(--ui-bg-accented);
+  --benchmark-warning-text: var(--color-amber-700);
+}
+
+.dark {
+  --benchmark-editor-active-line: var(--color-gray-800);
+  --benchmark-warning-text: var(--color-amber-400);
+}

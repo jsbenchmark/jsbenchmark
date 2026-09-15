@@ -224,6 +224,7 @@ const includeDeviceSpecsInImage = ref(true)
 const exportDeviceSpecs = ref('')
 const resultsClipboard = useClipboard({ legacy: true })
 const toast = useToast()
+const colorMode = useColorMode()
 
 const exportResults = async () => {
   isExporting.value = true
@@ -436,12 +437,12 @@ watch(
                         class="w-full"
                         :disabled="isRunningAllTests"
                       />
-                      <small class="block leading-normal text-gray-400 mt-2 text-xs">
+                      <small class="block leading-normal text-muted mt-2 text-xs">
                         Longer runs collect more samples and take longer to complete.
                       </small>
                     </div>
 
-                    <div class="border-t border-gray-800 pt-4">
+                    <div class="border-t border-default pt-4">
                       <div class="flex items-center gap-2">
                         <USwitch
                           id="parallel-tests"
@@ -453,7 +454,7 @@ watch(
                           Run tests in parallel
                         </label>
                       </div>
-                      <small class="block leading-normal text-gray-400 mt-2 text-xs">
+                      <small class="block leading-normal text-muted mt-2 text-xs">
                         Faster overall, but workers share CPU, cache, and memory bandwidth. Disable
                         this when results are close or inconsistent.
                       </small>
@@ -467,10 +468,10 @@ watch(
 
         <div class="flex flex-col gap-3">
           <h3 class="text-2xl font-bold">Setup</h3>
-          <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-400">
+          <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
             <p>
               Return the data your tests need. It will be available as
-              <code class="text-white">DATA</code>
+              <code class="text-highlighted">DATA</code>
               in every test case.
             </p>
             <UPopover :content="{ side: 'bottom', align: 'start' }" mode="hover">
@@ -490,11 +491,11 @@ watch(
                     Setup runs separately for each test case and is excluded from the benchmark
                     timing.
                   </p>
-                  <p class="text-gray-400">
+                  <p class="text-muted">
                     All snippets can use TypeScript when experimental support is enabled.
                   </p>
                   <a
-                    class="inline-flex font-medium underline transition hover:text-white"
+                    class="inline-flex font-medium underline transition hover:text-highlighted"
                     target="_blank"
                     rel="noreferrer"
                     :href="ADVANCED_EXAMPLE_URL"
@@ -515,7 +516,7 @@ watch(
 
         <div class="flex justify-between items-center !mt-10">
           <h3 class="text-2xl font-bold">
-            Test cases <span class="font-normal text-gray-500 text-xl">({{ cases.length }})</span>
+            Test cases <span class="font-normal text-muted text-xl">({{ cases.length }})</span>
           </h3>
           <div>
             <UButton
@@ -558,7 +559,8 @@ watch(
         >
           <div
             ref="exportViewRef"
-            class="relative w-[1600px] h-[900px] rounded-xl bg-gray-900 p-20 flex flex-col justify-center font-sans"
+            class="relative w-[1600px] h-[900px] rounded-xl bg-default text-highlighted p-20 flex flex-col justify-center font-sans"
+            :class="colorMode.value === 'dark' ? 'dark' : 'light'"
             :style="{
               fontSize: `${clamp(40 * (2 / Math.max(cases.length, 2)) * 0.95, 10, 35)}px`,
             }"
@@ -572,16 +574,16 @@ watch(
               :show-summary-statistics="includeStatisticsInImage"
             />
             <div
-              class="absolute top-0 right-0 bg-gray-800 rounded-bl-md rounded-tr-xl text-xs px-3.5 py-1.5 text-gray-400 tracking-wide font-medium"
+              class="absolute top-0 right-0 bg-muted rounded-bl-md rounded-tr-xl text-xs px-3.5 py-1.5 text-muted tracking-wide font-medium"
             >
               <span>Powered by</span>
-              <span class="text-gray-300 inline-block ml-1">jsbenchmark.com</span>
+              <span class="text-toned inline-block ml-1">jsbenchmark.com</span>
             </div>
             <div
               v-if="includeDeviceSpecsInImage"
-              class="absolute inset-x-0 bottom-0 bg-gray-800 rounded-b-xl text-xs px-6 py-2 text-center text-gray-400 tracking-wide font-medium"
+              class="absolute inset-x-0 bottom-0 bg-muted rounded-b-xl text-xs px-6 py-2 text-center text-muted tracking-wide font-medium"
             >
-              <span class="text-gray-300">Device:</span>
+              <span class="text-toned">Device:</span>
               <span class="ml-1">{{ exportDeviceSpecs }}</span>
             </div>
           </div>
@@ -623,7 +625,7 @@ watch(
                     />
                     <span class="font-medium">Include statistics</span>
                   </span>
-                  <span class="text-xs text-gray-400">Add median, p95, deviation, and RME</span>
+                  <span class="text-xs text-muted">Add median, p95, deviation, and RME</span>
                 </span>
               </template>
 
@@ -639,7 +641,7 @@ watch(
                     />
                     <span class="font-medium">Include device specs</span>
                   </span>
-                  <span class="text-xs text-gray-400">
+                  <span class="text-xs text-muted">
                     Add available platform and hardware details
                   </span>
                 </span>
@@ -650,7 +652,7 @@ watch(
 
         <Results :cases="cases" :state-by-test="stateByTest" :show-statistics="showStatistics" />
 
-        <div class="mt-16 text-[0.8rem] leading-normal text-gray-400">
+        <div class="mt-16 text-[0.8rem] leading-normal text-muted">
           Compare cases within the same run. Absolute performance may
           <span class="inline-flex items-center gap-1.5 whitespace-nowrap align-middle">
             <span>vary between runs.</span>
@@ -672,11 +674,11 @@ watch(
                     Tests are warmed up, then measured in timed batches using the actual elapsed
                     time. Statistics summarize per-operation batch averages, not individual calls.
                   </p>
-                  <p class="text-gray-400">
+                  <p class="text-muted">
                     Each test uses its own web worker. Tests run in parallel by default, so workers
                     share CPU, cache, and memory bandwidth.
                   </p>
-                  <p class="text-gray-400">
+                  <p class="text-muted">
                     CPU load, JIT compilation, garbage collection, and concurrent workers can affect
                     absolute ops/s.
                   </p>
@@ -691,23 +693,20 @@ watch(
 </template>
 
 <style>
-:root {
-  color-scheme: dark;
-}
-
 input {
   max-width: none;
 }
 
 .striped {
+  --color: rgba(255, 255, 255, 0.05);
   background-size: 2em 2em;
   background-image: linear-gradient(
     45deg,
-    rgba(255, 255, 255, 0.05) 25%,
+    var(--color) 25%,
     transparent 25%,
     transparent 50%,
-    rgba(255, 255, 255, 0.05) 50%,
-    rgba(255, 255, 255, 0.05) 75%,
+    var(--color) 50%,
+    var(--color) 75%,
     transparent 75%,
     transparent
   );

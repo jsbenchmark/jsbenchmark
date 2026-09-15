@@ -82,7 +82,7 @@ const copyToClipoard = (type: 'default' | 'short') => {
 <template>
   <div>
     <UPopover
-      :ui="{ content: 'shadow-xl shadow-black/25' }"
+      :ui="{ content: 'shadow-xl shadow-black/10 dark:shadow-black/25' }"
       :content="{ side: 'bottom', align: 'end' }"
     >
       <UTooltip text="Share">

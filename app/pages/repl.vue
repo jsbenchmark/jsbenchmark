@@ -269,7 +269,7 @@ const maxTimerDuration = computed(() => {
 
             <div
               v-if="state.status === 'error'"
-              class="bg-red-600/10 text-red-500 rounded-md px-4 py-3 font-mono border border-red-600"
+              class="bg-error/10 text-red-700 dark:text-red-400 rounded-md px-4 py-3 font-mono border border-error"
             >
               {{ state.error?.message }}
             </div>
@@ -283,13 +283,10 @@ const maxTimerDuration = computed(() => {
               <USkeleton class="h-6 w-80" />
               <USkeleton class="h-6 w-64" />
             </div>
-            <div
-              v-show="!isRunning && !state?.result?.logs?.length"
-              class="text-gray-400 space-y-3"
-            >
+            <div v-show="!isRunning && !state?.result?.logs?.length" class="text-muted space-y-3">
               <p>
                 Nothing logged yet. Add
-                <code class="px-1.5 py-0.5 bg-gray-700 text-sm text-white rounded"
+                <code class="px-1.5 py-0.5 bg-elevated text-sm text-highlighted rounded"
                   >LOG('foo', { bar: 'baz' }, ...)</code
                 >
                 to your code to log something. The logs will also be available in the browser
@@ -305,7 +302,7 @@ const maxTimerDuration = computed(() => {
               <div v-for="(log, i) in state.result?.logs ?? []" :key="i" class="font-mono mb-2">
                 <div
                   v-if="log.time !== state.result?.logs[i - 1]?.time"
-                  class="text-sm text-gray-400 mb-1"
+                  class="text-sm text-muted mb-1"
                   :class="{
                     'mt-6': i !== 0,
                   }"
@@ -327,10 +324,12 @@ const maxTimerDuration = computed(() => {
             <USkeleton class="h-[2.75em] w-full" />
             <USkeleton class="h-[2.75em] w-2/4" />
           </div>
-          <div v-else-if="!state?.result?.markers?.length" class="text-gray-400 space-y-3">
+          <div v-else-if="!state?.result?.markers?.length" class="text-muted space-y-3">
             <p>
               No markers yet. Add
-              <code class="px-1.5 py-0.5 bg-gray-700 text-sm text-white rounded">TIME('name')</code>
+              <code class="px-1.5 py-0.5 bg-elevated text-sm text-highlighted rounded"
+                >TIME('name')</code
+              >
               to your code to add markers.
             </p>
             <p>
@@ -340,7 +339,7 @@ const maxTimerDuration = computed(() => {
 
           <div v-else>
             <div v-for="(marker, i) in state.result?.markers ?? []" :key="i" class="font-mono mb-6">
-              <div class="text-sm text-gray-400 flex items-center mb-1">
+              <div class="text-sm text-muted flex items-center mb-1">
                 <div>{{ marker.time.toFixed(3) }} ms</div>
                 <div v-if="i !== 0" class="ml-2" title="Time difference to previous marker">
                   (+{{ (marker.time - (state.result?.markers[i - 1]?.time || 0)).toFixed(3) }} ms)

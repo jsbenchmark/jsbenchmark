@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { javascript } from '@codemirror/lang-javascript'
-import { duotoneDarkInit } from '@uiw/codemirror-theme-duotone'
+import { duotoneDarkInit, duotoneLightInit } from '@uiw/codemirror-theme-duotone'
 import { tags as t } from '@lezer/highlight'
 import { debounce } from 'lodash-es'
 import {
@@ -16,7 +16,7 @@ import {
   placeholder,
   EditorView,
 } from '@codemirror/view'
-import { EditorState } from '@codemirror/state'
+import { Compartment, EditorState } from '@codemirror/state'
 import {
   foldGutter,
   indentOnInput,
@@ -54,7 +54,7 @@ const updateListener = EditorView.updateListener.of((v) => {
   emitUpdateDebounced(v.state.doc.toString())
 })
 
-const theme = EditorView.theme({
+const baseTheme = EditorView.theme({
   '&': {
     fontSize: '16px',
   },
@@ -80,19 +80,65 @@ const theme = EditorView.theme({
     borderRadius: '0 3px 3px 0',
   },
   '&.cm-focused .cm-activeLine': {
-    backgroundColor: 'color-mix(in oklab, var(--color-gray-800) 75%, transparent) !important',
+    backgroundColor:
+      'color-mix(in oklab, var(--benchmark-editor-active-line) 75%, transparent) !important',
     borderRadius: '0 3px 3px 0',
   },
   '.cm-activeLineGutter': {
     backgroundColor: 'transparent !important',
   },
   '&.cm-focused .cm-activeLineGutter': {
-    backgroundColor: 'color-mix(in oklab, var(--color-gray-800) 75%, transparent) !important',
+    backgroundColor:
+      'color-mix(in oklab, var(--benchmark-editor-active-line) 75%, transparent) !important',
   },
   '.cm-lineNumbers .cm-activeLineGutter': {
     borderRadius: '3px 0 0 3px',
   },
 })
+
+type EditorColorMode = 'light' | 'dark'
+
+const createEditorColorTheme = (mode: EditorColorMode) => {
+  const isDark = mode === 'dark'
+  const createTheme = isDark ? duotoneDarkInit : duotoneLightInit
+  const primaryStrong = isDark ? 'var(--ui-color-primary-300)' : 'var(--ui-color-primary-700)'
+  const primary = isDark ? 'var(--ui-color-primary-400)' : 'var(--ui-color-primary-600)'
+  const purple = isDark ? '#a78bfa' : '#6d28d9'
+
+  return createTheme({
+    theme: mode,
+    settings: {
+      background: 'transparent',
+      foreground: isDark ? 'var(--color-gray-100)' : 'var(--ui-text-highlighted)',
+      caret: 'var(--ui-color-primary-500)',
+      gutterBackground: 'transparent',
+      gutterForeground: isDark ? 'var(--color-gray-600)' : 'var(--ui-text-muted)',
+      selection: isDark ? 'var(--color-gray-600)' : 'var(--ui-bg-accented)',
+      selectionMatch: isDark ? 'var(--color-gray-700)' : 'var(--ui-border-accented)',
+      lineHighlight: 'transparent',
+    },
+    styles: [
+      { tag: [t.comment, t.bracket], color: 'var(--ui-text-muted)' },
+      { tag: [t.number], color: primary },
+      { tag: [t.atom, t.keyword, t.link, t.attributeName], color: primaryStrong },
+      {
+        tag: [t.emphasis, t.heading, t.tagName, t.className, t.variableName],
+        color: isDark ? 'var(--color-gray-100)' : 'var(--ui-text-highlighted)',
+      },
+      { tag: [t.propertyName], color: 'var(--ui-text-toned)' },
+      { tag: [t.typeName, t.url], color: purple },
+      { tag: [t.function(t.variableName)], color: purple },
+      { tag: [t.function(t.propertyName)], color: purple },
+      { tag: t.operator, color: primaryStrong },
+      { tag: t.string, color: primary },
+      { tag: [t.unit, t.punctuation], color: 'var(--ui-text-muted)' },
+    ],
+  })
+}
+
+const colorMode = useColorMode()
+const colorTheme = new Compartment()
+const resolvedColorMode = (): EditorColorMode => (colorMode.value === 'dark' ? 'dark' : 'light')
 
 const setup = () => [
   lineNumbers(),
@@ -132,47 +178,23 @@ onMounted(() => {
         typescript: true,
       }),
       updateListener,
-      duotoneDarkInit({
-        settings: {
-          foreground: 'var(--color-gray-100)',
-          caret: 'var(--ui-color-primary-500)',
-          gutterForeground: 'var(--color-gray-600)',
-          selection: 'var(--color-gray-600)',
-          selectionMatch: 'var(--color-gray-700)',
-        },
-        styles: [
-          { tag: [t.comment, t.bracket], color: 'var(--color-gray-400)' },
-          {
-            tag: [t.number],
-            color: 'var(--ui-color-primary-400)',
-          },
-          {
-            tag: [t.atom, t.keyword, t.link, t.attributeName],
-            color: 'var(--ui-color-primary-300)',
-          },
-          {
-            tag: [t.emphasis, t.heading, t.tagName, t.className, t.variableName],
-            color: 'var(--color-gray-100)',
-          },
-          {
-            tag: [t.propertyName],
-            color: 'var(--color-gray-300)',
-          },
-          { tag: [t.typeName, t.url], color: '#a78bfa' },
-          { tag: [t.function(t.variableName)], color: '#a78bfa' },
-          { tag: [t.function(t.propertyName)], color: '#a78bfa' },
-          { tag: t.operator, color: 'var(--ui-color-primary-300)' },
-          { tag: t.string, color: 'var(--ui-color-primary-400)' },
-          { tag: [t.unit, t.punctuation], color: 'var(--color-gray-400)' },
-        ],
-      }),
-      theme,
+      colorTheme.of(createEditorColorTheme(resolvedColorMode())),
+      baseTheme,
       placeholder('Your code goes here...'),
     ],
     parent: editorRef.value,
     doc: props.modelValue,
   })
 })
+
+watch(
+  () => colorMode.value,
+  () => {
+    editor.value?.dispatch({
+      effects: colorTheme.reconfigure(createEditorColorTheme(resolvedColorMode())),
+    })
+  }
+)
 
 watch(
   () => props.modelValue,
@@ -205,7 +227,7 @@ const preferences = usePreferences()
   <div
     @keydown.enter.meta.prevent.stop.capture="run"
     @keydown.enter.ctrl.prevent.stop.capture="run"
-    class="font-mono p-3 rounded-md bg-gray-950 border border-gray-700 relative"
+    class="font-mono p-3 rounded-md bg-muted dark:bg-gray-950 border border-accented relative"
   >
     <div ref="editorRef"></div>
 

@@ -101,7 +101,7 @@ watchDebounced(
             <span class="truncate flex-1 mr-2 font-medium">
               {{ item.name }}
             </span>
-            <span class="text-gray-500 font-mono text-sm ml-auto">
+            <span class="text-muted font-mono text-sm ml-auto">
               {{ item.version }}
             </span>
           </div>

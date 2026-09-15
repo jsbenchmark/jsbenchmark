@@ -45,19 +45,19 @@ const addDep = () => {
       </div>
 
       <div v-if="showHint" class="mt-2 lg:mt-0">
-        <p class="text-xs text-gray-500 transition cursor-help">
+        <p class="text-xs text-muted transition cursor-help">
           You can also use sites like
           <a
             href="https://www.jsdelivr.com/"
             target="_blank"
-            class="text-gray-400 transition hover:text-white"
+            class="text-muted transition hover:text-highlighted"
             >jsDelivr</a
           >
           or
           <a
             href="https://www.skypack.dev/"
             target="_blank"
-            class="text-gray-400 transition hover:text-white"
+            class="text-muted transition hover:text-highlighted"
             >Skypack</a
           >
           to find URLs for packages.
@@ -65,7 +65,7 @@ const addDep = () => {
       </div>
     </div>
 
-    <div v-if="!!$slots.help" class="text-gray-400 mt-1.5 text-sm">
+    <div v-if="!!$slots.help" class="text-muted mt-1.5 text-sm">
       <slot name="help" />
     </div>
 

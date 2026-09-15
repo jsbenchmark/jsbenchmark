@@ -34,6 +34,7 @@ const maxOpsPerSecond = computed(() => {
 })
 
 const colorScale = chroma.scale(COLORS.GRADIENT).mode('lch').domain([0, 1])
+const colorMode = useColorMode()
 
 const colors = computed(() => {
   return props.cases.map((c) => {
@@ -66,21 +67,21 @@ const formatRelativeToFastest = (opsPerSecond: number) => {
           {{ test.name || `Test #${i + 1}` }}
         </div>
         <div class="font-mono">
-          <span v-if="stateByTest[test.id]?.status === 'running'" class="text-gray-400">
+          <span v-if="stateByTest[test.id]?.status === 'running'" class="text-muted">
             Running…
           </span>
           <template v-else>
-            <span class="text-gray-400">Ops/s:</span>
+            <span class="text-muted">Ops/s:</span>
             {{ formatNumber(stateByTest[test.id]?.result?.opsPerSecond) }}
           </template>
         </div>
       </div>
-      <div class="relative rounded-[0.375em] bg-gray-800">
+      <div class="relative rounded-[0.375em] bg-accented dark:bg-gray-800">
         <div
           class="rounded-[0.375em] h-[2.75em] transition-all duration-500 striped"
           :class="{
-            '!bg-gray-300': stateByTest[test.id]?.status === 'running',
-            '!bg-gray-800':
+            '!bg-gray-400 dark:!bg-gray-300': stateByTest[test.id]?.status === 'running',
+            '!bg-accented dark:!bg-gray-800':
               stateByTest[test.id]?.status !== 'running' && !stateByTest[test.id]?.result,
             'benchmark-progress': stateByTest[test.id]?.status === 'running',
             'striped-animated': stateByTest[test.id]?.status === 'running',
@@ -88,7 +89,7 @@ const formatRelativeToFastest = (opsPerSecond: number) => {
           }"
           :style="{
             '--color':
-              stateByTest[test.id]?.status === 'running'
+              stateByTest[test.id]?.status === 'running' && colorMode.value === 'dark'
                 ? 'rgba(0, 0, 0, 0.05)'
                 : 'rgba(255, 255, 255, 0.05)',
             '--benchmark-duration': `${stateByTest[test.id]?.estimatedDurationMs || 0}ms`,
@@ -101,48 +102,48 @@ const formatRelativeToFastest = (opsPerSecond: number) => {
       </div>
       <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[0.8em] mt-2.5 font-mono">
         <span class="whitespace-nowrap">
-          <span class="text-gray-400">Average run time:</span>
+          <span class="text-muted">Average run time:</span>
           {{ formatDuration(stateByTest[test.id]?.result?.averageTime) }}
         </span>
         <template v-if="showSummaryStatistics && stateByTest[test.id]?.result">
           <span class="whitespace-nowrap">
-            <span class="text-gray-400">· Median:</span>
+            <span class="text-muted">· Median:</span>
             {{ formatDuration(stateByTest[test.id]!.result!.statistics.median) }}
           </span>
           <span class="whitespace-nowrap">
-            <span class="text-gray-400">· p95:</span>
+            <span class="text-muted">· p95:</span>
             {{ formatDuration(stateByTest[test.id]!.result!.statistics.p95) }}
           </span>
           <span class="whitespace-nowrap">
-            <span class="text-gray-400">· Std deviation:</span>
+            <span class="text-muted">· Std deviation:</span>
             {{ formatDuration(stateByTest[test.id]!.result!.statistics.standardDeviation) }}
           </span>
           <span class="whitespace-nowrap">
-            <span class="text-gray-400">· 95% RME:</span>
+            <span class="text-muted">· 95% RME:</span>
             {{ formatPercentage(stateByTest[test.id]!.result!.statistics.relativeMarginOfError) }}
           </span>
         </template>
       </div>
       <template v-if="showStatistics && stateByTest[test.id]?.result">
         <dl
-          class="grid grid-cols-2 gap-x-5 gap-y-3 mt-3 p-3 rounded-md border border-gray-800 bg-gray-900/50 text-xs font-mono"
+          class="grid grid-cols-2 gap-x-5 gap-y-3 mt-3 p-3 rounded-md border border-default bg-muted/50 dark:bg-gray-900/50 text-xs font-mono"
         >
           <div>
-            <dt class="text-gray-400">Median</dt>
+            <dt class="text-muted">Median</dt>
             <dd>{{ formatDuration(stateByTest[test.id]!.result!.statistics.median) }}</dd>
           </div>
           <div>
-            <dt class="text-gray-400">p95</dt>
+            <dt class="text-muted">p95</dt>
             <dd>{{ formatDuration(stateByTest[test.id]!.result!.statistics.p95) }}</dd>
           </div>
           <div>
-            <dt class="text-gray-400">Std deviation</dt>
+            <dt class="text-muted">Std deviation</dt>
             <dd>
               {{ formatDuration(stateByTest[test.id]!.result!.statistics.standardDeviation) }}
             </dd>
           </div>
           <div>
-            <dt class="text-gray-400" title="Approximate 95% relative margin of error for the mean">
+            <dt class="text-muted" title="Approximate 95% relative margin of error for the mean">
               95% RME
             </dt>
             <dd>
@@ -150,19 +151,19 @@ const formatRelativeToFastest = (opsPerSecond: number) => {
             </dd>
           </div>
           <div>
-            <dt class="text-gray-400">Batches</dt>
+            <dt class="text-muted">Batches</dt>
             <dd>{{ formatCount(stateByTest[test.id]!.result!.statistics.sampleCount) }}</dd>
           </div>
           <div>
-            <dt class="text-gray-400">Operations</dt>
+            <dt class="text-muted">Operations</dt>
             <dd>{{ formatCount(stateByTest[test.id]!.result!.iterations) }}</dd>
           </div>
           <div>
-            <dt class="text-gray-400">Measured</dt>
+            <dt class="text-muted">Measured</dt>
             <dd>{{ formatDuration(stateByTest[test.id]!.result!.elapsedMs) }}</dd>
           </div>
           <div>
-            <dt class="text-gray-400">Relative</dt>
+            <dt class="text-muted">Relative</dt>
             <dd>
               {{ formatRelativeToFastest(stateByTest[test.id]!.result!.opsPerSecond) }}
             </dd>
@@ -171,12 +172,12 @@ const formatRelativeToFastest = (opsPerSecond: number) => {
         <p
           v-if="stateByTest[test.id]!.result!.statistics.sampleCount < 10"
           role="status"
-          class="mt-2 text-xs text-amber-400"
+          class="statistics-warning mt-2 text-xs"
         >
           Limited statistics: fewer than 10 timed batches were collected.
         </p>
       </template>
-      <hr v-if="i < cases.length - 1" class="mt-[1.25em] border-gray-800" />
+      <hr v-if="i < cases.length - 1" class="mt-[1.25em] border-default" />
     </div>
   </div>
 </template>
@@ -195,6 +196,10 @@ const formatRelativeToFastest = (opsPerSecond: number) => {
     transparent 75%,
     transparent
   );
+}
+
+.statistics-warning {
+  color: var(--benchmark-warning-text);
 }
 
 .striped-animated {
