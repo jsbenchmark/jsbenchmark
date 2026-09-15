@@ -5,9 +5,11 @@ import { nanoid } from 'nanoid'
 import { clamp } from '@vueuse/core'
 import slugify from 'slugify'
 import * as htmlToImage from 'html-to-image'
+import type { DropdownMenuItem } from '@nuxt/ui'
 import { ADVANCED_EXAMPLE_URL, DEFAULT_TEST_NAME, TARGET_BATCH_TIME } from '~/utils/constants'
 import { serialize, deserialize } from '~/utils'
 import { getDeviceSpecs } from '~/utils/device'
+import { formatBenchmarkResults, type BenchmarkExportFormat } from '~/utils/benchmark/export'
 import { runBenchmarkWorker } from '~/utils/benchmark/run'
 import { summarizeBenchmark } from '~/utils/benchmark/summary'
 import {
@@ -218,29 +220,89 @@ const someTestsHaveResults = computed(() => {
 const exportViewRef = ref<HTMLElement | null>(null)
 const isExporting = ref(false)
 const exportDeviceSpecs = ref('')
+const resultsClipboard = useClipboard({ legacy: true })
+const toast = useToast()
 
 const exportResults = async () => {
   isExporting.value = true
-  exportDeviceSpecs.value = await getDeviceSpecs()
-  await nextTick()
+  try {
+    exportDeviceSpecs.value = await getDeviceSpecs()
+    await nextTick()
 
-  // Fix fonts: https://github.com/bubkoo/html-to-image/issues/49#issuecomment-762222100
-  await document.fonts.ready
-  const fontEmbedCSS = await htmlToImage.getFontEmbedCSS(exportViewRef.value!)
-  const dataUrl = await htmlToImage.toPng(exportViewRef.value!, {
-    canvasWidth: 1600 * 2,
-    canvasHeight: 900 * 2,
-    fontEmbedCSS,
-  })
-  const link = document.createElement('a')
-  link.download = `${slugify(config.value.name).toLowerCase()}.png`
-  link.href = dataUrl
-  link.click()
-
-  setTimeout(() => {
-    isExporting.value = false
-  }, 1000)
+    // Fix fonts: https://github.com/bubkoo/html-to-image/issues/49#issuecomment-762222100
+    await document.fonts.ready
+    const fontEmbedCSS = await htmlToImage.getFontEmbedCSS(exportViewRef.value!)
+    const dataUrl = await htmlToImage.toPng(exportViewRef.value!, {
+      canvasWidth: 1600 * 2,
+      canvasHeight: 900 * 2,
+      fontEmbedCSS,
+    })
+    const link = document.createElement('a')
+    link.download = `${slugify(config.value.name).toLowerCase()}.png`
+    link.href = dataUrl
+    link.click()
+  } catch {
+    toast.add({
+      title: 'Image export failed',
+      description: 'The results could not be rendered as an image.',
+      closeIcon: 'i-tabler-x',
+      color: 'error',
+      icon: 'i-tabler-alert-circle',
+    })
+  } finally {
+    setTimeout(() => {
+      isExporting.value = false
+    }, 1000)
+  }
 }
+
+const copyResults = async (format: BenchmarkExportFormat) => {
+  await resultsClipboard.copy(
+    formatBenchmarkResults(config.value.name, cases.value, stateByTest.value, format)
+  )
+  toast.add({
+    title: `Copied as ${format === 'markdown' ? 'Markdown' : format.toUpperCase()}`,
+    description: 'Benchmark results and statistics are ready to paste.',
+    closeIcon: 'i-tabler-x',
+    color: 'success',
+    duration: 2_500,
+    icon: 'i-tabler-clipboard-check',
+  })
+}
+
+const exportItems = computed<DropdownMenuItem[][]>(() => [
+  [
+    {
+      label: 'Download image',
+      description: allTestsHaveResults.value ? 'Save results as PNG' : 'Run all tests first',
+      icon: 'i-tabler-photo-down',
+      disabled: !cases.value.length || !allTestsHaveResults.value || isExporting.value,
+      loading: isExporting.value,
+      onSelect: () => void exportResults(),
+    },
+  ],
+  [
+    { type: 'label', label: 'Copy results' },
+    {
+      label: 'Markdown',
+      icon: 'i-tabler-markdown',
+      disabled: !someTestsHaveResults.value,
+      onSelect: () => void copyResults('markdown'),
+    },
+    {
+      label: 'CSV',
+      icon: 'i-tabler-file-type-csv',
+      disabled: !someTestsHaveResults.value,
+      onSelect: () => void copyResults('csv'),
+    },
+    {
+      label: 'JSON',
+      icon: 'i-tabler-json',
+      disabled: !someTestsHaveResults.value,
+      onSelect: () => void copyResults('json'),
+    },
+  ],
+])
 
 const clear = () => {
   if (!confirm('Clear everything. Are you sure?')) return
@@ -481,22 +543,17 @@ watch(
             >
               Statistics
             </UButton>
-            <UTooltip
-              :text="
-                !cases.length || !allTestsHaveResults
-                  ? 'Run all tests to enable the image export'
-                  : 'Export tests results as image'
-              "
-            >
+            <UDropdownMenu :items="exportItems" :content="{ side: 'bottom', align: 'end' }">
               <UButton
-                @click="exportResults"
                 :loading="isExporting"
-                :disabled="!cases.length || !allTestsHaveResults"
+                :disabled="!someTestsHaveResults || isExporting"
                 color="neutral"
                 variant="outline"
-                >Export</UButton
+                trailing-icon="i-tabler-chevron-down"
               >
-            </UTooltip>
+                Export
+              </UButton>
+            </UDropdownMenu>
           </div>
         </div>
 
