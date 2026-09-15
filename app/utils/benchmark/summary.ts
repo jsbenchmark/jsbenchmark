@@ -1,6 +1,6 @@
 import { calculateStatistics } from './statistics'
 import type { BenchmarkStatistics } from './statistics'
-import type { BenchmarkWorkerResult } from './run'
+import type { BenchmarkRunResult } from './run'
 
 export type BenchmarkSummary = {
   averageTime: number
@@ -11,7 +11,7 @@ export type BenchmarkSummary = {
   statistics: BenchmarkStatistics
 }
 
-export const summarizeBenchmark = (measurement: BenchmarkWorkerResult): BenchmarkSummary => {
+export const summarizeBenchmark = (measurement: BenchmarkRunResult): BenchmarkSummary => {
   if (measurement.elapsedMs <= 0) {
     throw new Error('A benchmark requires positive elapsed time')
   }

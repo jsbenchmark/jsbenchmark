@@ -1,4 +1,5 @@
 import { onScopeDispose } from 'vue'
+import type { BenchmarkRuntime } from '../utils/benchmark/runtimes'
 
 export type BenchmarkRunStatus = {
   currentTest: number
@@ -6,6 +7,7 @@ export type BenchmarkRunStatus = {
   estimatedTestDurationMs: number
   label: string
   parallel: boolean
+  runtime: BenchmarkRuntime
   runStartedAt: number
   totalTests: number
 }
@@ -17,7 +19,10 @@ export const getBenchmarkRunStatusMessage = (status: BenchmarkRunStatus, now: nu
     0,
     status.estimatedTestDurationMs - elapsedMs + queuedTests * status.estimatedTestDurationMs
   )
-  const execution = status.parallel ? `${status.label} run` : `Sequential · ${status.label} run`
+  const runtime = status.runtime === 'dom' ? 'DOM' : 'Worker'
+  const execution = status.parallel
+    ? `${runtime} · ${status.label} run`
+    : `${runtime} · Sequential · ${status.label} run`
   const title = status.parallel
     ? `Running ${status.totalTests} ${status.totalTests === 1 ? 'test' : 'tests in parallel'}`
     : `Test ${status.currentTest} of ${status.totalTests}`
@@ -54,7 +59,7 @@ export const useBenchmarkRunStatus = () => {
   const start = (
     options: Pick<
       BenchmarkRunStatus,
-      'estimatedTestDurationMs' | 'label' | 'parallel' | 'totalTests'
+      'estimatedTestDurationMs' | 'label' | 'parallel' | 'runtime' | 'totalTests'
     >
   ) => {
     stopTimer()
@@ -115,4 +120,59 @@ export const useBenchmarkRunStatus = () => {
   })
 
   return { finish, start, startTest }
+}
+
+const VISIBILITY_WARNING_DESCRIPTION =
+  'The browser may throttle timers and animation frames, which can make this run less reliable.'
+
+export const useBenchmarkVisibilityWarning = () => {
+  const toast = useToast()
+  let removalTimer: ReturnType<typeof setTimeout> | undefined
+  let toastId: string | number | undefined
+
+  const stopRemovalTimer = () => {
+    if (removalTimer) clearTimeout(removalTimer)
+    removalTimer = undefined
+  }
+
+  const remove = () => {
+    stopRemovalTimer()
+    if (toastId !== undefined) toast.remove(toastId)
+    toastId = undefined
+  }
+
+  const notification = (runtime: BenchmarkRuntime) => ({
+    title: runtime === 'dom' ? 'Benchmark runner is hidden' : 'Benchmark page was hidden',
+    description: VISIBILITY_WARNING_DESCRIPTION,
+    closeIcon: 'i-tabler-x',
+    color: 'warning' as const,
+    duration: 0,
+    icon: 'i-tabler-alert-triangle',
+    progress: false,
+  })
+
+  const setHidden = (hidden: boolean, runtime: BenchmarkRuntime) => {
+    if (hidden) {
+      stopRemovalTimer()
+      if (toastId === undefined) {
+        toastId = toast.add(notification(runtime)).id
+      } else {
+        toast.update(toastId, notification(runtime))
+      }
+      return
+    }
+
+    if (toastId === undefined) return
+    if (runtime === 'dom') {
+      remove()
+      return
+    }
+
+    toast.update(toastId, { ...notification(runtime), duration: 3_000, progress: true })
+    removalTimer = setTimeout(remove, 3_000)
+  }
+
+  onScopeDispose(remove)
+
+  return { finish: remove, setHidden }
 }

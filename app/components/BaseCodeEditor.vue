@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { javascript } from '@codemirror/lang-javascript'
+import { html } from '@codemirror/lang-html'
 import { duotoneDarkInit, duotoneLightInit } from '@uiw/codemirror-theme-duotone'
 import { tags as t } from '@lezer/highlight'
 import { debounce } from 'lodash-es'
@@ -35,9 +36,15 @@ import {
 } from '@codemirror/autocomplete'
 import { lintKeymap } from '@codemirror/lint'
 
-const props = defineProps({
-  modelValue: String,
-})
+type CodeEditorLanguage = 'javascript' | 'html'
+
+const props = withDefaults(
+  defineProps<{
+    language?: CodeEditorLanguage
+    modelValue?: string
+  }>(),
+  { language: 'javascript', modelValue: '' }
+)
 
 const emit = defineEmits<{
   (event: 'update:modelValue', value: string): void
@@ -139,6 +146,10 @@ const createEditorColorTheme = (mode: EditorColorMode) => {
 const colorMode = useColorMode()
 const colorTheme = new Compartment()
 const resolvedColorMode = (): EditorColorMode => (colorMode.value === 'dark' ? 'dark' : 'light')
+const languageExtension = () =>
+  props.language === 'html' ? html() : javascript({ typescript: true })
+const editorPlaceholder = () =>
+  props.language === 'html' ? 'Optional body markup goes here...' : 'Your code goes here...'
 
 const setup = () => [
   lineNumbers(),
@@ -174,13 +185,11 @@ onMounted(() => {
     extensions: [
       setup(),
 
-      javascript({
-        typescript: true,
-      }),
+      languageExtension(),
       updateListener,
       colorTheme.of(createEditorColorTheme(resolvedColorMode())),
       baseTheme,
-      placeholder('Your code goes here...'),
+      placeholder(editorPlaceholder()),
     ],
     parent: editorRef.value,
     doc: props.modelValue,
@@ -221,6 +230,12 @@ const run = () => {
 }
 
 const preferences = usePreferences()
+
+onBeforeUnmount(() => {
+  emitUpdateDebounced.flush()
+  emitUpdateDebounced.cancel()
+  editor.value?.destroy()
+})
 </script>
 
 <template>
@@ -231,7 +246,10 @@ const preferences = usePreferences()
   >
     <div ref="editorRef"></div>
 
-    <div class="absolute bottom-[0.65rem] right-2.5 flex items-end">
+    <div
+      v-if="props.language === 'javascript'"
+      class="absolute bottom-[0.65rem] right-2.5 flex items-end"
+    >
       <ClientOnly>
         <UTooltip
           :text="

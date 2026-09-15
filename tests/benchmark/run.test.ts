@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { runBenchmarkWorker } from '../../app/utils/benchmark/run'
+import { runBenchmark } from '../../app/utils/benchmark/run'
 
 const installClock = () => {
   let elapsed = 0
@@ -17,11 +17,11 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe('runBenchmarkWorker', () => {
+describe('runBenchmark', () => {
   it('calibrates a batch and reports actual elapsed time', async () => {
     installClock()
 
-    const result = await runBenchmarkWorker({
+    const result = await runBenchmark({
       async: false,
       code: 'globalThis.advanceBenchmarkClock(1)',
       dataCode: 'return null',
@@ -39,7 +39,7 @@ describe('runBenchmarkWorker', () => {
   it('keeps timer reads far below the operation count for fast functions', async () => {
     const now = installClock()
 
-    const result = await runBenchmarkWorker({
+    const result = await runBenchmark({
       async: false,
       code: 'globalThis.advanceBenchmarkClock(0.001)',
       dataCode: 'return null',
@@ -55,7 +55,7 @@ describe('runBenchmarkWorker', () => {
   it('awaits asynchronous test cases', async () => {
     installClock()
 
-    const result = await runBenchmarkWorker({
+    const result = await runBenchmark({
       async: true,
       code: 'await globalThis.advanceBenchmarkClock(2)',
       dataCode: 'return null',
@@ -72,7 +72,7 @@ describe('runBenchmarkWorker', () => {
     installClock()
 
     await expect(
-      runBenchmarkWorker({
+      runBenchmark({
         async: false,
         code: 'throw new Error("boom")',
         dataCode: 'return null',
@@ -85,7 +85,9 @@ describe('runBenchmarkWorker', () => {
 
   it('remains self-contained when serialized into a worker', async () => {
     installClock()
-    const serializedRunner = Function(`return (${runBenchmarkWorker.toString()})`)() as typeof runBenchmarkWorker
+    const serializedRunner = Function(
+      `return (${runBenchmark.toString()})`
+    )() as typeof runBenchmark
 
     const result = await serializedRunner({
       async: false,

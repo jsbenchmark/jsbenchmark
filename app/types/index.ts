@@ -1,12 +1,15 @@
 import type { BenchmarkSummary } from '~/utils/benchmark/summary'
 import type { BenchmarkMode } from '~/utils/benchmark/modes'
+import type { BenchmarkRuntime } from '~/utils/benchmark/runtimes'
 
 export type Config = {
   benchmarkMode: BenchmarkMode
+  runtime: BenchmarkRuntime
   name: string
   parallel: boolean
   globalTestConfig: TestCase
   dataCode: string
+  setupHtml: string
 }
 
 export type Dependency = {

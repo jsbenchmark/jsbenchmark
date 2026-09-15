@@ -1,31 +1,41 @@
 <script setup lang="ts">
-import { useWebWorkerFn } from '~/utils/worker'
 import type { TestCase, Dependency, TestState, Config } from '~/types'
 import { nanoid } from 'nanoid'
 import { clamp } from '@vueuse/core'
 import slugify from 'slugify'
 import * as htmlToImage from 'html-to-image'
 import type { DropdownMenuItem } from '@nuxt/ui'
-import { ADVANCED_EXAMPLE_URL, DEFAULT_TEST_NAME, TARGET_BATCH_TIME } from '~/utils/constants'
+import { ADVANCED_EXAMPLE_URL, DEFAULT_TEST_NAME } from '~/utils/constants'
 import { serialize, deserialize } from '~/utils'
 import { getDeviceSpecs } from '~/utils/device'
 import { formatBenchmarkResults, type BenchmarkExportFormat } from '~/utils/benchmark/export'
-import { runBenchmarkWorker } from '~/utils/benchmark/run'
-import { summarizeBenchmark } from '~/utils/benchmark/summary'
+import {
+  createBenchmarkExampleCases,
+  DEFAULT_WORKER_BENCHMARK_EXAMPLE,
+  getBenchmarkExampleForRuntimeChange,
+} from '~/utils/benchmark/examples'
 import {
   BENCHMARK_MODES,
   DEFAULT_BENCHMARK_MODE,
   resolveBenchmarkMode,
 } from '~/utils/benchmark/modes'
+import {
+  BENCHMARK_RUNTIMES,
+  DEFAULT_BENCHMARK_RUNTIME,
+  normalizeSetupHtml,
+  resolveBenchmarkRuntime,
+} from '~/utils/benchmark/runtimes'
 
 const config = ref<Config>({
   benchmarkMode: DEFAULT_BENCHMARK_MODE,
-  name: DEFAULT_TEST_NAME,
+  runtime: DEFAULT_BENCHMARK_RUNTIME,
+  name: DEFAULT_WORKER_BENCHMARK_EXAMPLE.name,
   parallel: true,
   globalTestConfig: {
     dependencies: [] as Dependency[],
   } as TestCase,
-  dataCode: 'return [...Array(1000).keys()]',
+  dataCode: DEFAULT_WORKER_BENCHMARK_EXAMPLE.dataCode,
+  setupHtml: DEFAULT_WORKER_BENCHMARK_EXAMPLE.setupHtml,
 })
 
 useHead({
@@ -35,135 +45,26 @@ useHead({
   },
 })
 
-const cases = ref<TestCase[]>([
-  {
-    id: nanoid(),
-    code: 'DATA.find(i => i === 99)',
-    name: 'Find 99',
-    dependencies: [],
-  },
-  {
-    id: nanoid(),
-    code: 'DATA.find(i => i === 199)',
-    name: 'Find 199',
-    dependencies: [],
-  },
-  {
-    id: nanoid(),
-    code: 'DATA.find(i => i === 499)',
-    name: 'Find 499',
-    dependencies: [],
-  },
-])
+const cases = ref<TestCase[]>(createBenchmarkExampleCases(DEFAULT_WORKER_BENCHMARK_EXAMPLE, nanoid))
 
 const stateByTest = ref<Record<string, TestState>>({})
 
-const compile = useCompile()
 const benchmarkModeOptions = Object.entries(BENCHMARK_MODES).map(([value, settings]) => ({
   label: `${settings.label} · ${settings.time / 1000}s`,
   value,
 }))
+const setupEditorTab = ref<'javascript' | 'html'>('javascript')
+const setupTabItems = [
+  { label: 'JavaScript', value: 'javascript' },
+  { label: 'HTML fixture', value: 'html' },
+]
 
-const runCase = async (c: TestCase) => {
-  const benchmarkSettings = resolveBenchmarkMode(config.value.benchmarkMode)
-  stateByTest.value[c.id] = {
-    status: 'running',
-    error: null,
-    estimatedDurationMs: benchmarkSettings.time + benchmarkSettings.warmupTime,
-  }
-
-  const dependencies = [
-    ...(config.value.globalTestConfig.dependencies || []),
-    ...(c.dependencies || []),
-  ].filter((d) => d.url)
-  const { workerFn, workerTerminate } = useWebWorkerFn(runBenchmarkWorker, {
-    timeout: benchmarkSettings.timeout,
-    dependencies: unref(dependencies),
-    esm: dependencies.some((d) => d.esm),
-  })
-
-  let res
-  try {
-    const code = await compile.whenEnabled({
-      code: c.code,
-    })
-    const dataCode = await compile.whenEnabled({
-      code: config.value.dataCode,
-    })
-
-    res = await workerFn({
-      code,
-      dataCode,
-      targetBatchTime: TARGET_BATCH_TIME,
-      time: benchmarkSettings.time,
-      warmupTime: benchmarkSettings.warmupTime,
-      async: c.async,
-    })
-
-    stateByTest.value[c.id] = {
-      status: 'success',
-      error: null,
-      result: summarizeBenchmark(res),
-    }
-  } catch (e) {
-    const error =
-      e instanceof ErrorEvent
-        ? new Error(
-            e.type === 'TIMEOUT_EXPIRED'
-              ? `The test was canceled because the timeout expired. Check your code for infinite loops and make sure it doesn't take longer than ${benchmarkSettings.timeout / 1000} seconds.`
-              : e.type
-          )
-        : e instanceof Error
-          ? e
-          : new Error('Unknown error')
-    console.error(`Worker failed with error: ${error.message}`)
-    stateByTest.value[c.id] = {
-      status: 'error',
-      error,
-      result: undefined,
-    }
-    workerTerminate()
-
-    if (error.message.toLowerCase().startsWith('unexpected')) {
-      usePredefinedNotifications().typescriptHint()
-    }
-  }
-}
-
-const isRunningAllTests = ref(false)
+const { isAnyTestRunning, isRunningAllTests, run, runCase } = useBenchmarkExecution({
+  cases,
+  config,
+  stateByTest,
+})
 const showStatistics = ref(false)
-const benchmarkRunStatus = useBenchmarkRunStatus()
-
-const run = async () => {
-  const tests = [...cases.value]
-  if (!tests.length) return
-
-  isRunningAllTests.value = true
-  const benchmarkSettings = resolveBenchmarkMode(config.value.benchmarkMode)
-  benchmarkRunStatus.start({
-    estimatedTestDurationMs: benchmarkSettings.time + benchmarkSettings.warmupTime,
-    label: benchmarkSettings.label,
-    parallel: config.value.parallel,
-    totalTests: tests.length,
-  })
-
-  try {
-    if (config.value.parallel) {
-      await Promise.all(tests.map(runCase))
-    } else {
-      for (const [index, test] of tests.entries()) {
-        benchmarkRunStatus.startTest(index + 1)
-        await runCase(test)
-      }
-    }
-  } finally {
-    const failedTests = tests.filter(
-      (test) => stateByTest.value[test.id]?.status === 'error'
-    ).length
-    benchmarkRunStatus.finish(failedTests)
-    isRunningAllTests.value = false
-  }
-}
 
 const addCase = (insertAtStart = false) => {
   const test = {
@@ -196,12 +97,34 @@ const duplicateCase = (c: TestCase) => {
 
 const route = useRoute()
 
-const isAnyTestRunning = computed(() => {
-  return cases.value.some((c) => {
-    const state = stateByTest.value[c.id]
-    return state?.status === 'running'
-  })
-})
+const runtimeTabItems = computed(() =>
+  Object.entries(BENCHMARK_RUNTIMES).map(([value, settings]) => ({
+    label: settings.label,
+    value,
+    disabled: isAnyTestRunning.value,
+  }))
+)
+const isHtmlSetupActive = computed(
+  () => config.value.runtime === 'dom' && setupEditorTab.value === 'html'
+)
+
+watch(
+  () => config.value.runtime,
+  (runtime) => {
+    const example = getBenchmarkExampleForRuntimeChange(config.value, cases.value, runtime)
+    if (!example) return
+
+    config.value = {
+      ...config.value,
+      name: example.name,
+      dataCode: example.dataCode,
+      setupHtml: example.setupHtml,
+    }
+    const existingIds = cases.value.map((test) => test.id)
+    cases.value = createBenchmarkExampleCases(example, () => existingIds.shift() ?? nanoid())
+    setupEditorTab.value = runtime === 'dom' ? 'html' : 'javascript'
+  }
+)
 
 const allTestsHaveResults = computed(() => {
   return cases.value.every((c) => {
@@ -340,9 +263,11 @@ const clear = () => {
   cases.value = []
   config.value = {
     benchmarkMode: DEFAULT_BENCHMARK_MODE,
+    runtime: DEFAULT_BENCHMARK_RUNTIME,
     name: '',
     parallel: true,
     dataCode: '',
+    setupHtml: '',
     globalTestConfig: {
       dependencies: [] as Dependency[],
     } as TestCase,
@@ -358,6 +283,8 @@ onMounted(() => {
     config.value = {
       ...urlState.config,
       benchmarkMode: resolveBenchmarkMode(urlState.config.benchmarkMode).mode,
+      runtime: resolveBenchmarkRuntime(urlState.config.runtime),
+      setupHtml: normalizeSetupHtml(urlState.config.setupHtml),
     }
   }
 })
@@ -395,118 +322,230 @@ watch(
             :rows="1"
           />
 
-          <div class="mt-8 lg:ml-10 lg:mt-1.5 flex gap-3 items-center">
-            <UTooltip text="Clear">
-              <UButton
-                @click="clear"
-                color="neutral"
-                variant="outline"
-                icon="i-tabler-trash"
-                size="lg"
-              />
-            </UTooltip>
-            <ShareButton :payload="{ config, cases }" type="benchmark" />
+          <div class="mt-8 lg:ml-10 lg:mt-1.5 flex flex-col items-start lg:items-end gap-2">
+            <div class="flex flex-wrap gap-3 items-center">
+              <UTooltip text="Clear">
+                <UButton
+                  @click="clear"
+                  :disabled="isAnyTestRunning"
+                  aria-label="Clear benchmark"
+                  color="neutral"
+                  variant="outline"
+                  icon="i-tabler-trash"
+                  size="lg"
+                />
+              </UTooltip>
+              <ShareButton :payload="{ config, cases }" type="benchmark" />
 
-            <UFieldGroup size="lg">
-              <UButton
-                @click="run"
-                :loading="isRunningAllTests"
-                :disabled="isAnyTestRunning"
-                class="font-semibold"
-                icon="i-tabler-play"
-                >Run all</UButton
-              >
-              <UPopover :content="{ side: 'bottom', align: 'end' }">
-                <UTooltip text="Benchmark settings">
-                  <UButton
-                    aria-label="Benchmark settings"
-                    class="font-semibold w-8 !p-0 justify-center"
-                    icon="i-tabler-chevron-down"
-                  />
-                </UTooltip>
+              <div class="relative">
+                <UTabs
+                  v-model="config.runtime"
+                  :items="runtimeTabItems"
+                  :content="false"
+                  :ui="{ trigger: 'last:pe-8' }"
+                  aria-label="Benchmark environment"
+                  size="md"
+                />
+                <UPopover :content="{ side: 'bottom', align: 'end', sideOffset: 16 }" mode="hover">
+                  <button
+                    type="button"
+                    aria-label="About the DOM runner"
+                    class="absolute inset-e-3 top-1/2 z-10 flex size-5 -translate-y-1/2 items-center justify-center rounded-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    :class="
+                      config.runtime === 'dom'
+                        ? 'text-inverted hover:text-inverted'
+                        : 'text-muted hover:text-default'
+                    "
+                  >
+                    <UIcon name="i-tabler-info-circle" class="size-4" aria-hidden="true" />
+                  </button>
 
-                <template #content>
-                  <div class="w-72 p-4 space-y-4">
-                    <div>
-                      <label for="benchmark-mode" class="font-medium block mb-2">Run length</label>
-                      <USelect
-                        id="benchmark-mode"
-                        v-model="config.benchmarkMode"
-                        :items="benchmarkModeOptions"
-                        value-key="value"
-                        class="w-full"
-                        :disabled="isRunningAllTests"
-                      />
-                      <small class="block leading-normal text-muted mt-2 text-xs">
-                        Longer runs collect more samples and take longer to complete.
-                      </small>
+                  <template #content>
+                    <div
+                      class="w-80 max-w-[calc(100vw-2rem)] space-y-3 p-4 text-sm leading-relaxed"
+                    >
+                      <p class="font-semibold text-highlighted">DOM runner</p>
+                      <p>
+                        Opens one separate runner window for the run. Benchmark settings control
+                        whether cases run sequentially or together in parallel.
+                      </p>
+                      <p class="text-muted">
+                        Every case gets a fresh sandboxed iframe with browser APIs such as
+                        <code class="text-toned">document</code>, layout, and
+                        <code class="text-toned">Image</code>. The HTML fixture, dependencies, and
+                        JavaScript setup load before timing begins.
+                      </p>
+                      <p class="text-muted">
+                        Keep the runner visible while testing; browsers may throttle hidden windows
+                        and make results less reliable.
+                      </p>
                     </div>
+                  </template>
+                </UPopover>
+              </div>
 
-                    <div class="border-t border-default pt-4">
-                      <div class="flex items-center gap-2">
-                        <USwitch
-                          id="parallel-tests"
-                          v-model="config.parallel"
-                          size="sm"
+              <UFieldGroup size="lg">
+                <UButton
+                  @click="run"
+                  :loading="isRunningAllTests"
+                  :disabled="isAnyTestRunning"
+                  class="font-semibold"
+                  icon="i-tabler-play"
+                  >Run all</UButton
+                >
+                <UPopover :content="{ side: 'bottom', align: 'end' }">
+                  <UTooltip text="Benchmark settings">
+                    <UButton
+                      aria-label="Benchmark settings"
+                      class="font-semibold w-8 !p-0 justify-center"
+                      icon="i-tabler-chevron-down"
+                    />
+                  </UTooltip>
+
+                  <template #content>
+                    <div class="w-72 p-4 space-y-4">
+                      <div>
+                        <label for="benchmark-mode" class="font-medium block mb-2"
+                          >Run length</label
+                        >
+                        <USelect
+                          id="benchmark-mode"
+                          v-model="config.benchmarkMode"
+                          :items="benchmarkModeOptions"
+                          value-key="value"
+                          class="w-full"
                           :disabled="isRunningAllTests"
                         />
-                        <label for="parallel-tests" class="font-medium text-nowrap">
-                          Run tests in parallel
-                        </label>
+                        <small class="block leading-normal text-muted mt-2 text-xs">
+                          Longer runs collect more samples and take longer to complete.
+                        </small>
                       </div>
-                      <small class="block leading-normal text-muted mt-2 text-xs">
-                        Faster overall, but workers share CPU, cache, and memory bandwidth. Disable
-                        this when results are close or inconsistent.
-                      </small>
+
+                      <div class="border-t border-default pt-4">
+                        <div class="flex items-center gap-2">
+                          <USwitch
+                            id="parallel-tests"
+                            v-model="config.parallel"
+                            size="sm"
+                            :disabled="isRunningAllTests"
+                          />
+                          <label for="parallel-tests" class="font-medium text-nowrap">
+                            Run tests in parallel
+                          </label>
+                        </div>
+                        <small
+                          v-if="config.runtime === 'dom'"
+                          class="block leading-normal text-muted mt-2 text-xs"
+                        >
+                          <template v-if="config.parallel">
+                            Cases run together in separate sandboxed frames, but still share the
+                            runner's renderer, layout, and memory resources.
+                          </template>
+                          <template v-else>
+                            Cases run one at a time for more reliable comparisons. Enable this to
+                            experiment with parallel DOM execution.
+                          </template>
+                        </small>
+                        <small v-else class="block leading-normal text-muted mt-2 text-xs">
+                          Faster overall, but workers share CPU, cache, and memory bandwidth.
+                          Disable this when results are close or inconsistent.
+                        </small>
+                      </div>
                     </div>
-                  </div>
-                </template>
-              </UPopover>
-            </UFieldGroup>
+                  </template>
+                </UPopover>
+              </UFieldGroup>
+            </div>
           </div>
         </div>
 
         <div class="flex flex-col gap-3">
-          <h3 class="text-2xl font-bold">Setup</h3>
-          <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
-            <p>
-              Return the data your tests need. It will be available as
-              <code class="text-highlighted">DATA</code>
-              in every test case.
-            </p>
-            <UPopover :content="{ side: 'bottom', align: 'start' }" mode="hover">
-              <UButton
-                color="neutral"
-                variant="link"
-                size="xs"
-                icon="i-tabler-info-circle"
-                class="p-0 font-medium"
-              >
-                Details
-              </UButton>
-
-              <template #content>
-                <div class="w-80 max-w-[calc(100vw-2rem)] space-y-3 p-4 text-sm leading-normal">
-                  <p>
-                    Setup runs separately for each test case and is excluded from the benchmark
-                    timing.
-                  </p>
-                  <p class="text-muted">
-                    All snippets can use TypeScript when experimental support is enabled.
-                  </p>
-                  <a
-                    class="inline-flex font-medium underline transition hover:text-highlighted"
-                    target="_blank"
-                    rel="noreferrer"
-                    :href="ADVANCED_EXAMPLE_URL"
-                  >
-                    View an advanced example
-                  </a>
-                </div>
-              </template>
-            </UPopover>
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h3 class="text-2xl font-bold">Setup</h3>
+            <UTabs
+              v-model="setupEditorTab"
+              :items="setupTabItems"
+              :content="false"
+              :class="{
+                'invisible pointer-events-none': config.runtime !== 'dom',
+              }"
+              :aria-hidden="config.runtime !== 'dom'"
+              :inert="config.runtime !== 'dom'"
+              aria-label="Setup editor"
+              size="sm"
+            />
           </div>
-          <BaseCodeEditor v-model="config.dataCode" />
+          <div class="grid text-sm text-muted">
+            <div
+              class="[grid-area:1/1] flex flex-wrap items-center gap-x-2 gap-y-1"
+              :class="{ 'invisible pointer-events-none': isHtmlSetupActive }"
+              :aria-hidden="isHtmlSetupActive"
+              :inert="isHtmlSetupActive"
+            >
+              <p>
+                Return the data your tests need. It will be available as
+                <code class="text-highlighted">DATA</code>
+                in every test case.
+              </p>
+              <UPopover :content="{ side: 'bottom', align: 'start' }" mode="hover">
+                <UButton
+                  color="neutral"
+                  variant="link"
+                  size="xs"
+                  icon="i-tabler-info-circle"
+                  class="p-0 font-medium"
+                >
+                  Details
+                </UButton>
+
+                <template #content>
+                  <div class="w-80 max-w-[calc(100vw-2rem)] space-y-3 p-4 text-sm leading-normal">
+                    <p>
+                      Setup runs separately for each test case and is excluded from the benchmark
+                      timing.
+                    </p>
+                    <p class="text-muted">
+                      All snippets can use TypeScript when experimental support is enabled.
+                    </p>
+                    <a
+                      class="inline-flex font-medium underline transition hover:text-highlighted"
+                      target="_blank"
+                      rel="noreferrer"
+                      :href="ADVANCED_EXAMPLE_URL"
+                    >
+                      View an advanced example
+                    </a>
+                  </div>
+                </template>
+              </UPopover>
+            </div>
+            <p
+              class="[grid-area:1/1] self-start leading-normal"
+              :class="{ 'invisible pointer-events-none': !isHtmlSetupActive }"
+              :aria-hidden="!isHtmlSetupActive"
+            >
+              Optional body markup inserted before JavaScript setup. Setup is excluded from
+              benchmark timing.
+            </p>
+          </div>
+          <div class="grid">
+            <div
+              class="[grid-area:1/1]"
+              :class="{ 'invisible pointer-events-none': isHtmlSetupActive }"
+              :aria-hidden="isHtmlSetupActive"
+              :inert="isHtmlSetupActive"
+            >
+              <BaseCodeEditor v-model="config.dataCode" language="javascript" />
+            </div>
+            <div
+              class="[grid-area:1/1]"
+              :class="{ 'invisible pointer-events-none': !isHtmlSetupActive }"
+              :aria-hidden="!isHtmlSetupActive"
+              :inert="!isHtmlSetupActive"
+            >
+              <BaseCodeEditor v-model="config.setupHtml" language="html" />
+            </div>
+          </div>
           <DependencyList v-model:test="config.globalTestConfig" show-hint global class="mt-2">
             <template #help>
               <p>Global dependencies are available in the setup function and every test case.</p>
@@ -535,6 +574,7 @@ watch(
           v-model="cases"
           :state-by-test="stateByTest"
           :config="config"
+          :disable-run="config.runtime === 'dom' && isAnyTestRunning"
           @run="runCase"
           @remove="removeCase"
           @duplicate="duplicateCase"
@@ -674,13 +714,21 @@ watch(
                     Tests are warmed up, then measured in timed batches using the actual elapsed
                     time. Statistics summarize per-operation batch averages, not individual calls.
                   </p>
-                  <p class="text-muted">
+                  <p v-if="config.runtime === 'worker'" class="text-muted">
                     Each test uses its own web worker. Tests run in parallel by default, so workers
                     share CPU, cache, and memory bandwidth.
                   </p>
+                  <p v-else class="text-muted">
+                    DOM tests run in fresh visible sandboxed frames inside one separate runner
+                    window. They run {{ config.parallel ? 'in parallel' : 'sequentially' }}; HTML
+                    and JavaScript setup run before timing starts.
+                  </p>
                   <p class="text-muted">
-                    CPU load, JIT compilation, garbage collection, and concurrent workers can affect
-                    absolute ops/s.
+                    CPU load, JIT compilation, and garbage collection can affect absolute ops/s.
+                    <template v-if="config.runtime === 'dom'">
+                      Hidden or minimized runner windows may also have throttled timers and
+                      animation frames.
+                    </template>
                   </p>
                 </div>
               </template>

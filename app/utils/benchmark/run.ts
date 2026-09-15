@@ -1,4 +1,4 @@
-export type BenchmarkWorkerOptions = {
+export type BenchmarkRunOptions = {
   async?: boolean
   code: string
   dataCode: string
@@ -7,18 +7,19 @@ export type BenchmarkWorkerOptions = {
   warmupTime: number
 }
 
-export type BenchmarkWorkerResult = {
+export type BenchmarkRunResult = {
   batchSize: number
   elapsedMs: number
   iterations: number
   samplesMsPerOperation: number[]
 }
 
-export async function runBenchmarkWorker(
-  { code, dataCode, time, warmupTime, targetBatchTime, async: isAsync }: BenchmarkWorkerOptions,
+export async function runBenchmark(
+  { code, dataCode, time, warmupTime, targetBatchTime, async: isAsync }: BenchmarkRunOptions,
   dependencies?: unknown
-): Promise<BenchmarkWorkerResult> {
-  const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor as FunctionConstructor
+): Promise<BenchmarkRunResult> {
+  const AsyncFunction = Object.getPrototypeOf(async function () {})
+    .constructor as FunctionConstructor
   const dataFunction = AsyncFunction(dataCode)
   const testFunction = isAsync ? AsyncFunction(code) : Function(code)
   const now = performance.now.bind(performance)

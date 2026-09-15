@@ -6,6 +6,7 @@ const $props = defineProps<{
   modelValue: TestCase[]
   stateByTest: Record<string, TestState>
   config: Config
+  disableRun?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -70,6 +71,10 @@ const onOptionsOpen = (open: boolean, c: TestCase) => {
 
 const formatOpsPerSecond = (value: number | undefined) =>
   value?.toLocaleString(undefined, { maximumSignificantDigits: 4 }) || '?'
+
+const run = (test: TestCase) => {
+  if (!$props.disableRun) emit('run', test)
+}
 </script>
 
 <template>
@@ -115,8 +120,9 @@ const formatOpsPerSecond = (value: number | undefined) =>
               </UTooltip>
 
               <UButton
-                @click="emit('run', c)"
+                @click="run(c)"
                 :loading="stateByTest[c.id]?.status === 'running'"
+                :disabled="$props.disableRun"
                 variant="outline"
                 color="primary"
                 size="md"
@@ -137,7 +143,7 @@ const formatOpsPerSecond = (value: number | undefined) =>
             </div>
           </div>
         </div>
-        <BaseCodeEditor v-model="c.code" @run="emit('run', c)" />
+        <BaseCodeEditor v-model="c.code" @run="run(c)" />
 
         <DependencyList
           :test="testCases[index]!"
