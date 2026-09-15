@@ -31,7 +31,7 @@ export const getBenchmarkRunStatusMessage = (status: BenchmarkRunStatus, now: nu
     title,
     description:
       remainingMs > 0
-        ? `${execution} · about ${Math.ceil(remainingMs / 1_000)}s remaining`
+        ? `${execution} · ${Math.ceil(remainingMs / 1_000)}s remaining`
         : `${execution} · finishing…`,
   }
 }

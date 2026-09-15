@@ -55,7 +55,7 @@ const benchmarkModeOptions = Object.entries(BENCHMARK_MODES).map(([value, settin
 }))
 const setupEditorTab = ref<'javascript' | 'html'>('javascript')
 const setupTabItems = [
-  { label: 'JavaScript', value: 'javascript' },
+  { label: 'JavaScript / TypeScript', value: 'javascript' },
   { label: 'HTML fixture', value: 'html' },
 ]
 
@@ -460,6 +460,8 @@ watch(
           </div>
         </div>
 
+        <hr class="dark:border-neutral-800 border-neutral-200" />
+
         <div class="flex flex-col gap-3">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <h3 class="text-2xl font-bold">Setup</h3>
@@ -555,7 +557,9 @@ watch(
           </DependencyList>
         </div>
 
-        <div class="flex justify-between items-center !mt-10">
+        <hr class="dark:border-neutral-800 border-neutral-200" />
+
+        <div class="flex justify-between items-center">
           <h3 class="text-2xl font-bold">
             Test cases <span class="font-normal text-muted text-xl">({{ cases.length }})</span>
           </h3>
