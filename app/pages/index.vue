@@ -7,6 +7,7 @@ import slugify from 'slugify'
 import * as htmlToImage from 'html-to-image'
 import { ADVANCED_EXAMPLE_URL, DEFAULT_TEST_NAME, TARGET_BATCH_TIME } from '~/utils/constants'
 import { serialize, deserialize } from '~/utils'
+import { getDeviceSpecs } from '~/utils/device'
 import { runBenchmarkWorker } from '~/utils/benchmark/run'
 import { summarizeBenchmark } from '~/utils/benchmark/summary'
 import {
@@ -216,9 +217,11 @@ const someTestsHaveResults = computed(() => {
 
 const exportViewRef = ref<HTMLElement | null>(null)
 const isExporting = ref(false)
+const exportDeviceSpecs = ref('')
 
 const exportResults = async () => {
   isExporting.value = true
+  exportDeviceSpecs.value = await getDeviceSpecs()
   await nextTick()
 
   // Fix fonts: https://github.com/bubkoo/html-to-image/issues/49#issuecomment-762222100
@@ -440,7 +443,7 @@ watch(
         >
           <div
             ref="exportViewRef"
-            class="w-[1600px] h-[900px] rounded-xl bg-gray-900 p-20 flex flex-col justify-center font-sans"
+            class="relative w-[1600px] h-[900px] rounded-xl bg-gray-900 p-20 flex flex-col justify-center font-sans"
             :style="{
               fontSize: `${clamp(40 * (2 / Math.max(cases.length, 2)) * 0.95, 10, 35)}px`,
             }"
@@ -454,6 +457,13 @@ watch(
             >
               <span>Powered by</span>
               <span class="text-gray-300 inline-block ml-1">jsbenchmark.com</span>
+            </div>
+            <div
+              data-export-device-specs
+              class="absolute inset-x-0 bottom-0 bg-gray-800 rounded-b-xl text-xs px-6 py-2 text-center text-gray-400 tracking-wide font-medium"
+            >
+              <span class="text-gray-300">Device:</span>
+              <span class="ml-1">{{ exportDeviceSpecs }}</span>
             </div>
           </div>
         </div>
