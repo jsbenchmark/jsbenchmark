@@ -219,6 +219,7 @@ const someTestsHaveResults = computed(() => {
 
 const exportViewRef = ref<HTMLElement | null>(null)
 const isExporting = ref(false)
+const includeStatisticsInImage = ref(false)
 const includeDeviceSpecsInImage = ref(true)
 const exportDeviceSpecs = ref('')
 const resultsClipboard = useClipboard({ legacy: true })
@@ -280,6 +281,20 @@ const exportItems = computed<DropdownMenuItem[][]>(() => [
       disabled: !cases.value.length || !allTestsHaveResults.value || isExporting.value,
       loading: isExporting.value,
       onSelect: () => void exportResults(),
+    },
+    {
+      type: 'checkbox',
+      slot: 'statistics',
+      class: 'ps-8',
+      label: 'Include statistics',
+      description: 'Add median, p95, deviation, and RME',
+      checked: includeStatisticsInImage.value,
+      onUpdateChecked: (checked) => {
+        includeStatisticsInImage.value = checked
+      },
+      onSelect: (event) => {
+        event.preventDefault()
+      },
     },
     {
       type: 'checkbox',
@@ -551,7 +566,11 @@ watch(
             <h1 class="font-extrabold text-[2.6em] mb-[1em] leading-none">
               {{ config.name }}
             </h1>
-            <Results :cases="cases" :state-by-test="stateByTest" />
+            <Results
+              :cases="cases"
+              :state-by-test="stateByTest"
+              :show-summary-statistics="includeStatisticsInImage"
+            />
             <div
               class="absolute top-0 right-0 bg-gray-800 rounded-bl-md rounded-tr-xl text-xs px-3.5 py-1.5 text-gray-400 tracking-wide font-medium"
             >
@@ -591,6 +610,22 @@ watch(
               >
                 Export
               </UButton>
+
+              <template #statistics>
+                <span class="flex flex-col gap-1.5">
+                  <span class="flex items-center gap-2">
+                    <USwitch
+                      :model-value="includeStatisticsInImage"
+                      size="sm"
+                      tabindex="-1"
+                      aria-hidden="true"
+                      class="pointer-events-none shrink-0"
+                    />
+                    <span class="font-medium">Include statistics</span>
+                  </span>
+                  <span class="text-xs text-gray-400">Add median, p95, deviation, and RME</span>
+                </span>
+              </template>
 
               <template #device-specs>
                 <span class="flex flex-col gap-1.5">

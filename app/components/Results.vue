@@ -17,6 +17,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showSummaryStatistics: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const maxOpsPerSecond = computed(() => {
@@ -95,9 +99,29 @@ const formatRelativeToFastest = (opsPerSecond: number) => {
           }"
         ></div>
       </div>
-      <div class="text-[0.8em] mt-2.5 font-mono">
-        <span class="text-gray-400">Average run time:</span>
-        {{ formatDuration(stateByTest[test.id]?.result?.averageTime) }}
+      <div class="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[0.8em] mt-2.5 font-mono">
+        <span class="whitespace-nowrap">
+          <span class="text-gray-400">Average run time:</span>
+          {{ formatDuration(stateByTest[test.id]?.result?.averageTime) }}
+        </span>
+        <template v-if="showSummaryStatistics && stateByTest[test.id]?.result">
+          <span class="whitespace-nowrap">
+            <span class="text-gray-400">· Median:</span>
+            {{ formatDuration(stateByTest[test.id]!.result!.statistics.median) }}
+          </span>
+          <span class="whitespace-nowrap">
+            <span class="text-gray-400">· p95:</span>
+            {{ formatDuration(stateByTest[test.id]!.result!.statistics.p95) }}
+          </span>
+          <span class="whitespace-nowrap">
+            <span class="text-gray-400">· Std deviation:</span>
+            {{ formatDuration(stateByTest[test.id]!.result!.statistics.standardDeviation) }}
+          </span>
+          <span class="whitespace-nowrap">
+            <span class="text-gray-400">· 95% RME:</span>
+            {{ formatPercentage(stateByTest[test.id]!.result!.statistics.relativeMarginOfError) }}
+          </span>
+        </template>
       </div>
       <template v-if="showStatistics && stateByTest[test.id]?.result">
         <dl
