@@ -452,21 +452,44 @@ watch(
 
         <div class="flex flex-col gap-3">
           <h3 class="text-2xl font-bold">Setup</h3>
-          <p class="text-gray-400 text-sm">
-            This setup function should return the stuff you need in the tests. Anything returned
-            will be available via the
-            <code class="text-white">DATA</code>
-            variable inside the test cases. Running the setup function is not part of the benchmark
-            and it's run separately for each test case. To learn more, check out
-            <a
-              class="font-medium transition hover:text-white text-sm underline"
-              target="_blank"
-              :href="ADVANCED_EXAMPLE_URL"
-            >
-              this more advanced example </a
-            >. Note that all snippets can be authored in TypeScript when experimental support is
-            enabled.
-          </p>
+          <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-400">
+            <p>
+              Return the data your tests need. It will be available as
+              <code class="text-white">DATA</code>
+              in every test case.
+            </p>
+            <UPopover :content="{ side: 'bottom', align: 'start' }" mode="hover">
+              <UButton
+                color="neutral"
+                variant="link"
+                size="xs"
+                icon="i-tabler-info-circle"
+                class="p-0 font-medium"
+              >
+                Details
+              </UButton>
+
+              <template #content>
+                <div class="w-80 max-w-[calc(100vw-2rem)] space-y-3 p-4 text-sm leading-normal">
+                  <p>
+                    Setup runs separately for each test case and is excluded from the benchmark
+                    timing.
+                  </p>
+                  <p class="text-gray-400">
+                    All snippets can use TypeScript when experimental support is enabled.
+                  </p>
+                  <a
+                    class="inline-flex font-medium underline transition hover:text-white"
+                    target="_blank"
+                    rel="noreferrer"
+                    :href="ADVANCED_EXAMPLE_URL"
+                  >
+                    View an advanced example
+                  </a>
+                </div>
+              </template>
+            </UPopover>
+          </div>
           <BaseCodeEditor v-model="config.dataCode" />
           <DependencyList v-model:test="config.globalTestConfig" show-hint global class="mt-2">
             <template #help>
@@ -592,17 +615,40 @@ watch(
 
         <Results :cases="cases" :state-by-test="stateByTest" :show-statistics="showStatistics" />
 
-        <div class="mt-20 text-gray-400 text-[0.8rem] space-y-2">
-          <p>
-            <span class="font-bold">Note:</span> Each test is warmed up, measured in timed batches,
-            and summarized using the actual elapsed time. Tests run in parallel unless disabled.
-          </p>
-          <p>
-            Each test runs in a separate web worker. This means that the actual ops/s might be
-            higher in a real-world scenario. Results are most useful for comparing cases within this
-            run and can vary with CPU load, JIT compilation, garbage collection, and concurrent
-            workers.
-          </p>
+        <div class="mt-16 text-[0.8rem] leading-normal text-gray-400">
+          Compare cases within the same run. Absolute performance may
+          <span class="inline-flex items-center gap-1.5 whitespace-nowrap align-middle">
+            <span>vary between runs.</span>
+            <UPopover :content="{ side: 'top', align: 'end' }" mode="hover">
+              <UButton
+                color="neutral"
+                variant="link"
+                size="xs"
+                icon="i-tabler-info-circle"
+                class="p-0 font-medium"
+              >
+                Methodology
+              </UButton>
+
+              <template #content>
+                <div class="w-80 max-w-[calc(100vw-2rem)] space-y-3 p-4 text-sm leading-normal">
+                  <p class="font-semibold">How results are measured</p>
+                  <p>
+                    Tests are warmed up, then measured in timed batches using the actual elapsed
+                    time. Statistics summarize per-operation batch averages, not individual calls.
+                  </p>
+                  <p class="text-gray-400">
+                    Each test uses its own web worker. Tests run in parallel by default, so workers
+                    share CPU, cache, and memory bandwidth.
+                  </p>
+                  <p class="text-gray-400">
+                    CPU load, JIT compilation, garbage collection, and concurrent workers can affect
+                    absolute ops/s.
+                  </p>
+                </div>
+              </template>
+            </UPopover>
+          </span>
         </div>
       </template>
     </SplitLayout>

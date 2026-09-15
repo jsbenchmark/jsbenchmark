@@ -40,10 +40,6 @@ const colors = computed(() => {
   })
 })
 
-const hasVisibleStatistics = computed(() => {
-  return props.showStatistics && props.cases.some((test) => props.stateByTest[test.id]?.result)
-})
-
 const formatNumber = (value: number | undefined) =>
   value?.toLocaleString(undefined, { maximumSignificantDigits: 4 }) || '?'
 
@@ -158,10 +154,6 @@ const formatRelativeToFastest = (opsPerSecond: number) => {
       </template>
       <hr v-if="i < cases.length - 1" class="mt-[1.25em] border-gray-800" />
     </div>
-    <p v-if="hasVisibleStatistics" class="text-xs leading-normal text-gray-500">
-      Latency statistics are per-operation averages from timed batches, not individual-call
-      percentiles.
-    </p>
   </div>
 </template>
 
