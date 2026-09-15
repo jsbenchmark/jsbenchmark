@@ -79,7 +79,7 @@ const formatRelativeToFastest = (opsPerSecond: number) => {
         <div
           class="rounded-[0.375em] h-[2.75em] transition-all duration-500 striped"
           :class="{
-            '!bg-gray-700': stateByTest[test.id]?.status === 'running',
+            '!bg-gray-300': stateByTest[test.id]?.status === 'running',
             '!bg-gray-800':
               stateByTest[test.id]?.status !== 'running' && !stateByTest[test.id]?.result,
             'benchmark-progress': stateByTest[test.id]?.status === 'running',
@@ -87,6 +87,10 @@ const formatRelativeToFastest = (opsPerSecond: number) => {
             '!bg-red-600': stateByTest[test.id]?.status === 'error',
           }"
           :style="{
+            '--color':
+              stateByTest[test.id]?.status === 'running'
+                ? 'rgba(0, 0, 0, 0.05)'
+                : 'rgba(255, 255, 255, 0.05)',
             '--benchmark-duration': `${stateByTest[test.id]?.estimatedDurationMs || 0}ms`,
             backgroundColor: colors[i],
             width: !stateByTest[test.id]?.result
@@ -163,14 +167,15 @@ const formatRelativeToFastest = (opsPerSecond: number) => {
 
 <style scoped>
 .striped {
+  --color: rgba(255, 255, 255, 0.05);
   background-size: 2em 2em;
   background-image: linear-gradient(
     45deg,
-    rgba(255, 255, 255, 0.05) 25%,
+    var(--color) 25%,
     transparent 25%,
     transparent 50%,
-    rgba(255, 255, 255, 0.05) 50%,
-    rgba(255, 255, 255, 0.05) 75%,
+    var(--color) 50%,
+    var(--color) 75%,
     transparent 75%,
     transparent
   );
@@ -209,7 +214,7 @@ const formatRelativeToFastest = (opsPerSecond: number) => {
   }
 
   100% {
-    background-position: 2rem 0;
+    background-position: -2rem 0;
   }
 }
 </style>
