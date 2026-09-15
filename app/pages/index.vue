@@ -344,6 +344,7 @@ watch(
                   :content="false"
                   :ui="{ trigger: 'last:pe-8' }"
                   aria-label="Benchmark environment"
+                  variant="outline"
                   size="md"
                 />
                 <UPopover :content="{ side: 'bottom', align: 'end', sideOffset: 16 }" mode="hover">
@@ -353,7 +354,7 @@ watch(
                     class="absolute inset-e-3 top-1/2 z-10 flex size-5 -translate-y-1/2 items-center justify-center rounded-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                     :class="
                       config.runtime === 'dom'
-                        ? 'text-inverted hover:text-inverted'
+                        ? 'text-primary hover:text-primary'
                         : 'text-muted hover:text-default'
                     "
                   >
@@ -472,6 +473,7 @@ watch(
               :aria-hidden="config.runtime !== 'dom'"
               :inert="config.runtime !== 'dom'"
               aria-label="Setup editor"
+              variant="outline"
               size="sm"
             />
           </div>
