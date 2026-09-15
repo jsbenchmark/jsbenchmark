@@ -219,6 +219,7 @@ const someTestsHaveResults = computed(() => {
 
 const exportViewRef = ref<HTMLElement | null>(null)
 const isExporting = ref(false)
+const includeDeviceSpecsInImage = ref(true)
 const exportDeviceSpecs = ref('')
 const resultsClipboard = useClipboard({ legacy: true })
 const toast = useToast()
@@ -226,7 +227,7 @@ const toast = useToast()
 const exportResults = async () => {
   isExporting.value = true
   try {
-    exportDeviceSpecs.value = await getDeviceSpecs()
+    exportDeviceSpecs.value = includeDeviceSpecsInImage.value ? await getDeviceSpecs() : ''
     await nextTick()
 
     // Fix fonts: https://github.com/bubkoo/html-to-image/issues/49#issuecomment-762222100
@@ -279,6 +280,20 @@ const exportItems = computed<DropdownMenuItem[][]>(() => [
       disabled: !cases.value.length || !allTestsHaveResults.value || isExporting.value,
       loading: isExporting.value,
       onSelect: () => void exportResults(),
+    },
+    {
+      type: 'checkbox',
+      slot: 'device-specs',
+      class: 'ps-8',
+      label: 'Include device specs',
+      description: 'Add available platform and hardware details',
+      checked: includeDeviceSpecsInImage.value,
+      onUpdateChecked: (checked) => {
+        includeDeviceSpecsInImage.value = checked
+      },
+      onSelect: (event) => {
+        event.preventDefault()
+      },
     },
   ],
   [
@@ -521,7 +536,7 @@ watch(
               <span class="text-gray-300 inline-block ml-1">jsbenchmark.com</span>
             </div>
             <div
-              data-export-device-specs
+              v-if="includeDeviceSpecsInImage"
               class="absolute inset-x-0 bottom-0 bg-gray-800 rounded-b-xl text-xs px-6 py-2 text-center text-gray-400 tracking-wide font-medium"
             >
               <span class="text-gray-300">Device:</span>
@@ -553,6 +568,24 @@ watch(
               >
                 Export
               </UButton>
+
+              <template #device-specs>
+                <span class="flex flex-col gap-1.5">
+                  <span class="flex items-center gap-2">
+                    <USwitch
+                      :model-value="includeDeviceSpecsInImage"
+                      size="sm"
+                      tabindex="-1"
+                      aria-hidden="true"
+                      class="pointer-events-none shrink-0"
+                    />
+                    <span class="font-medium">Include device specs</span>
+                  </span>
+                  <span class="text-xs text-gray-400">
+                    Add available platform and hardware details
+                  </span>
+                </span>
+              </template>
             </UDropdownMenu>
           </div>
         </div>

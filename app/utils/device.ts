@@ -55,7 +55,7 @@ export const getDeviceSpecs = async (
   }
 
   if (deviceNavigator.deviceMemory) {
-    specs.push(`~${deviceNavigator.deviceMemory} GB RAM`)
+    specs.push(`${deviceNavigator.deviceMemory} GB RAM`)
   }
 
   return specs.join(' · ') || 'Device details unavailable'

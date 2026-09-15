@@ -20,7 +20,7 @@ describe('getDeviceSpecs', () => {
         },
       })
     ).resolves.toBe(
-      'Example Model · Example OS 15.0 · arm 64-bit · 8 logical CPU cores · ~16 GB RAM'
+      'Example Model · Example OS 15.0 · arm 64-bit · 8 logical CPU cores · 16 GB RAM'
     )
   })
 
