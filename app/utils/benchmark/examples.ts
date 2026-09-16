@@ -26,14 +26,22 @@ export const DEFAULT_WORKER_BENCHMARK_EXAMPLE: BenchmarkExample = {
 
 export const DEFAULT_DOM_BENCHMARK_EXAMPLE: BenchmarkExample = {
   name: 'DOM element selection',
-  dataCode: 'return document',
-  setupHtml: '<button id="target" data-target>Target</button>',
+  dataCode: "return { id: 'target' }",
+  setupHtml: '<button id="target">Target</button>',
   cases: [
-    { code: "DATA.getElementById('target')", name: 'getElementById', dependencies: [] },
-    { code: "DATA.querySelector('#target')", name: 'Query ID selector', dependencies: [] },
     {
-      code: "DATA.querySelector('[data-target]')",
-      name: 'Query data attribute',
+      code: 'document.getElementById(DATA.id)',
+      name: 'getElementById',
+      dependencies: [],
+    },
+    {
+      code: 'document.querySelector(`#${DATA.id}`)',
+      name: 'Query ID selector',
+      dependencies: [],
+    },
+    {
+      code: 'document.querySelector(`[id="${DATA.id}"]`)',
+      name: 'Query ID attribute',
       dependencies: [],
     },
   ],

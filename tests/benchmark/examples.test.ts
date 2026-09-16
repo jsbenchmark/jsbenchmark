@@ -65,7 +65,7 @@ describe('benchmark starter examples', () => {
     expect(cases.map((test) => test.name)).toEqual([
       'getElementById',
       'Query ID selector',
-      'Query data attribute',
+      'Query ID attribute',
     ])
     expect(DEFAULT_DOM_BENCHMARK_EXAMPLE.cases.every((test) => !('id' in test))).toBe(true)
   })
