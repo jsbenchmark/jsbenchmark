@@ -3,7 +3,7 @@ import {
   getBenchmarkRunStatusMessage,
   useBenchmarkRunStatus,
   useBenchmarkVisibilityWarning,
-} from '../../app/composables/benchmark-run-status'
+} from './benchmark-run-status'
 
 vi.mock('vue', async (importOriginal) => ({
   ...(await importOriginal<typeof import('vue')>()),

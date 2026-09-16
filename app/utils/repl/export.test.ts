@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { formatReplMarkdown } from '../../app/utils/repl/export'
-import { deserialize } from '../../app/utils'
-import type { ReplConfig, ReplCompletedState } from '../../app/utils/repl/types'
+import { formatReplMarkdown } from './export'
+import { deserialize } from '..'
+import type { ReplConfig, ReplCompletedState } from './types'
 
 const config: ReplConfig = {
   name: 'DOM investigation',

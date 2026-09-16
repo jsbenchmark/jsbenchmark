@@ -1,9 +1,9 @@
 import { effectScope, ref } from 'vue'
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
-import { createDefaultReplConfig } from '../../app/utils/repl/config'
-import { useReplExecution } from '../../app/composables/repl-execution'
-import type { UseWebWorkerOptions } from '../../app/utils/worker'
-import type { ReplConfig, ReplProgressEvent, ReplRunResult } from '../../app/utils/repl/types'
+import { createDefaultReplConfig } from '../utils/repl/config'
+import { useReplExecution } from './repl-execution'
+import type { UseWebWorkerOptions } from '../utils/worker'
+import type { ReplConfig, ReplProgressEvent, ReplRunResult } from '../utils/repl/types'
 
 const mocks = vi.hoisted(() => ({
   compile: vi.fn(async ({ code }: { code: string }) => `compiled:${code}`),
@@ -13,11 +13,11 @@ const mocks = vi.hoisted(() => ({
   workerFn: vi.fn(),
 }))
 
-vi.mock('../../app/composables/compile', () => ({
+vi.mock('./compile', () => ({
   useCompile: () => ({ whenEnabled: mocks.compile }),
 }))
 
-vi.mock('../../app/utils/worker', () => ({
+vi.mock('../utils/worker', () => ({
   useWebWorkerFn: (_run: unknown, options: typeof mocks.workerOptions) => {
     mocks.workerOptions = options
     const workerTerminate = vi.fn()
@@ -27,7 +27,7 @@ vi.mock('../../app/utils/worker', () => ({
   },
 }))
 
-vi.mock('../../app/utils/repl/dom', () => ({
+vi.mock('../utils/repl/dom', () => ({
   createReplDomFrame: mocks.createDomFrame,
 }))
 

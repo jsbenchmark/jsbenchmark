@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createDomBenchmarkSession } from '../../app/utils/benchmark/dom/session'
-import { createDomChannelName } from '../../app/utils/benchmark/dom/protocol'
+import { createDomBenchmarkSession } from './session'
+import { createDomChannelName } from './protocol'
 
 class FakeBroadcastChannel {
   static instances: FakeBroadcastChannel[] = []

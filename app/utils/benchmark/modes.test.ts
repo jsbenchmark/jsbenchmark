@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_BENCHMARK_MODE, resolveBenchmarkMode } from '../../app/utils/benchmark/modes'
+import { DEFAULT_BENCHMARK_MODE, resolveBenchmarkMode } from './modes'
 
 describe('resolveBenchmarkMode', () => {
   it('keeps the existing timing as the standard default', () => {

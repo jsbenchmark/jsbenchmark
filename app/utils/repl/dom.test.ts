@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createReplFrameSrcdoc, createReplDomFrame } from '../../app/utils/repl/dom'
-import { createSandboxHarness } from '../helpers/sandbox-frame'
+import { createReplFrameSrcdoc, createReplDomFrame } from './dom'
+import { createSandboxHarness } from '../../../tests/helpers/sandbox-frame'
 
 const payload = {
   code: "console.log(document.querySelector('#target'))",

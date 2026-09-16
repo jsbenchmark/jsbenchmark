@@ -27,7 +27,7 @@ The complete DOM-runner implementation is preserved in baseline commit `87fcd9b`
 
 **Verification:**
 
-- [x] Tests pass: `pnpm test tests/benchmark/run.test.ts tests/benchmark/runtimes.test.ts` (8 tests passed).
+- [x] Tests pass: `pnpm test app/utils/benchmark/run.test.ts app/utils/benchmark/runtimes.test.ts` (8 tests passed).
 - [x] Typecheck passes: `pnpm typecheck`.
 - [x] Review confirms no timing constants, loop bounds, or statistics calculations changed.
 
@@ -38,8 +38,8 @@ The complete DOM-runner implementation is preserved in baseline commit `87fcd9b`
 - `app/utils/benchmark/run.ts`
 - `app/utils/benchmark/runtimes.ts`
 - `app/types/index.ts`
-- `tests/benchmark/run.test.ts`
-- `tests/benchmark/runtimes.test.ts`
+- `app/utils/benchmark/run.test.ts`
+- `app/utils/benchmark/runtimes.test.ts`
 
 **Estimated scope:** Medium (5 files)
 
@@ -58,7 +58,7 @@ The complete DOM-runner implementation is preserved in baseline commit `87fcd9b`
 
 **Verification:**
 
-- [x] Tests pass: `pnpm test tests/benchmark/dom-protocol.test.ts tests/benchmark/dom-frame.test.ts` (11 tests passed, including direct parent-source/one-port bootstrap coverage).
+- [x] Tests pass: `pnpm test app/utils/benchmark/dom/protocol.test.ts app/utils/benchmark/dom/frame.test.ts` (11 tests passed, including direct parent-source/one-port bootstrap coverage).
 - [x] Typecheck passes: `pnpm typecheck`.
 - [x] Manual harness smoke check confirms `document.createElement`, DOM insertion, and `new Image()` are available in Chromium 153 and Firefox 155.
 
@@ -68,8 +68,8 @@ The complete DOM-runner implementation is preserved in baseline commit `87fcd9b`
 
 - `app/utils/benchmark/dom/protocol.ts`
 - `app/utils/benchmark/dom/frame.ts`
-- `tests/benchmark/dom-protocol.test.ts`
-- `tests/benchmark/dom-frame.test.ts`
+- `app/utils/benchmark/dom/protocol.test.ts`
+- `app/utils/benchmark/dom/frame.test.ts`
 
 **Estimated scope:** Medium (4 files)
 
@@ -87,7 +87,7 @@ The complete DOM-runner implementation is preserved in baseline commit `87fcd9b`
 
 **Verification:**
 
-- [x] Tests pass: `pnpm test tests/benchmark/dom-session.test.ts` (9 tests passed, including terminal close and parent-watchdog paths).
+- [x] Tests pass: `pnpm test app/utils/benchmark/dom/session.test.ts` (9 tests passed, including terminal close and parent-watchdog paths).
 - [x] Typecheck passes: `pnpm typecheck`.
 - [x] Browser check: simulated blocked popups produce the actionable error; normal DOM Run all opens exactly one runner in Chromium 153 and Firefox 155.
 - [x] Manual check: attempt `localStorage`, parent DOM access, top navigation, and `window.open()` from benchmark code and confirm sandbox restrictions hold in Chromium 153 and Firefox 155.
@@ -100,7 +100,7 @@ The complete DOM-runner implementation is preserved in baseline commit `87fcd9b`
 - `app/utils/benchmark/dom/session.ts`
 - `app/pages/runner.vue`
 - `app/utils/benchmark/dom/protocol.ts`
-- `tests/benchmark/dom-session.test.ts`
+- `app/utils/benchmark/dom/session.test.ts`
 
 **Estimated scope:** Medium (4 files)
 
@@ -126,7 +126,7 @@ The complete DOM-runner implementation is preserved in baseline commit `87fcd9b`
 
 **Verification:**
 
-- [x] Tests pass: `pnpm test tests/benchmark/execution.test.ts tests/benchmark/run-status.test.ts tests/benchmark/use-benchmark-execution.test.ts` (12 tests passed).
+- [x] Tests pass: `pnpm test app/utils/benchmark/execution.test.ts app/composables/benchmark-run-status.test.ts app/composables/benchmark-execution.test.ts` (12 tests passed).
 - [x] Full tests pass: `pnpm test` (15 files, 70 tests).
 - [x] Browser check: two DOM cases mutate/read document state and confirm no state leaks between fresh frames.
 - [x] Browser check: Worker Run all succeeds in Chromium and Firefox; Chromium timing confirms saved parallel execution remains observably faster than sequential execution (1.39 s vs 2.60 s in the final smoke).
@@ -138,8 +138,8 @@ The complete DOM-runner implementation is preserved in baseline commit `87fcd9b`
 - `app/pages/index.vue`
 - `app/composables/benchmark-execution.ts`
 - `app/composables/benchmark-run-status.ts`
-- `tests/benchmark/execution.test.ts`
-- `tests/benchmark/run-status.test.ts`
+- `app/utils/benchmark/execution.test.ts`
+- `app/composables/benchmark-run-status.test.ts`
 
 **Estimated scope:** Medium (5 files)
 

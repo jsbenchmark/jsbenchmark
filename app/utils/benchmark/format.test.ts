@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDuration } from '../../app/utils/benchmark/format'
+import { formatDuration } from './format'
 
 describe('formatDuration', () => {
   it('uses nanoseconds for sub-microsecond durations', () => {

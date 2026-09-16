@@ -4,7 +4,7 @@ import {
   DEFAULT_BENCHMARK_RUNTIME,
   normalizeSetupHtml,
   resolveBenchmarkRuntime,
-} from '../../app/utils/benchmark/runtimes'
+} from './runtimes'
 
 describe('resolveBenchmarkRuntime', () => {
   it('keeps Worker as the default and exposes both supported runtimes', () => {

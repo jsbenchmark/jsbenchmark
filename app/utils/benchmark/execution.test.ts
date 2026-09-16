@@ -3,7 +3,7 @@ import {
   getBenchmarkWatchdogTimeout,
   normalizeBenchmarkExecutionError,
   runBenchmarkCases,
-} from '../../app/utils/benchmark/execution'
+} from './execution'
 
 describe('getBenchmarkWatchdogTimeout', () => {
   it('allows parallel DOM cases to queue on a shared renderer without changing other timeouts', () => {

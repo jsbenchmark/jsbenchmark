@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import type { Config, TestCase } from '../../app/types'
+import type { Config, TestCase } from '../../types'
 import {
   createBenchmarkExampleCases,
   DEFAULT_DOM_BENCHMARK_EXAMPLE,
   DEFAULT_WORKER_BENCHMARK_EXAMPLE,
   getBenchmarkExampleForRuntimeChange,
-} from '../../app/utils/benchmark/examples'
+} from './examples'
 
 const createConfig = (runtime: Config['runtime'] = 'worker'): Config => ({
   benchmarkMode: 'quick',

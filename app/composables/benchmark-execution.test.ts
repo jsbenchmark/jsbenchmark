@@ -1,7 +1,7 @@
 import { effectScope, ref } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { Config, TestCase, TestState } from '../../app/types'
-import { useBenchmarkExecution } from '../../app/composables/benchmark-execution'
+import type { Config, TestCase, TestState } from '../types'
+import { useBenchmarkExecution } from './benchmark-execution'
 
 const mocks = vi.hoisted(() => ({
   compileWhenEnabled: vi.fn(async () => {
@@ -14,11 +14,11 @@ const mocks = vi.hoisted(() => ({
   startTest: vi.fn(),
 }))
 
-vi.mock('../../app/composables/compile', () => ({
+vi.mock('./compile', () => ({
   useCompile: () => ({ whenEnabled: mocks.compileWhenEnabled }),
 }))
 
-vi.mock('../../app/composables/benchmark-run-status', () => ({
+vi.mock('./benchmark-run-status', () => ({
   useBenchmarkRunStatus: () => ({
     finish: mocks.finishStatus,
     start: mocks.startStatus,

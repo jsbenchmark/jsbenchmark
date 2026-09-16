@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  createDefaultReplConfig,
-  createEmptyReplConfig,
-  normalizeReplConfig,
-} from '../../app/utils/repl/config'
+import { createDefaultReplConfig, createEmptyReplConfig, normalizeReplConfig } from './config'
 
 describe('REPL configuration', () => {
   it('uses Worker mode and an empty HTML fixture by default', () => {

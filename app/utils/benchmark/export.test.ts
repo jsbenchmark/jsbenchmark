@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { formatBenchmarkResults } from '../../app/utils/benchmark/export'
-import type { TestCase, TestState } from '../../app/types'
+import { formatBenchmarkResults } from './export'
+import type { TestCase, TestState } from '../../types'
 
 const cases: TestCase[] = [
   {

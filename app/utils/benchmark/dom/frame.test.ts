@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { createDomFrameSrcdoc } from '../../app/utils/benchmark/dom/frame'
-import { createSandboxHarness } from '../helpers/sandbox-frame'
+import { createDomFrameSrcdoc } from './frame'
+import { createSandboxHarness } from '../../../../tests/helpers/sandbox-frame'
 
 const payload = {
   dependencies: [{ url: '/classic.js' }],

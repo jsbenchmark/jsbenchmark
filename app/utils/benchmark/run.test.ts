@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { runBenchmark } from '../../app/utils/benchmark/run'
+import { runBenchmark } from './run'
 
 const installClock = () => {
   let elapsed = 0

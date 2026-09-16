@@ -38,7 +38,7 @@ The worker environment remains the default and retains its current parallel beha
 | `app/components/TestCases.vue`            | Per-case Run controls that need DOM-mode concurrency disabling.                                                                               |
 | `app/composables/benchmark-run-status.ts` | Existing run progress toast and parallel/sequential wording.                                                                                  |
 | `app/types/index.ts`                      | Serialized `Config`, `TestCase`, and UI result state.                                                                                         |
-| `tests/benchmark/run.test.ts`             | Timing invariants and serialized-function coverage that must remain green.                                                                    |
+| `app/utils/benchmark/run.test.ts`         | Timing invariants and serialized-function coverage that must remain green.                                                                    |
 
 ## Revalidated Baseline
 

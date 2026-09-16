@@ -1,8 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-  createDomFrameJob,
-  registerDomRunnerClosingHandlers,
-} from '../../app/utils/benchmark/dom/runner'
+import { createDomFrameJob, registerDomRunnerClosingHandlers } from './runner'
 
 const payload = {
   caseName: 'DOM case',

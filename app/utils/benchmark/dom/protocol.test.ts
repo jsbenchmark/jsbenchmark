@@ -3,7 +3,7 @@ import {
   createDomSessionFragment,
   isFrameToRunnerMessage,
   parseDomSessionFragment,
-} from '../../app/utils/benchmark/dom/protocol'
+} from './protocol'
 
 describe('DOM benchmark protocol', () => {
   it('creates and parses a router-safe session fragment', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { summarizeBenchmark } from '../../app/utils/benchmark/summary'
+import { summarizeBenchmark } from './summary'
 
 describe('summarizeBenchmark', () => {
   it('uses actual elapsed time instead of the configured time budget', () => {

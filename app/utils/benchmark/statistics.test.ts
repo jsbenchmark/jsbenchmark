@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calculateStatistics } from '../../app/utils/benchmark/statistics'
+import { calculateStatistics } from './statistics'
 
 describe('calculateStatistics', () => {
   it('calculates location, spread, percentile, and uncertainty', () => {

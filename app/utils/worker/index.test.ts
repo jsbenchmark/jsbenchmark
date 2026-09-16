@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { useWebWorkerFn } from '../app/utils/worker'
+import { useWebWorkerFn } from './index'
 
 class FakeWorker {
   static latest: FakeWorker | undefined
@@ -39,7 +39,7 @@ describe('useWebWorkerFn', () => {
 
   it('releases resources if posting the input fails', async () => {
     class BrokenWorker extends FakeWorker {
-      postMessage = vi.fn(() => {
+      override postMessage = vi.fn(() => {
         throw new DOMException('Cannot clone input', 'DataCloneError')
       })
     }

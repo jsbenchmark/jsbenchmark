@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { runReplCode } from '../../app/utils/repl/run'
-import type { ReplProgressEvent } from '../../app/utils/repl/types'
+import { runReplCode } from './run'
+import type { ReplProgressEvent } from './types'
 
 const silentConsole = () => ({
   ...console,

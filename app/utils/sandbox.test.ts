@@ -1,9 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import {
-  prepareSandbox,
-  serializeSandboxError,
-  deserializeSandboxError,
-} from '../app/utils/sandbox'
+import { prepareSandbox, serializeSandboxError, deserializeSandboxError } from './sandbox'
 
 afterEach(() => vi.unstubAllGlobals())
 

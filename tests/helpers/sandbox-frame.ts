@@ -31,7 +31,7 @@ export function createSandboxHarness(srcdoc: string, globals: Record<string, unk
   })
 
   const send = (payload: unknown, source: unknown = parent, ports: unknown[] = [port]) =>
-    receive?.({ source, ports, data: { type: 'run', payload } } as MessageEvent)
+    receive?.({ source, ports, data: { type: 'run', payload } } as unknown as MessageEvent)
 
   return { document, parent, port, send }
 }
