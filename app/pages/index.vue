@@ -135,7 +135,7 @@ const exportViewRef = ref<HTMLElement | null>(null)
 const isExporting = ref(false)
 const includeStatisticsInImage = ref(false)
 const includeDeviceSpecsInImage = ref(true)
-const exportDeviceSpecs = ref('')
+const exportDeviceSpecs = ref<Awaited<ReturnType<typeof getDeviceSpecs>> | null>(null)
 const resultsClipboard = useClipboard({ legacy: true })
 const toast = useToast()
 const colorMode = useColorMode()
@@ -143,7 +143,7 @@ const colorMode = useColorMode()
 const exportResults = async () => {
   isExporting.value = true
   try {
-    exportDeviceSpecs.value = includeDeviceSpecsInImage.value ? await getDeviceSpecs() : ''
+    exportDeviceSpecs.value = includeDeviceSpecsInImage.value ? await getDeviceSpecs() : null
     await nextTick()
 
     // Fix fonts: https://github.com/bubkoo/html-to-image/issues/49#issuecomment-762222100
@@ -215,8 +215,8 @@ const exportItems = computed<DropdownMenuItem[][]>(() => [
       type: 'checkbox',
       slot: 'device-specs',
       class: 'ps-8',
-      label: 'Include device specs',
-      description: 'Add available platform and hardware details',
+      label: 'Include device & browser',
+      description: 'Add available device details and browser version',
       checked: includeDeviceSpecsInImage.value,
       onUpdateChecked: (checked) => {
         includeDeviceSpecsInImage.value = checked
@@ -533,11 +533,17 @@ watch(
               <span class="text-toned inline-block ml-1">jsbenchmark.com</span>
             </div>
             <div
-              v-if="includeDeviceSpecsInImage"
-              class="absolute inset-x-0 bottom-0 bg-muted rounded-b-xl text-xs px-6 py-2 text-center text-muted tracking-wide font-medium"
+              v-if="includeDeviceSpecsInImage && exportDeviceSpecs"
+              class="absolute inset-x-0 bottom-0 bg-muted rounded-b-xl text-xs px-6 py-2 text-center text-muted tracking-wide font-medium flex flex-wrap justify-center gap-x-6 gap-y-1"
             >
-              <span class="text-toned">Device:</span>
-              <span class="ml-1">{{ exportDeviceSpecs }}</span>
+              <div>
+                <span class="text-toned">Device:</span>
+                <span class="ml-1">{{ exportDeviceSpecs.device }}</span>
+              </div>
+              <div v-if="exportDeviceSpecs.browser">
+                <span class="text-toned">Browser:</span>
+                <span class="ml-1">{{ exportDeviceSpecs.browser }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -592,10 +598,10 @@ watch(
                       aria-hidden="true"
                       class="pointer-events-none shrink-0"
                     />
-                    <span class="font-medium">Include device specs</span>
+                    <span class="font-medium">Include device &amp; browser</span>
                   </span>
                   <span class="text-xs text-muted">
-                    Add available platform and hardware details
+                    Add available device details and browser version
                   </span>
                 </span>
               </template>

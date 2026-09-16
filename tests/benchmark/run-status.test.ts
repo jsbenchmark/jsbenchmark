@@ -33,7 +33,7 @@ describe('getBenchmarkRunStatusMessage', () => {
       )
     ).toEqual({
       title: 'Running 3 tests in parallel',
-      description: 'Worker · Standard run · about 3s remaining',
+      description: 'Worker · Standard run · 3s remaining',
     })
   })
 
@@ -72,7 +72,7 @@ describe('getBenchmarkRunStatusMessage', () => {
       )
     ).toEqual({
       title: 'Test 2 of 3',
-      description: 'Worker · Sequential · Standard run · about 7s remaining',
+      description: 'Worker · Sequential · Standard run · 7s remaining',
     })
   })
 
