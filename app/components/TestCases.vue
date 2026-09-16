@@ -143,7 +143,11 @@ const run = (test: TestCase) => {
             </div>
           </div>
         </div>
-        <BaseCodeEditor v-model="c.code" @run="run(c)" />
+        <BaseCodeEditor
+          v-model="c.code"
+          :aria-label="`${c.name || `Test #${index + 1}`} code`"
+          @run="run(c)"
+        />
 
         <DependencyList
           :test="testCases[index]!"

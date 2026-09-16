@@ -5,6 +5,8 @@
 .cache
 .vitest
 dist
+playwright-report
+test-results
 
 # Node dependencies
 node_modules

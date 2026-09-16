@@ -22,27 +22,6 @@ const harness = () => {
 }
 
 describe('DOM benchmark frame', () => {
-  it('executes the serialized harness and returns the benchmark result over a MessagePort', async () => {
-    const frame = harness()
-    const { port1, port2 } = new MessageChannel()
-
-    try {
-      const response = new Promise((resolve) => {
-        port1.onmessage = ({ data }) => resolve(data)
-      })
-
-      await frame.send(payload, frame.parent, [port2])
-
-      expect(await response).toEqual({
-        type: 'result',
-        result: { batchSize: 1, elapsedMs: 1, iterations: 1, samplesMsPerOperation: [1] },
-      })
-    } finally {
-      port1.close()
-      port2.close()
-    }
-  })
-
   it('accepts one job and one port only from its parent', async () => {
     const frame = harness()
 

@@ -446,7 +446,11 @@ watch(
               :aria-hidden="isHtmlSetupActive"
               :inert="isHtmlSetupActive"
             >
-              <BaseCodeEditor v-model="config.dataCode" language="javascript" />
+              <BaseCodeEditor
+                v-model="config.dataCode"
+                aria-label="Benchmark setup code"
+                language="javascript"
+              />
             </div>
             <div
               class="[grid-area:1/1]"
@@ -454,7 +458,11 @@ watch(
               :aria-hidden="!isHtmlSetupActive"
               :inert="!isHtmlSetupActive"
             >
-              <BaseCodeEditor v-model="config.setupHtml" language="html" />
+              <BaseCodeEditor
+                v-model="config.setupHtml"
+                aria-label="Benchmark HTML fixture"
+                language="html"
+              />
             </div>
           </div>
           <DependencyList v-model:test="config.globalTestConfig" show-hint global class="mt-2">

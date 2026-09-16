@@ -8,6 +8,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "test:watch": "vitest",
     "upgrade": "nuxi upgrade --force",
     "format": "prettier '**/*.{ts,vue}' --write",
@@ -16,6 +18,7 @@
   "devDependencies": {
     "@nuxt/devtools": "^3.4.2",
     "@nuxtjs/plausible": "^4.0.0",
+    "@playwright/test": "^1.63.0",
     "@types/codemirror": "^5.60.18",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^24.13.4",

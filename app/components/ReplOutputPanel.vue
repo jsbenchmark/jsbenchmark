@@ -74,6 +74,7 @@ const levelPresentation: Record<ReplConsoleLevel, { icon: string; label: string;
         <div>
           <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">Result</p>
           <pre
+            aria-label="Result"
             class="max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-md border border-default bg-muted p-3 font-mono text-sm"
             >{{ state.output.value }}</pre>
         </div>

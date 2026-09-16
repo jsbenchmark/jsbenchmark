@@ -40,6 +40,7 @@ type CodeEditorLanguage = 'javascript' | 'html'
 
 const props = withDefaults(
   defineProps<{
+    ariaLabel?: string
     language?: CodeEditorLanguage
     modelValue?: string
   }>(),
@@ -193,6 +194,9 @@ onMounted(() => {
 
       languageExtension(),
       updateListener,
+      EditorView.contentAttributes.of({
+        'aria-label': props.ariaLabel || editorPlaceholder(),
+      }),
       colorTheme.of(createEditorColorTheme(resolvedColorMode())),
       baseTheme,
       placeholder(editorPlaceholder()),
@@ -229,6 +233,11 @@ watch(
     }
   },
   { immediate: true }
+)
+
+watch(
+  () => props.ariaLabel,
+  (value) => editor.value?.contentDOM.setAttribute('aria-label', value || editorPlaceholder())
 )
 
 const run = () => {

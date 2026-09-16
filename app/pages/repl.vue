@@ -231,7 +231,12 @@ const copyMarkdown = async () => {
                 :aria-hidden="isHtmlEditorActive"
                 :inert="isHtmlEditorActive"
               >
-                <BaseCodeEditor v-model="config.test.code" language="javascript" @run="run" />
+                <BaseCodeEditor
+                  v-model="config.test.code"
+                  aria-label="REPL JavaScript"
+                  language="javascript"
+                  @run="run"
+                />
               </div>
               <div
                 class="min-w-0 [grid-area:1/1]"
@@ -239,7 +244,12 @@ const copyMarkdown = async () => {
                 :aria-hidden="!isHtmlEditorActive"
                 :inert="!isHtmlEditorActive"
               >
-                <BaseCodeEditor v-model="config.setupHtml" language="html" @run="run" />
+                <BaseCodeEditor
+                  v-model="config.setupHtml"
+                  aria-label="REPL HTML fixture"
+                  language="html"
+                  @run="run"
+                />
               </div>
             </div>
           </section>

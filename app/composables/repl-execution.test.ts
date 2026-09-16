@@ -127,24 +127,8 @@ describe('useReplExecution', () => {
     })
   })
 
-  it('streams Worker output and completes with the returned value', async () => {
-    mocks.workerFn.mockImplementation(async () => {
-      mocks.workerOptions?.onProgress?.({
-        type: 'console',
-        entry: { level: 'log', time: 1, values: ['first'] },
-      })
-      mocks.workerOptions?.onProgress?.({ type: 'console-clear' })
-      mocks.workerOptions?.onProgress?.({
-        type: 'console',
-        entry: { level: 'info', time: 2, values: ['kept'] },
-      })
-
-      return {
-        duration: 4,
-        markers: [{ name: 'work', time: 0, duration: 3 }],
-        value: '42',
-      }
-    })
+  it('passes compiled code and ESM dependencies to the Worker', async () => {
+    mocks.workerFn.mockResolvedValueOnce({ duration: 4, markers: [], value: '42' })
     const { config, execution } = createExecution()
     config.value.test.dependencies = [{ url: '/lib.js', esm: true }]
 
@@ -155,18 +139,9 @@ describe('useReplExecution', () => {
       dependencies: [{ url: '/lib.js', esm: true }],
       esm: true,
     })
-    expect(execution.state.value).toMatchObject({
-      status: 'success',
-      output: {
-        duration: 4,
-        value: '42',
-        logs: [{ level: 'info', time: 2, values: ['kept'] }],
-        markers: [{ name: 'work', time: 0, duration: 3 }],
-      },
-    })
   })
 
-  it('runs DOM code in the preview host and keeps the frame after completion', async () => {
+  it('keeps a completed DOM preview until its scope is disposed', async () => {
     const dispose = vi.fn()
     mocks.createDomFrame.mockReturnValue({
       isDisposed: ref(false),

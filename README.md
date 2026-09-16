@@ -34,3 +34,20 @@ pnpm run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+## Testing
+
+Run the unit tests:
+
+```bash
+pnpm test
+```
+
+Install the browsers once, then run the end-to-end tests in Chromium and Firefox:
+
+```bash
+pnpm exec playwright install chromium firefox
+pnpm test:e2e
+```
+
+Use `pnpm test:e2e:ui` to run the Playwright suite interactively.
