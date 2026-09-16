@@ -7,7 +7,7 @@ import type { Dependency } from '~/types'
 
 export type WebWorkerStatus = 'PENDING' | 'SUCCESS' | 'RUNNING' | 'ERROR' | 'TIMEOUT_EXPIRED'
 
-export interface UseWebWorkerOptions extends ConfigurableWindow {
+export interface UseWebWorkerOptions<Progress = unknown> extends ConfigurableWindow {
   /**
    * Number of milliseconds before killing the worker
    *
@@ -20,114 +20,89 @@ export interface UseWebWorkerOptions extends ConfigurableWindow {
   dependencies?: Dependency[]
 
   esm?: boolean
+
+  onProgress?: (progress: Progress) => void
 }
 
-/**
- * Run expensive function without blocking the UI, using a simple syntax that makes use of Promise.
- *
- * @see https://vueuse.org/useWebWorkerFn
- * @param fn
- * @param options
- */
-export function useWebWorkerFn<T extends (...fnArgs: any[]) => any>(
-  fn: T,
-  options: UseWebWorkerOptions = {}
-) {
-  const { dependencies = [], timeout, window = defaultWindow } = options
+type WorkerMessage<Result, Progress> =
+  ['PROGRESS', Progress] | ['SUCCESS', Result] | ['ERROR', unknown]
 
-  const worker = ref<(Worker & { _url?: string }) | undefined>()
+export function useWebWorkerFn<Args extends unknown[], Result, Progress = unknown>(
+  fn: (...args: Args) => Result,
+  options: UseWebWorkerOptions<Progress> = {}
+) {
+  const { dependencies = [], esm = false, onProgress, timeout, window = defaultWindow } = options
   const workerStatus = ref<WebWorkerStatus>('PENDING')
-  const promise = ref<{
-    reject?: (result: ReturnType<T> | ErrorEvent) => void
-    resolve?: (result: ReturnType<T>) => void
-  }>({})
-  const timeoutId = ref<number>()
+  let worker: Worker | undefined
+  let workerUrl: string | undefined
+  let timeoutId: number | undefined
+  let rejectRun: ((error: unknown) => void) | undefined
 
   const workerTerminate = (status: WebWorkerStatus = 'PENDING') => {
-    if (worker.value && worker.value._url && window) {
-      worker.value.terminate()
-      URL.revokeObjectURL(worker.value._url)
-
-      // Reject the promise if the worker is terminated by timeout.
-      if (status === 'TIMEOUT_EXPIRED') {
-        const { reject = () => {} } = promise.value
-        reject(new ErrorEvent('TIMEOUT_EXPIRED'))
-      }
-
-      promise.value = {}
-      worker.value = undefined
-      window.clearTimeout(timeoutId.value)
-      workerStatus.value = status
+    if (!worker && !workerUrl) return
+    if (worker) {
+      worker.onmessage = null
+      worker.onerror = null
+      worker.terminate()
     }
-  }
+    if (workerUrl) URL.revokeObjectURL(workerUrl)
+    window?.clearTimeout(timeoutId)
 
-  workerTerminate()
+    if (status === 'TIMEOUT_EXPIRED') rejectRun?.(new ErrorEvent('TIMEOUT_EXPIRED'))
+    else if (status === 'PENDING')
+      rejectRun?.(new DOMException('Worker execution canceled.', 'AbortError'))
+
+    worker = undefined
+    workerUrl = undefined
+    rejectRun = undefined
+    timeoutId = undefined
+    workerStatus.value = status
+  }
 
   tryOnScopeDispose(workerTerminate)
 
-  const generateWorker = () => {
-    const blobUrl = createWorkerBlobUrl(fn, dependencies, options.esm)
-    const newWorker: Worker & { _url?: string } = new Worker(blobUrl, {
-      type: options.esm ? 'module' : 'classic',
-    })
-    newWorker._url = blobUrl
-
-    newWorker.onmessage = (e: MessageEvent) => {
-      const { resolve = () => {}, reject = () => {} } = promise.value
-      const [status, result] = e.data as [WebWorkerStatus, ReturnType<T>]
-
-      switch (status) {
-        case 'SUCCESS':
-          resolve(result)
-          workerTerminate(status)
-          break
-        default:
-          reject(result)
-          workerTerminate('ERROR')
-          break
-      }
-    }
-
-    newWorker.onerror = (e: ErrorEvent) => {
-      const { reject = () => {} } = promise.value
-
-      reject(e)
-      workerTerminate('ERROR')
-    }
-
-    if (timeout) {
-      timeoutId.value = setTimeout(() => workerTerminate('TIMEOUT_EXPIRED'), timeout) as any
-    }
-    return newWorker
-  }
-
-  const callWorker = (...fnArgs: Parameters<T>) =>
-    new Promise<ReturnType<T>>((resolve, reject) => {
-      promise.value = {
-        resolve,
-        reject,
-      }
-      worker.value && worker.value.postMessage([[...fnArgs]])
-
-      workerStatus.value = 'RUNNING'
-    })
-
-  const workerFn = (...fnArgs: Parameters<T>) => {
+  const workerFn = (...args: Args): Promise<Awaited<Result>> => {
     if (workerStatus.value === 'RUNNING') {
-      console.error('[useWebWorkerFn] You can only run one instance of the worker at a time.')
-      /* eslint-disable-next-line prefer-promise-reject-errors */
-      return Promise.reject()
+      return Promise.reject(new Error('Only one worker execution can run at a time.'))
     }
 
-    worker.value = generateWorker()
-    return callWorker(...fnArgs)
+    return new Promise((resolve, reject) => {
+      rejectRun = reject
+      try {
+        workerUrl = createWorkerBlobUrl(fn, dependencies, esm)
+        worker = new Worker(workerUrl, { type: esm ? 'module' : 'classic' })
+        workerStatus.value = 'RUNNING'
+        worker.onmessage = ({ data }: MessageEvent<WorkerMessage<Awaited<Result>, Progress>>) => {
+          const [status, result] = data
+          switch (status) {
+            case 'PROGRESS':
+              onProgress?.(result)
+              break
+            case 'SUCCESS':
+              resolve(result)
+              workerTerminate('SUCCESS')
+              break
+            default:
+              reject(result)
+              workerTerminate('ERROR')
+              break
+          }
+        }
+        worker.onerror = (error) => {
+          reject(error)
+          workerTerminate('ERROR')
+        }
+        if (timeout)
+          timeoutId = window?.setTimeout(() => workerTerminate('TIMEOUT_EXPIRED'), timeout)
+        worker.postMessage([args])
+      } catch (error) {
+        reject(error)
+        workerTerminate('ERROR')
+      }
+    })
   }
 
-  return {
-    workerFn,
-    workerStatus,
-    workerTerminate,
-  }
+  return { workerFn, workerStatus, workerTerminate }
 }
 
 export type UseWebWorkerFnReturn = ReturnType<typeof useWebWorkerFn>
