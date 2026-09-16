@@ -1,35 +1,40 @@
 <script setup lang="ts">
-import type { Dependency, LogEntry, ReplState, TestCase, TimeMarker } from '~/types'
-import { COLORS, DEFAULT_TEST_NAME } from '~/utils/constants'
-import { useWebWorkerFn } from '~/utils/worker'
-import chroma from 'chroma-js'
+import { DEFAULT_TEST_NAME } from '~/utils/constants'
+import {
+  createDefaultReplConfig,
+  createEmptyReplConfig,
+  normalizeReplConfig,
+} from '~/utils/repl/config'
+import { formatReplMarkdown } from '~/utils/repl/export'
+import type { ReplConfig } from '~/utils/repl/types'
 
-const config = ref({
-  name: DEFAULT_TEST_NAME,
-  test: {
-    dependencies: [] as Dependency[],
-    code: `LOG('Hello World!', { foo: 'bar' })
+const config = ref<ReplConfig>(createDefaultReplConfig())
+const previewHost = ref<HTMLElement>()
+const editorTab = ref<'javascript' | 'html'>('javascript')
+const colorMode = useColorMode()
+const previewColorMode = computed(() => (colorMode.value === 'dark' ? 'dark' : 'light'))
+const { hasDomPreview, isRunning, reset, run, state } = useReplExecution(
+  config,
+  previewHost,
+  previewColorMode
+)
 
-TIME('First')
-await new Promise((r) => setTimeout(r, 100))
-TIME('First')
-
-TIME('Second')
-await new Promise((r) => setTimeout(r, 250))
-TIME('Second')
-
-TIME('Done!')`,
-  } as TestCase,
-})
+const runtimeTabs = computed(() => [
+  { label: 'Worker', value: 'worker', disabled: isRunning.value },
+  { label: 'DOM', value: 'dom', disabled: isRunning.value },
+])
+const editorTabs = [
+  { label: 'JavaScript', value: 'javascript' },
+  { label: 'HTML fixture', value: 'html' },
+]
+const isHtmlEditorActive = computed(
+  () => config.value.runtime === 'dom' && editorTab.value === 'html'
+)
 
 const clear = () => {
-  config.value = {
-    name: '',
-    test: {
-      dependencies: [] as Dependency[],
-      code: '',
-    } as TestCase,
-  }
+  config.value = createEmptyReplConfig()
+  editorTab.value = 'javascript'
+  reset()
 }
 
 useHead({
@@ -39,203 +44,59 @@ useHead({
   },
 })
 
-const isRunning = ref(false)
-
-const run = async () => {
-  isRunning.value = true
-  await runCase(config.value.test)
-  isRunning.value = false
-}
-
-const state = ref<ReplState>({
-  status: 'idle',
-  error: null,
-  result: {
-    markers: [],
-    logs: [],
-  },
-})
-
-const compile = useCompile()
-
-const runCase = async (c: TestCase) => {
-  state.value = {
-    status: 'running',
-    error: null,
-  }
-
-  const dependencies = config.value.test.dependencies?.filter((d) => d.url) ?? []
-
-  const { workerFn, workerTerminate } = useWebWorkerFn(
-    async ({ code, dataCode, time, warmupTime }, d?: any) => {
-      const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
-
-      let start = 0
-
-      const logs: LogEntry[] = []
-      ;(globalThis as any).LOG = (...values: any[]) => {
-        const time = performance.now() - start
-
-        logs.push(
-          ...values.map((v) => {
-            let value: string = v
-            if (typeof v === 'function') {
-              value = v.toString()
-            } else {
-              value = JSON.stringify(v)
-            }
-
-            return {
-              value,
-              time,
-            }
-          })
-        )
-      }
-
-      const markers: TimeMarker[] = []
-      ;(globalThis as any).TIME = (name: string) => {
-        const now = performance.now() - start
-
-        const startMarker = markers.findLast((m) => m.name === name)
-        if (startMarker && !startMarker.duration) {
-          startMarker.duration = now - startMarker.time
-        } else {
-          markers.push({
-            name,
-            time: now,
-          })
-        }
-        // TODO: Realtime markers/logs?
-        // postMessage({
-        //   type: 'marker',
-        //   name,
-        //   time: performance.now(),
-        // })
-      }
-
-      const fn = AsyncFunction(code)
-
-      start = performance.now()
-      await fn()
-      const end = performance.now()
-
-      return {
-        start,
-        end,
-        markers,
-        logs,
-      }
-    },
-    {
-      timeout: 30_000,
-      dependencies: dependencies,
-      esm: dependencies.some((d) => d.esm),
-    }
-  )
-
-  let res
-  try {
-    const code = await compile.whenEnabled({
-      code: c.code,
-    })
-
-    res = await workerFn({
-      code,
-      time: TEST_TIME,
-      warmupTime: WARMUP_TIME,
-    })
-
-    const totalDuration = res.end - res.start
-
-    state.value = {
-      status: 'success',
-      error: null,
-      result: {
-        duration: totalDuration,
-        markers: res.markers.map((m) => {
-          return {
-            name: m.name,
-            time: m.time,
-            duration: m.duration,
-            durationPercentage: m.duration ? m.duration / totalDuration : undefined,
-          }
-        }),
-        logs: res.logs.map((l) => {
-          let value = l.value
-
-          try {
-            value = JSON.parse(value)
-          } catch (error) {}
-
-          return {
-            time: l.time,
-            value,
-          }
-        }),
-      },
-    }
-  } catch (e) {
-    console.error(e)
-
-    const error = ((e as Error).message ? e : new Error('Unknown error')) as Error
-    console.error(`Worker failed with error: `, error)
-    state.value = {
-      status: 'error',
-      error: error,
-      result: undefined,
-    }
-    workerTerminate()
-
-    if (error.message.toLowerCase().startsWith('unexpected')) {
-      usePredefinedNotifications().typescriptHint()
-    }
-  }
-}
-
 const route = useRoute()
 const router = useRouter()
 
-// Read state from URL.
 onMounted(() => {
-  const urlState = deserialize(route.hash.slice(1))
-  if (urlState) {
-    config.value = urlState.config
+  try {
+    const urlState = deserialize(route.hash.slice(1))
+    if (urlState?.config) config.value = normalizeReplConfig(urlState.config)
+  } catch {
+    // Keep the default example when a malformed hash cannot be decoded.
   }
 })
 
-// Write state to URL.
 watch(
   config,
-  (v) => {
-    const encoded = serialize({
-      config: v,
-    })
-
+  (value) => {
     router.replace({
-      hash: `#${encoded}`,
+      hash: `#${serialize({ config: value })}`,
     })
   },
   { deep: true }
 )
 
-const colorScale = chroma.scale(COLORS.GRADIENT).mode('lch').domain([0, 1])
+watch(
+  () => config.value.runtime,
+  (runtime) => {
+    if (runtime === 'worker') editorTab.value = 'javascript'
+  }
+)
 
-const maxTimerDuration = computed(() => {
-  return Math.max(...(state.value.result?.markers.map((m) => m.duration || 0) ?? [0]))
-})
+const reportClipboard = useClipboard({ legacy: true })
+const toast = useToast()
+const copyMarkdown = async () => {
+  if (state.value.status !== 'success' && state.value.status !== 'error') return
+  await reportClipboard.copy(formatReplMarkdown(state.value, getUrl()))
+  toast.add({
+    title: 'Copied as Markdown',
+    description: 'The latest REPL investigation is ready to paste.',
+    color: 'success',
+    icon: 'i-tabler-check',
+  })
+}
 </script>
 
 <template>
   <div>
     <SplitLayout>
       <template #default>
-        <div>
-          <div class="flex-col lg:flex-row flex justify-between lg:items-start">
+        <div class="flex min-w-0 flex-col gap-8">
+          <div class="flex flex-col justify-between lg:flex-row lg:items-start">
             <UTextarea
               v-model="config.name"
               placeholder="Name"
-              class="font-bold flex-1 max-w-full"
+              class="max-w-full flex-1 font-bold"
               autoresize
               :ui="{ base: 'p-0' }"
               variant="none"
@@ -243,126 +104,173 @@ const maxTimerDuration = computed(() => {
               :rows="1"
             />
 
-            <div class="mt-8 lg:ml-10 lg:mt-1.5 flex gap-3 items-center">
-              <UButton
-                @click="clear"
-                color="neutral"
-                variant="outline"
-                icon="i-tabler-trash"
-                size="lg"
-              />
-              <ShareButton :payload="{ config }" type="repl" />
-              <UButton
-                @click="run"
-                :loading="isRunning"
-                :disabled="isRunning"
-                size="lg"
-                class="font-semibold"
-                icon="i-tabler-play"
-                >Run</UButton
-              >
-            </div>
-          </div>
-          <div class="flex flex-col gap-3 mt-8">
-            <DependencyList v-model:test="config.test" class="mt-2 mb-4" />
-            <BaseCodeEditor v-model="config.test.code" @run="run" />
+            <div class="mt-8 flex flex-col items-start gap-2 lg:ml-10 lg:mt-1.5 lg:items-end">
+              <div class="flex flex-wrap items-center gap-3">
+                <UTooltip text="Clear">
+                  <UButton
+                    @click="clear"
+                    :disabled="isRunning"
+                    aria-label="Clear REPL"
+                    color="neutral"
+                    variant="outline"
+                    icon="i-tabler-trash"
+                    size="lg"
+                  />
+                </UTooltip>
+                <ShareButton :payload="{ config }" type="repl" />
 
-            <div
-              v-if="state.status === 'error'"
-              class="bg-error/10 text-red-700 dark:text-red-400 rounded-md px-4 py-3 font-mono border border-error"
-            >
-              {{ state.error?.message }}
-            </div>
-          </div>
+                <div class="relative">
+                  <UTabs
+                    v-model="config.runtime"
+                    :items="runtimeTabs"
+                    :content="false"
+                    :ui="{ trigger: 'last:pe-8' }"
+                    aria-label="REPL environment"
+                    variant="outline"
+                    size="md"
+                  />
+                  <UPopover
+                    :content="{ side: 'bottom', align: 'end', sideOffset: 16 }"
+                    mode="hover"
+                  >
+                    <button
+                      type="button"
+                      aria-label="About DOM mode"
+                      class="absolute inset-e-3 top-1/2 z-10 flex size-5 -translate-y-1/2 items-center justify-center rounded-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                      :class="
+                        config.runtime === 'dom'
+                          ? 'text-primary hover:text-primary'
+                          : 'text-muted hover:text-default'
+                      "
+                    >
+                      <UIcon name="i-tabler-info-circle" class="size-4" aria-hidden="true" />
+                    </button>
 
-          <div class="mt-8">
-            <h4 class="font-semibold text-2xl mb-5">Logs</h4>
-
-            <div v-show="isRunning" class="space-y-3">
-              <USkeleton class="h-6 w-32" />
-              <USkeleton class="h-6 w-80" />
-              <USkeleton class="h-6 w-64" />
-            </div>
-            <div v-show="!isRunning && !state?.result?.logs?.length" class="text-muted space-y-3">
-              <p>
-                Nothing logged yet. Add
-                <code class="px-1.5 py-0.5 bg-elevated text-sm text-highlighted rounded"
-                  >LOG('foo', { bar: 'baz' }, ...)</code
-                >
-                to your code to log something. The logs will also be available in the browser
-                devtools/console.
-              </p>
-              <p>
-                The logged values need to be JSON serializable, because your code runs in a web
-                worker. If something doesn't look right, try checking the console.
-              </p>
-            </div>
-
-            <div v-show="!isRunning && state?.result?.logs?.length">
-              <div v-for="(log, i) in state.result?.logs ?? []" :key="i" class="font-mono mb-2">
-                <div
-                  v-if="log.time !== state.result?.logs[i - 1]?.time"
-                  class="text-sm text-muted mb-1"
-                  :class="{
-                    'mt-6': i !== 0,
-                  }"
-                >
-                  {{ log.time.toFixed(3) }} ms
+                    <template #content>
+                      <div
+                        class="w-80 max-w-[calc(100vw-2rem)] space-y-3 p-4 text-sm leading-relaxed"
+                      >
+                        <p class="font-semibold text-highlighted">DOM mode</p>
+                        <p>
+                          Runs once in a fresh sandboxed preview below the editor, with access to
+                          browser APIs such as <code class="text-toned">document</code> and layout.
+                        </p>
+                        <p class="text-muted">
+                          Synchronous infinite loops can make this page unresponsive. Worker mode
+                          provides stronger isolation for code that does not need the DOM.
+                        </p>
+                      </div>
+                    </template>
+                  </UPopover>
                 </div>
-                <pre>{{ log.value }}</pre>
+
+                <UButton
+                  @click="run"
+                  :loading="isRunning"
+                  :disabled="isRunning"
+                  size="lg"
+                  class="font-semibold"
+                  icon="i-tabler-play"
+                >
+                  Run
+                </UButton>
               </div>
             </div>
           </div>
+
+          <DependencyList v-model:test="config.test" />
+
+          <section class="flex min-w-0 flex-col gap-3" aria-labelledby="repl-code-heading">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <h2 id="repl-code-heading" class="text-2xl font-bold">Code</h2>
+              <UTabs
+                v-model="editorTab"
+                :items="editorTabs"
+                :content="false"
+                :class="{
+                  'invisible pointer-events-none': config.runtime !== 'dom',
+                }"
+                :aria-hidden="config.runtime !== 'dom'"
+                :inert="config.runtime !== 'dom'"
+                aria-label="REPL editor"
+                variant="outline"
+                size="sm"
+              />
+            </div>
+
+            <div class="grid text-sm text-muted">
+              <p
+                class="flex flex-wrap items-center gap-x-1.5 gap-y-1 [grid-area:1/1]"
+                :class="{ 'invisible pointer-events-none': isHtmlEditorActive }"
+                :aria-hidden="isHtmlEditorActive"
+              >
+                <span>Return a value to show it in Output. Press</span>
+                <span
+                  class="inline-flex items-center gap-1"
+                  aria-label="Control or Command plus Enter"
+                >
+                  <UKbd value="meta" size="sm" />
+                  <span aria-hidden="true">+</span>
+                  <UKbd value="enter" size="sm" />
+                </span>
+                <span>to run.</span>
+              </p>
+              <p
+                class="[grid-area:1/1]"
+                :class="{ 'invisible pointer-events-none': !isHtmlEditorActive }"
+                :aria-hidden="!isHtmlEditorActive"
+              >
+                Optional body markup installed before dependencies and JavaScript execute.
+              </p>
+            </div>
+
+            <div class="grid min-w-0">
+              <div
+                class="min-w-0 [grid-area:1/1]"
+                :class="{ 'invisible pointer-events-none': isHtmlEditorActive }"
+                :aria-hidden="isHtmlEditorActive"
+                :inert="isHtmlEditorActive"
+              >
+                <BaseCodeEditor v-model="config.test.code" language="javascript" @run="run" />
+              </div>
+              <div
+                class="min-w-0 [grid-area:1/1]"
+                :class="{ 'invisible pointer-events-none': !isHtmlEditorActive }"
+                :aria-hidden="!isHtmlEditorActive"
+                :inert="!isHtmlEditorActive"
+              >
+                <BaseCodeEditor v-model="config.setupHtml" language="html" @run="run" />
+              </div>
+            </div>
+          </section>
+
+          <section
+            v-if="config.runtime === 'dom'"
+            class="flex flex-col gap-3"
+            aria-labelledby="repl-preview-heading"
+          >
+            <div>
+              <h2 id="repl-preview-heading" class="text-2xl font-bold">Preview</h2>
+              <p class="mt-1 text-sm text-muted">Recreated from the HTML fixture on every run.</p>
+            </div>
+            <div
+              class="relative h-96 overflow-hidden rounded-md border border-accented bg-default"
+              :aria-busy="isRunning"
+            >
+              <div ref="previewHost" class="h-full w-full" />
+              <div
+                v-if="!hasDomPreview"
+                class="pointer-events-none absolute inset-0 flex items-center justify-center p-8 text-center text-sm text-gray-500"
+              >
+                Run the code to render the DOM preview.
+              </div>
+            </div>
+          </section>
         </div>
       </template>
+
       <template #sidebar>
-        <div>
-          <h2 class="text-3xl font-bold mb-10">Time markers</h2>
-
-          <div v-if="isRunning" class="space-y-4">
-            <USkeleton class="h-[2.75em] w-3/4" />
-            <USkeleton class="h-[2.75em] w-full" />
-            <USkeleton class="h-[2.75em] w-2/4" />
-          </div>
-          <div v-else-if="!state?.result?.markers?.length" class="text-muted space-y-3">
-            <p>
-              No markers yet. Add
-              <code class="px-1.5 py-0.5 bg-elevated text-sm text-highlighted rounded"
-                >TIME('name')</code
-              >
-              to your code to add markers.
-            </p>
-            <p>
-              When two markers have the same name, the duration between them will be calculated.
-            </p>
-          </div>
-
-          <div v-else>
-            <div v-for="(marker, i) in state.result?.markers ?? []" :key="i" class="font-mono mb-6">
-              <div class="text-sm text-muted flex items-center mb-1">
-                <div>{{ marker.time.toFixed(3) }} ms</div>
-                <div v-if="i !== 0" class="ml-2" title="Time difference to previous marker">
-                  (+{{ (marker.time - (state.result?.markers[i - 1]?.time || 0)).toFixed(3) }} ms)
-                </div>
-              </div>
-              <p>
-                <span class="font-bold">{{ marker.name }}</span>
-                <span v-if="marker.duration">: {{ marker.duration.toFixed(3) }} ms</span>
-              </p>
-
-              <div class="relative mt-2">
-                <div
-                  v-if="marker.duration"
-                  class="rounded-[0.375em] h-[2.75em] transition-all duration-500 striped"
-                  :style="{
-                    backgroundColor: colorScale(marker.duration / maxTimerDuration).hex(),
-                    width: (marker.duration / maxTimerDuration) * 100 + '%',
-                  }"
-                ></div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ReplOutputPanel :state="state" @copy-markdown="copyMarkdown" />
       </template>
     </SplitLayout>
   </div>

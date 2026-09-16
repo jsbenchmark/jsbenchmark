@@ -64,8 +64,14 @@ const updateListener = EditorView.updateListener.of((v) => {
 const baseTheme = EditorView.theme({
   '&': {
     fontSize: '16px',
+    maxWidth: '100%',
+    minWidth: '0',
+    width: '100%',
   },
-  '.cm-scroller': { fontFamily: 'inherit' },
+  '.cm-scroller': {
+    fontFamily: 'inherit',
+    overflowX: 'auto',
+  },
   '&.cm-editor': {
     backgroundColor: 'transparent !important',
     outline: 'none',
@@ -242,9 +248,9 @@ onBeforeUnmount(() => {
   <div
     @keydown.enter.meta.prevent.stop.capture="run"
     @keydown.enter.ctrl.prevent.stop.capture="run"
-    class="font-mono p-3 rounded-md bg-muted dark:bg-gray-950 border border-accented relative"
+    class="relative w-full min-w-0 max-w-full rounded-md border border-accented bg-muted p-3 font-mono dark:bg-gray-950"
   >
-    <div ref="editorRef"></div>
+    <div ref="editorRef" class="w-full min-w-0 max-w-full"></div>
 
     <div
       v-if="props.language === 'javascript'"
@@ -260,7 +266,7 @@ onBeforeUnmount(() => {
           <UButton
             icon="i-tabler-brand-typescript"
             variant="ghost"
-            size="sm"
+            size="md"
             :color="preferences.typescript ? 'primary' : 'neutral'"
             @click="preferences.typescript = !preferences.typescript"
             :class="{ 'opacity-50': !preferences.typescript }"
