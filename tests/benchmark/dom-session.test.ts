@@ -80,20 +80,24 @@ describe('createDomBenchmarkSession', () => {
     const second = createSession({ BroadcastChannel, createId: () => secondIds.shift()! }).session
     const firstRunner = new BroadcastChannel(createDomChannelName('session-first'))
     const secondRunner = new BroadcastChannel(createDomChannelName('session-second'))
+
     try {
       firstRunner.postMessage({ type: 'ready' })
       secondRunner.postMessage({ type: 'ready' })
       await Promise.all([first.ready, second.ready])
+
       const firstResult = first.run(payload, 500)
       const secondResult = second.run(payload, 500)
       firstRunner.postMessage({ type: 'result', requestId: 'shared-request', result: measurement })
       await expect(firstResult).resolves.toEqual(measurement)
+
       const secondMeasurement = { ...measurement, iterations: 8 }
       secondRunner.postMessage({
         type: 'result',
         requestId: 'shared-request',
         result: secondMeasurement,
       })
+
       await expect(secondResult).resolves.toEqual(secondMeasurement)
     } finally {
       first.close()
@@ -120,6 +124,7 @@ describe('createDomBenchmarkSession', () => {
 
   it('correlates a request and ignores stale or unrelated results', async () => {
     const { channel, session } = createSession()
+
     channel.emit({ type: 'ready' })
     await session.ready
 
@@ -147,6 +152,7 @@ describe('createDomBenchmarkSession', () => {
 
   it('correlates concurrent requests when results finish out of order', async () => {
     const { channel, session } = createSession()
+
     channel.emit({ type: 'ready' })
     await session.ready
 
@@ -190,6 +196,7 @@ describe('createDomBenchmarkSession', () => {
   it('treats a parent-watchdog timeout as terminal after allowing runner cleanup grace', async () => {
     vi.useFakeTimers()
     const { channel, session } = createSession()
+
     channel.emit({ type: 'ready' })
     await session.ready
 
@@ -206,6 +213,7 @@ describe('createDomBenchmarkSession', () => {
   it('uses a longer response watchdog for parallel jobs without changing the case timeout', async () => {
     vi.useFakeTimers()
     const { channel, session } = createSession()
+
     channel.emit({ type: 'ready' })
     await session.ready
 
@@ -217,7 +225,9 @@ describe('createDomBenchmarkSession', () => {
     })
 
     await vi.advanceTimersByTimeAsync(750)
+
     expect(channel.closed).toBe(false)
+
     channel.emit({
       type: 'result',
       requestId: 'request-a',
@@ -278,11 +288,13 @@ describe('createDomBenchmarkSession', () => {
     await secondResultPromise
 
     session.close()
+
     expect(onVisibilityChange).toHaveBeenLastCalledWith(false)
   })
 
   it('makes runner closure terminal during active work', async () => {
     const { channel, session } = createSession()
+
     channel.emit({ type: 'ready' })
     await session.ready
 

@@ -17,6 +17,7 @@ const payload = {
   },
   setupHtml: '<button id="target">Run</button>',
 }
+
 const measurement = {
   batchSize: 2,
   elapsedMs: 10,
@@ -36,18 +37,23 @@ const frameElement = () => ({
   className: '',
   srcdoc: '',
 })
+
 const emitReady = (source: unknown, data: unknown = { type: 'ready' }) => {
   for (const receive of listeners) receive({ source, data } as MessageEvent)
 }
+
 const createJob = (fixture = payload.setupHtml) => {
   const job = createDomFrameJob({ ...payload, setupHtml: fixture }, 3_250)
   jobs.push(job)
+
   return { job, frame: job.frame as unknown as ReturnType<typeof frameElement> }
 }
+
 const connect = (frame: ReturnType<typeof frameElement>) => {
   emitReady(frame.contentWindow)
   const port = frame.contentWindow.postMessage.mock.calls[0]![2][0] as MessagePort
   ports.push(port)
+
   return port
 }
 
@@ -86,21 +92,27 @@ describe('createDomFrameJob', () => {
 
     emitReady({})
     emitReady(frame.contentWindow, { type: 'unrelated' })
+
     expect(frame.contentWindow.postMessage).not.toHaveBeenCalled()
 
     const port = connect(frame)
     emitReady(frame.contentWindow)
+
     expect(frame.contentWindow.postMessage).toHaveBeenCalledExactlyOnceWith(
       { type: 'run', payload: { ...payload, setupHtml: fixture } },
       '*',
       [port]
     )
     expect(listeners.size).toBe(0)
+
     port.postMessage({ type: 'result', result: measurement })
     await result
+
     expect(frame.remove).toHaveBeenCalledOnce()
     expect(vi.getTimerCount()).toBe(0)
+
     job.cancel()
+
     expect(frame.remove).toHaveBeenCalledOnce()
   })
 
@@ -113,14 +125,18 @@ describe('createDomFrameJob', () => {
       ...measurement,
       iterations: 8,
     })
+
     const firstPort = connect(first.frame)
     const secondPort = connect(second.frame)
 
     secondPort.postMessage({ type: 'result', result: { ...measurement, iterations: 8 } })
     await secondResult
+
     expect(first.frame.remove).not.toHaveBeenCalled()
+
     firstPort.postMessage({ type: 'result', result: measurement })
     await firstResult
+
     expect(first.frame.remove).toHaveBeenCalledOnce()
     expect(second.frame.remove).toHaveBeenCalledOnce()
   })
@@ -128,8 +144,10 @@ describe('createDomFrameJob', () => {
   it('rejects malformed sandbox responses and removes the frame', async () => {
     const { job, frame } = createJob()
     const result = expect(job.result).rejects.toThrow('invalid response')
+
     connect(frame).postMessage({ type: 'result', result: {} })
     await result
+
     expect(frame.remove).toHaveBeenCalledOnce()
     expect(vi.getTimerCount()).toBe(0)
   })
@@ -141,11 +159,13 @@ describe('createDomFrameJob', () => {
       message: 'setup failed',
       stack: 'original stack',
     })
+
     connect(frame).postMessage({
       type: 'error',
       error: { name: 'TypeError', message: 'setup failed', stack: 'original stack' },
     })
     await result
+
     expect(frame.remove).toHaveBeenCalledOnce()
   })
 
@@ -153,8 +173,10 @@ describe('createDomFrameJob', () => {
     const { job, frame } = createJob()
     const result = expect(job.result).rejects.toThrow("doesn't take longer than 3.25 seconds")
     if (connected) connect(frame)
+
     await vi.advanceTimersByTimeAsync(3_250)
     await result
+
     expect(frame.remove).toHaveBeenCalledOnce()
     expect(listeners.size).toBe(0)
     expect(vi.getTimerCount()).toBe(0)
@@ -170,6 +192,7 @@ describe('createDomFrameJob', () => {
     first.job.cancel()
     second.job.cancel()
     await Promise.all([firstResult, secondResult])
+
     expect(first.frame.remove).toHaveBeenCalledOnce()
     expect(second.frame.remove).toHaveBeenCalledOnce()
     expect(listeners.size).toBe(0)
@@ -179,26 +202,19 @@ describe('createDomFrameJob', () => {
 
 describe('registerDomRunnerClosingHandlers', () => {
   it('reports pagehide or beforeunload once and removes both listeners on cleanup', () => {
-    const listeners = new Map<string, Set<() => void>>()
-    const windowObject = {
-      addEventListener: vi.fn((type: string, listener: () => void) => {
-        const entries = listeners.get(type) ?? new Set()
-        entries.add(listener)
-        listeners.set(type, entries)
-      }),
-      removeEventListener: vi.fn((type: string, listener: () => void) => {
-        listeners.get(type)?.delete(listener)
-      }),
-    }
+    const windowObject = new EventTarget()
+    const removeListener = vi.spyOn(windowObject, 'removeEventListener')
     const reportClosing = vi.fn()
     const stop = registerDomRunnerClosingHandlers(windowObject, reportClosing)
 
-    for (const listener of listeners.get('pagehide') ?? []) listener()
-    for (const listener of listeners.get('beforeunload') ?? []) listener()
+    windowObject.dispatchEvent(new Event('pagehide'))
+    windowObject.dispatchEvent(new Event('beforeunload'))
+
     expect(reportClosing).toHaveBeenCalledOnce()
 
     stop()
-    for (const listener of listeners.get('pagehide') ?? []) listener()
-    expect(reportClosing).toHaveBeenCalledOnce()
+
+    expect(removeListener).toHaveBeenCalledWith('pagehide', expect.any(Function))
+    expect(removeListener).toHaveBeenCalledWith('beforeunload', expect.any(Function))
   })
 })

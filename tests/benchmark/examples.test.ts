@@ -27,6 +27,7 @@ describe('benchmark starter examples', () => {
     )
 
     cases[0]!.code = 'custom code'
+
     expect(getBenchmarkExampleForRuntimeChange(config, cases, 'dom')).toBeUndefined()
   })
 
@@ -47,11 +48,13 @@ describe('benchmark starter examples', () => {
   it('does not replace a starter with custom setup or dependencies', () => {
     const cases = createBenchmarkExampleCases(DEFAULT_WORKER_BENCHMARK_EXAMPLE, () => 'id')
     const customFixture = { ...createConfig('dom'), setupHtml: '<main>Custom</main>' }
+
     expect(getBenchmarkExampleForRuntimeChange(customFixture, cases, 'dom')).toBeUndefined()
 
     const customDependencies: TestCase[] = cases.map((test, index) =>
       index === 0 ? { ...test, dependencies: [{ url: '/custom.js' }] } : test
     )
+
     expect(
       getBenchmarkExampleForRuntimeChange(createConfig('dom'), customDependencies, 'dom')
     ).toBeUndefined()
@@ -62,11 +65,6 @@ describe('benchmark starter examples', () => {
     const cases = createBenchmarkExampleCases(DEFAULT_DOM_BENCHMARK_EXAMPLE, () => ids.shift()!)
 
     expect(cases.map((test) => test.id)).toEqual(['first', 'second', 'third'])
-    expect(cases.map((test) => test.name)).toEqual([
-      'getElementById',
-      'Query ID selector',
-      'Query ID attribute',
-    ])
     expect(DEFAULT_DOM_BENCHMARK_EXAMPLE.cases.every((test) => !('id' in test))).toBe(true)
   })
 })

@@ -20,6 +20,7 @@ describe('runBenchmarkCases', () => {
     const promise = runBenchmarkCases(['a', 'b'], true, execute)
 
     expect(execute).toHaveBeenCalledTimes(2)
+
     resolvers.forEach((resolve) => resolve())
     await promise
   })
@@ -35,8 +36,10 @@ describe('runBenchmarkCases', () => {
 
     await Promise.resolve()
     expect(events).toEqual(['start:a:0'])
+
     firstDone.resolve()
     await promise
+
     expect(events).toEqual(['start:a:0', 'end:a:0', 'start:b:1', 'end:b:1'])
   })
 })
@@ -44,6 +47,7 @@ describe('runBenchmarkCases', () => {
 describe('normalizeBenchmarkExecutionError', () => {
   it('keeps Error instances and provides runtime-neutral timeout guidance', () => {
     const original = new TypeError('bad code')
+
     expect(normalizeBenchmarkExecutionError(original, 5_500)).toBe(original)
 
     const timeout = { type: 'TIMEOUT_EXPIRED' } as ErrorEvent

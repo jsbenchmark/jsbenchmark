@@ -11,87 +11,55 @@ vi.mock('vue', async (importOriginal) => ({
 }))
 
 afterEach(() => {
+  vi.useRealTimers()
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
 })
 
 describe('getBenchmarkRunStatusMessage', () => {
+  const running = {
+    currentTest: 1,
+    currentTestStartedAt: 1_000,
+    estimatedTestDurationMs: 3_500,
+    label: 'Standard',
+    parallel: true,
+    runtime: 'worker' as const,
+    runStartedAt: 1_000,
+    totalTests: 3,
+  }
+
   it('describes parallel runs using their shared remaining time', () => {
-    expect(
-      getBenchmarkRunStatusMessage(
-        {
-          currentTest: 1,
-          currentTestStartedAt: 1_000,
-          estimatedTestDurationMs: 3_500,
-          label: 'Standard',
-          parallel: true,
-          runtime: 'worker',
-          runStartedAt: 1_000,
-          totalTests: 3,
-        },
-        1_500
-      )
-    ).toEqual({
+    expect(getBenchmarkRunStatusMessage(running, 1_500)).toEqual({
       title: 'Running 3 tests in parallel',
       description: 'Worker · Standard run · 3s remaining',
     })
   })
 
   it('uses singular copy for a one-test run', () => {
-    expect(
-      getBenchmarkRunStatusMessage(
-        {
-          currentTest: 1,
-          currentTestStartedAt: 1_000,
-          estimatedTestDurationMs: 3_500,
-          label: 'Standard',
-          parallel: true,
-          runtime: 'worker',
-          runStartedAt: 1_000,
-          totalTests: 1,
-        },
-        1_500
-      ).title
-    ).toBe('Running 1 test')
+    expect(getBenchmarkRunStatusMessage({ ...running, totalTests: 1 }, 1_500).title).toBe(
+      'Running 1 test'
+    )
   })
 
   it('includes queued tests in a sequential run estimate', () => {
-    expect(
-      getBenchmarkRunStatusMessage(
-        {
-          currentTest: 2,
-          currentTestStartedAt: 5_000,
-          estimatedTestDurationMs: 3_500,
-          label: 'Standard',
-          parallel: false,
-          runtime: 'worker',
-          runStartedAt: 1_000,
-          totalTests: 3,
-        },
-        5_500
-      )
-    ).toEqual({
+    const status = { ...running, currentTest: 2, currentTestStartedAt: 5_000, parallel: false }
+
+    expect(getBenchmarkRunStatusMessage(status, 5_500)).toEqual({
       title: 'Test 2 of 3',
       description: 'Worker · Sequential · Standard run · 7s remaining',
     })
   })
 
   it('shows a finishing state after the estimate is exhausted', () => {
-    expect(
-      getBenchmarkRunStatusMessage(
-        {
-          currentTest: 3,
-          currentTestStartedAt: 8_000,
-          estimatedTestDurationMs: 3_500,
-          label: 'Standard',
-          parallel: false,
-          runtime: 'dom',
-          runStartedAt: 1_000,
-          totalTests: 3,
-        },
-        12_000
-      )
-    ).toEqual({
+    const status = {
+      ...running,
+      currentTest: 3,
+      currentTestStartedAt: 8_000,
+      parallel: false,
+      runtime: 'dom' as const,
+    }
+
+    expect(getBenchmarkRunStatusMessage(status, 12_000)).toEqual({
       title: 'Test 3 of 3',
       description: 'DOM · Sequential · Standard run · finishing…',
     })
@@ -144,6 +112,7 @@ describe('useBenchmarkVisibilityWarning', () => {
     )
 
     warning.setHidden(false, 'dom')
+
     expect(remove).toHaveBeenCalledWith('visibility-warning')
   })
 
@@ -165,6 +134,7 @@ describe('useBenchmarkVisibilityWarning', () => {
     expect(remove).not.toHaveBeenCalled()
 
     vi.advanceTimersByTime(3_000)
+
     expect(remove).toHaveBeenCalledWith('visibility-warning')
   })
 })
