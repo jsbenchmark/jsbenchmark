@@ -1,3 +1,4 @@
+import type { SerializedSandboxError } from '../../sandbox'
 import type { PreparedBenchmarkCase } from '../execution'
 import type { BenchmarkRunResult } from '../run'
 
@@ -13,12 +14,6 @@ export const parseDomSessionFragment = (fragment: string) => {
 
   const sessionId = fragment.slice(DOM_SESSION_FRAGMENT_PREFIX.length)
   return /^[A-Za-z0-9_-]{8,128}$/.test(sessionId) ? sessionId : undefined
-}
-
-export type SerializedBenchmarkError = {
-  name: string
-  message: string
-  stack?: string
 }
 
 export type DomRunPayload = PreparedBenchmarkCase & {
@@ -38,13 +33,12 @@ export type ParentToRunnerMessage =
 export type RunnerToParentMessage =
   | { type: 'ready' }
   | { type: 'result'; requestId: string; result: BenchmarkRunResult }
-  | { type: 'error'; requestId: string; error: SerializedBenchmarkError }
+  | { type: 'error'; requestId: string; error: SerializedSandboxError }
   | { type: 'visibility'; hidden: boolean }
   | { type: 'closing' }
 
 export type FrameToRunnerMessage =
-  | { type: 'result'; result: BenchmarkRunResult }
-  | { type: 'error'; error: SerializedBenchmarkError }
+  { type: 'result'; result: BenchmarkRunResult } | { type: 'error'; error: SerializedSandboxError }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
@@ -82,24 +76,4 @@ export const isFrameToRunnerMessage = (value: unknown): value is FrameToRunnerMe
   }
 
   return false
-}
-
-export function serializeBenchmarkError(error: unknown): SerializedBenchmarkError {
-  if (error instanceof Error) {
-    return {
-      name: error.name || 'Error',
-      message: error.message || 'Unknown error',
-      ...(error.stack ? { stack: error.stack } : {}),
-    }
-  }
-
-  return { name: 'Error', message: typeof error === 'string' ? error : 'Unknown error' }
-}
-
-export const deserializeBenchmarkError = (error: SerializedBenchmarkError) => {
-  const deserialized = new Error(error.message)
-  deserialized.name = error.name
-  if (error.stack) deserialized.stack = error.stack
-
-  return deserialized
 }

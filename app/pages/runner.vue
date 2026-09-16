@@ -1,9 +1,6 @@
 <script setup lang="ts">
-import {
-  createDomChannelName,
-  parseDomSessionFragment,
-  serializeBenchmarkError,
-} from '~/utils/benchmark/dom/protocol'
+import { serializeSandboxError } from '~/utils/sandbox'
+import { createDomChannelName, parseDomSessionFragment } from '~/utils/benchmark/dom/protocol'
 import type { ParentToRunnerMessage, RunnerToParentMessage } from '~/utils/benchmark/dom/protocol'
 import {
   createDomFrameJob,
@@ -70,7 +67,7 @@ onMounted(() => {
       postToParent({ type: 'result', requestId, result })
       idleStatus.value = 'Benchmark complete.'
     } catch (error) {
-      postToParent({ type: 'error', requestId, error: serializeBenchmarkError(error) })
+      postToParent({ type: 'error', requestId, error: serializeSandboxError(error) })
       idleStatus.value = 'Benchmark failed.'
     } finally {
       activeCases.delete(requestId)

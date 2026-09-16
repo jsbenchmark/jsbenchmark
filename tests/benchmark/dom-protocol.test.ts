@@ -3,7 +3,6 @@ import {
   createDomSessionFragment,
   isFrameToRunnerMessage,
   parseDomSessionFragment,
-  serializeBenchmarkError,
 } from '../../app/utils/benchmark/dom/protocol'
 
 describe('DOM benchmark protocol', () => {
@@ -55,14 +54,5 @@ describe('DOM benchmark protocol', () => {
     { type: 'error', error: { name: 'Error', message: {} } },
   ])('rejects malformed sandbox output: %j', (message) => {
     expect(isFrameToRunnerMessage(message)).toBe(false)
-  })
-
-  it('serializes errors without relying on structured cloning Error objects', () => {
-    const error = new TypeError('bad input')
-    expect(serializeBenchmarkError(error)).toMatchObject({
-      name: 'TypeError',
-      message: 'bad input',
-    })
-    expect(serializeBenchmarkError('nope')).toEqual({ name: 'Error', message: 'nope' })
   })
 })

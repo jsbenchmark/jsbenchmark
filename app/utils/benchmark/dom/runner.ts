@@ -1,7 +1,8 @@
+import { deserializeSandboxError } from '../../sandbox'
 import { createBenchmarkTimeoutError } from '../execution'
 import type { BenchmarkRunResult } from '../run'
 import { createDomFrameSrcdoc } from './frame'
-import { deserializeBenchmarkError, isFrameToRunnerMessage } from './protocol'
+import { isFrameToRunnerMessage } from './protocol'
 import type { DomRunPayload } from './protocol'
 
 export function createDomFrameJob(payload: DomRunPayload, responseTimeoutMs: number) {
@@ -46,7 +47,7 @@ export function createDomFrameJob(payload: DomRunPayload, responseTimeoutMs: num
         } else if (data.type === 'result') {
           settle(() => resolve(data.result))
         } else {
-          settle(() => reject(deserializeBenchmarkError(data.error)))
+          settle(() => reject(deserializeSandboxError(data.error)))
         }
       }
 

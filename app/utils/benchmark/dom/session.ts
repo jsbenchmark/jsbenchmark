@@ -1,11 +1,8 @@
+import { deserializeSandboxError } from '../../sandbox'
 import { nanoid } from 'nanoid'
 import { createBenchmarkTimeoutError } from '../execution'
 import type { BenchmarkRunResult } from '../run'
-import {
-  createDomChannelName,
-  createDomSessionFragment,
-  deserializeBenchmarkError,
-} from './protocol'
+import { createDomChannelName, createDomSessionFragment } from './protocol'
 import type { DomRunPayload, ParentToRunnerMessage, RunnerToParentMessage } from './protocol'
 
 const READY_TIMEOUT_MS = 3_000
@@ -138,7 +135,7 @@ export function createDomBenchmarkSession(
     if (message.type === 'result') {
       request.resolve(message.result)
     } else {
-      request.reject(deserializeBenchmarkError(message.error))
+      request.reject(deserializeSandboxError(message.error))
     }
   }
 
