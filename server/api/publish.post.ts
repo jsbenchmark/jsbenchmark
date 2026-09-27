@@ -5,7 +5,7 @@ type WorkerResponse = {
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
 
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig(event)
   const data = await $fetch<WorkerResponse>(`${config.public.workerUrl}/api/shortcode`, {
     method: 'POST',
     body: JSON.stringify(body),
