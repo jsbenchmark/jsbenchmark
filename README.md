@@ -35,6 +35,16 @@ pnpm run preview
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
 
+### Cloudflare Pages
+
+Use `pnpm run build` as the build command and `dist` as the output directory.
+Nuxt detects Cloudflare Pages automatically. To build and preview that preset locally:
+
+```bash
+NITRO_PRESET=cloudflare_pages pnpm run build
+npx wrangler@4 pages dev dist
+```
+
 ## Testing
 
 Run the unit tests:

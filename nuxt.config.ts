@@ -5,6 +5,12 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   ssr: true,
 
+  nitro: {
+    // Chroma registers color parsers and interpolators through import side effects.
+    // Keep them when Cloudflare bundles dependencies into the server worker.
+    moduleSideEffects: ['chroma-js'],
+  },
+
   ui: {
     fonts: false,
   },
